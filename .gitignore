@@ -41,7 +41,7 @@
 # debug information files
 *.dwo
 
-### CMake files
+### CMake files/directories
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
@@ -52,8 +52,12 @@ cmake_install.cmake
 install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
-_deps
-CMakeUserPresets.json
 
-# build files, should be renamed according to the name of the directory
+# build files; should be renamed according to the name of the directory
 build/debug
+
+# CMake dependencies directory
+_deps
+
+# CMake user presets
+CMakeUserPresets.json

@@ -1,4 +1,4 @@
-set(ENGINE_NAME engine)
+set(ENGINE_NAME engine CACHE STRING "" FORCE)
 
 set(SRC
     engine.cxx
@@ -14,7 +14,7 @@ add_library(${ENGINE_NAME} SHARED
 )
 
 set_target_properties(${ENGINE_NAME} PROPERTIES 
-    OUTPUT_NAME "engine"
+    OUTPUT_NAME "${ENGINE_NAME}"
     PREFIX ""
 )
 
@@ -28,6 +28,6 @@ set(LIBRARIES
 
 target_link_libraries(${ENGINE_NAME} PRIVATE ${LIBRARIES})
 target_include_directories(${ENGINE_NAME} PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${CMAKE_CURRENT_BINARY_DIR}"
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
