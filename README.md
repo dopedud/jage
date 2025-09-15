@@ -1,4 +1,4 @@
-# Game Engine from Scratch
+# Game Engine from Scratch in C/C++
 
 ```
 cmake --build build --target clean_install
