@@ -46,7 +46,7 @@ add_library(${PROGRAM_NAME} SHARED
     ${SRC_FILES}
 )
 set_target_properties(${PROGRAM_NAME} PROPERTIES 
-    OUTPUT_NAME "enginelib"
+    OUTPUT_NAME "engine"
     PREFIX ""
 )
 
