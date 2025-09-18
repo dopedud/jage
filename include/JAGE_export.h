@@ -1,18 +1,18 @@
 
-#ifndef JAGE_EXPORT_H
-#define JAGE_EXPORT_H
+#ifndef JAGE_API_H
+#define JAGE_API_H
 
 #ifdef JAGE_STATIC_DEFINE
-#  define JAGE_EXPORT
+#  define JAGE_API
 #  define JAGE_NO_EXPORT
 #else
-#  ifndef JAGE_EXPORT
+#  ifndef JAGE_API
 #    ifdef JAGE_EXPORTS
         /* We are building this library */
-#      define JAGE_EXPORT __declspec(dllexport)
+#      define JAGE_API __declspec(dllexport)
 #    else
         /* We are using this library */
-#      define JAGE_EXPORT __declspec(dllimport)
+#      define JAGE_API __declspec(dllimport)
 #    endif
 #  endif
 
@@ -26,7 +26,7 @@
 #endif
 
 #ifndef JAGE_DEPRECATED_EXPORT
-#  define JAGE_DEPRECATED_EXPORT JAGE_EXPORT JAGE_DEPRECATED
+#  define JAGE_DEPRECATED_EXPORT JAGE_API JAGE_DEPRECATED
 #endif
 
 #ifndef JAGE_DEPRECATED_NO_EXPORT
@@ -40,4 +40,4 @@
 #  endif
 #endif
 
-#endif /* JAGE_EXPORT_H */
+#endif /* JAGE_API_H */

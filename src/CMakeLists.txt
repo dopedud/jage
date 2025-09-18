@@ -18,7 +18,8 @@ set_target_properties(${ENGINE_NAME} PROPERTIES
 
 include(GenerateExportHeader)
 generate_export_header(${ENGINE_NAME}
-    EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/engine_export.h
+    EXPORT_MACRO_NAME ${ENGINE_NAME}_API
+    EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/${ENGINE_NAME}_export.h
 )
 
 set(LIBRARIES

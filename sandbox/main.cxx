@@ -7,8 +7,8 @@ int main()
 {
     JAGE::Logger::Init();
 
-    JAGE_MSG_INFO("Hey World!");
-    SANDBOX_LOG_INFO("Hey {}!", "World");
+    JAGE_MSG_INFO("Hey Engine World!");
+    SANDBOX_LOG1_INFO("Hey {}!", "Sandbox World");
 
     return 0;
 }
