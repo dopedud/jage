@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "engine.h"
+#include "JAGE.h"
 
 // int main(int argc, char** argv) <--- WE'LL USE THIS FOR LATER
 int main()

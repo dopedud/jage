@@ -63,4 +63,8 @@ _deps
 CMakeUserPresets.json
 
 ### Miscellaneous
+# VSCode configuration directory
 .vscode
+
+# Doxygen generated documentation
+docs
