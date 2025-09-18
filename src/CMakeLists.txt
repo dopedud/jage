@@ -30,8 +30,7 @@ set(LIBRARIES
 
 target_link_libraries(${ENGINE_NAME} PRIVATE ${LIBRARIES})
 target_include_directories(${ENGINE_NAME}
-    PUBLIC
-        ${CMAKE_SOURCE_DIR}/include
     PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
