@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "JAGE.h"
+#include "JAGE/core.h"
 
 // int main(int argc, char** argv) <--- WE'LL USE THIS FOR LATER
 int main()
@@ -8,7 +8,7 @@ int main()
     JAGE::Logger::Init();
 
     JAGE_MSG_INFO("Hey Engine World!");
-    SANDBOX_LOG1_INFO("Hey {}!", "Sandbox World");
+    SANDBOX_LOG_INFO("Hey {}!", "Sandbox World");
 
     return 0;
 }

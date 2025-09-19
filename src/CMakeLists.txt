@@ -6,31 +6,36 @@ set(SRC
 
 set(SRC_FILES)
 foreach(src ${SRC})
-    list(APPEND SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${src}")
+    list(APPEND SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${src})
 endforeach()
 
 add_library(${ENGINE_NAME} SHARED ${SRC_FILES})
 
+target_compile_definitions(${ENGINE_NAME} PRIVATE ${ENGINE_NAME}_EXPORT)
+
 set_target_properties(${ENGINE_NAME} PROPERTIES 
     OUTPUT_NAME ${ENGINE_NAME}
     PREFIX ""
+
+    C_VISIBILITY_PRESET hidden
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN YES
 )
 
-include(GenerateExportHeader)
-generate_export_header(${ENGINE_NAME}
-    EXPORT_MACRO_NAME ${ENGINE_NAME}_API
-    EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/${ENGINE_NAME}_export.h
-)
-
-set(LIBRARIES
+set(PUBLIC_LIBRARIES
     spdlog::spdlog
+)
+
+set(PRIVATE_LIBRARIES
     glfw
     glad
 )
 
-target_link_libraries(${ENGINE_NAME} PRIVATE ${LIBRARIES})
+target_link_libraries(${ENGINE_NAME} PUBLIC ${PUBLIC_LIBRARIES})
+target_link_libraries(${ENGINE_NAME} PRIVATE ${PRIVATE_LIBRARIES})
 target_include_directories(${ENGINE_NAME}
-    PRIVATE
+    PUBLIC
         ${CMAKE_SOURCE_DIR}/include
+    PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
