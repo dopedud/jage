@@ -5,10 +5,7 @@
  * @brief The Core header file that contains the core subsystems and utilities for JAGE.
  */
 
-#include <memory>
-#include <string_view>
-#include <utility>
-#include <cstdint>
+#include "jgpch.h"
 
 #include "spdlog/spdlog.h"
 
@@ -45,63 +42,76 @@ namespace JAGE
     {
     private:
         inline static std::shared_ptr<spdlog::logger> enginelog = nullptr;
-        inline static std::shared_ptr<spdlog::logger> sandboxlog = nullptr;
+        inline static std::shared_ptr<spdlog::logger> applog = nullptr;
     public:
-        static void Init();
+        static void Init(spdlog::level::level_enum engine_level, spdlog::level::level_enum app_level);
 
+        inline static void EngineLog_Trace(std::string_view msg) { enginelog->trace(msg); }
+        inline static void EngineLog_Debug(std::string_view msg) { enginelog->debug(msg); }
         inline static void EngineLog_Info(std::string_view msg) { enginelog->info(msg); }
-        inline static void SandboxLog_Info(std::string_view msg) { sandboxlog->info(msg); }
+        inline static void EngineLog_Warn(std::string_view msg) { enginelog->warn(msg); }
+        inline static void EngineLog_Error(std::string_view msg) { enginelog->error(msg); }
 
+        inline static void AppLog_Trace(std::string_view msg) { applog->trace(msg); }
+        inline static void AppLog_Debug(std::string_view msg) { applog->debug(msg); }
+        inline static void AppLog_Info(std::string_view msg) { applog->info(msg); }
+        inline static void AppLog_Warn(std::string_view msg) { applog->warn(msg); }
+        inline static void AppLog_Error(std::string_view msg) { applog->error(msg); }
+
+        template<typename... Args>
+        inline static void EngineLog_Trace(std::string_view log, Args &&... args)
+        { enginelog->trace(log, std::forward<Args>(args)...); }
+        template<typename... Args>
+        inline static void EngineLog_Debug(std::string_view log, Args &&... args)
+        { enginelog->debug(log, std::forward<Args>(args)...); }
         template<typename... Args>
         inline static void EngineLog_Info(std::string_view log, Args &&... args)
-        {
-            enginelog->info(log, std::forward<Args>(args)...);
-        }
+        { enginelog->info(log, std::forward<Args>(args)...); }
+        template<typename... Args>
+        inline static void EngineLog_Warn(std::string_view log, Args &&... args)
+        { enginelog->warn(log, std::forward<Args>(args)...); }
+        template<typename... Args>
+        inline static void EngineLog_Error(std::string_view log, Args &&... args)
+        { enginelog->error(log, std::forward<Args>(args)...); }
 
         template<typename... Args>
-        inline static void SandboxLog_Info(std::string_view log, Args &&... args)
-        {
-            sandboxlog->info(log, std::forward<Args>(args)...);
-        }
+        inline static void AppLog_Trace(std::string_view log, Args &&... args)
+        { applog->trace(log, std::forward<Args>(args)...); }
+        template<typename... Args>
+        inline static void AppLog_Debug(std::string_view log, Args &&... args)
+        { applog->debug(log, std::forward<Args>(args)...); }
+        template<typename... Args>
+        inline static void AppLog_Info(std::string_view log, Args &&... args)
+        { applog->info(log, std::forward<Args>(args)...); }
+        template<typename... Args>
+        inline static void AppLog_Warn(std::string_view log, Args &&... args)
+        { applog->warn(log, std::forward<Args>(args)...); }
+        template<typename... Args>
+        inline static void AppLog_Error(std::string_view log, Args &&... args)
+        { applog->error(log, std::forward<Args>(args)...); }
     };
 
+    #define JAGE_MSG_TRACE(MSG) JAGE::Logger::EngineLog_Trace(MSG)
+    #define JAGE_MSG_DEBUG(MSG) JAGE::Logger::EngineLog_Debug(MSG)
     #define JAGE_MSG_INFO(MSG) JAGE::Logger::EngineLog_Info(MSG)
-    #define SANDBOX_MSG_INFO(MSG) JAGE::Logger::SandboxLog_Info(MSG)
+    #define JAGE_MSG_WARN(MSG) JAGE::Logger::EngineLog_Warn(MSG)
+    #define JAGE_MSG_ERROR(MSG) JAGE::Logger::EngineLog_Error(MSG)
 
+    #define APP_MSG_TRACE(MSG) JAGE::Logger::AppLog_Trace(MSG)
+    #define APP_MSG_DEBUG(MSG) JAGE::Logger::AppLog_Debug(MSG)
+    #define APP_MSG_INFO(MSG) JAGE::Logger::AppLog_Info(MSG)
+    #define APP_MSG_WARN(MSG) JAGE::Logger::AppLog_Warn(MSG)
+    #define APP_MSG_ERROR(MSG) JAGE::Logger::AppLog_Error(MSG)
+
+    #define JAGE_LOG_TRACE(LOG, ...) JAGE::Logger::EngineLog_Trace(LOG, __VA_ARGS__)
+    #define JAGE_LOG_DEBUG(LOG, ...) JAGE::Logger::EngineLog_Debug(LOG, __VA_ARGS__)
     #define JAGE_LOG_INFO(LOG, ...) JAGE::Logger::EngineLog_Info(LOG, __VA_ARGS__)
-    #define SANDBOX_LOG_INFO(LOG, ...) JAGE::Logger::SandboxLog_Info(LOG, __VA_ARGS__)
+    #define JAGE_LOG_WARN(LOG, ...) JAGE::Logger::EngineLog_Warn(LOG, __VA_ARGS__)
+    #define JAGE_LOG_ERROR(LOG, ...) JAGE::Logger::EngineLog_Error(LOG, __VA_ARGS__)
 
-    enum class EventType : uint8_t
-    {
-        None = 0,
-        WindowClose, WindowResize, WindowFocus, WindowUnFocus, WindowMoved,
-        AppTick, AppUpdate, AppRender,
-        KeyPressed, KeyReleased,
-        MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
-    };   
-
-    #define BIT(x) (1 << x)
-
-    enum class EventCategory : uint8_t
-    {
-        None = 0,
-        Application     = BIT(0),
-        Input           = BIT(1),
-        Keyboard        = BIT(2),
-        Mouse           = BIT(3),
-        MouseButton     = BIT(4)
-    };
-
-    class JAGE_API Event
-    {
-    public:
-        virtual std::string_view name() const = 0;
-        virtual EventType event_type() const = 0;
-        virtual EventCategory event_category() const = 0;
-        virtual std::string_view ToString() const { return name(); }
-
-        inline bool is_category(EventCategory category) { return event_category() & category; }
-    protected:
-        bool handled = false;
-    };
+    #define APP_LOG_TRACE(LOG, ...) JAGE::Logger::AppLog_Trace(LOG, __VA_ARGS__)
+    #define APP_LOG_DEBUG(LOG, ...) JAGE::Logger::AppLog_Debug(LOG, __VA_ARGS__)
+    #define APP_LOG_INFO(LOG, ...) JAGE::Logger::AppLog_Info(LOG, __VA_ARGS__)
+    #define APP_LOG_WARN(LOG, ...) JAGE::Logger::AppLog_Warn(LOG, __VA_ARGS__)
+    #define APP_LOG_ERROR(LOG, ...) JAGE::Logger::AppLog_Error(LOG, __VA_ARGS__)
 }

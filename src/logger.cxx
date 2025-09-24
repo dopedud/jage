@@ -4,14 +4,17 @@
 
 namespace JAGE
 {
-    void Logger::Init()
+    void Logger::Init(
+        spdlog::level::level_enum engine_level,
+        spdlog::level::level_enum app_level
+    )
     {
-        spdlog::set_pattern("%^[%T][%n] :- %v%$");
+        spdlog::set_pattern("%^[%Y/%m/%d | %T][%n][%L] :- %v%$");
         
         enginelog = spdlog::stdout_color_mt("ENGINE");
-        enginelog->set_level(spdlog::level::trace);
+        enginelog->set_level(engine_level);
 
-        sandboxlog = spdlog::stdout_color_mt("SANDBOX");
-        sandboxlog->set_level(spdlog::level::trace);
+        applog = spdlog::stdout_color_mt("APP");
+        applog->set_level(app_level);
     }
 }

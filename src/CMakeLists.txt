@@ -33,6 +33,7 @@ set(PRIVATE_LIBRARIES
 
 target_link_libraries(${ENGINE_NAME} PUBLIC ${PUBLIC_LIBRARIES})
 target_link_libraries(${ENGINE_NAME} PRIVATE ${PRIVATE_LIBRARIES})
+target_precompile_headers(${ENGINE_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/include/JAGE/jgpch.h")
 target_include_directories(${ENGINE_NAME}
     PUBLIC
         ${CMAKE_SOURCE_DIR}/include

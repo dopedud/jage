@@ -5,6 +5,7 @@
 #       define JAGE_API __declspec(dllexport)
 #   else
 #       define JAGE_API __declspec(dllimport)
+#   endif
 #elif defined(__GNUC__) && __GNUC__ >= 4
 #   define JAGE_API __attribute__((visibility("default")))
 #else
