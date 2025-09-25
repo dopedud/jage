@@ -1,4 +1,4 @@
-### C files
+### C/C++ files
 # Prerequisites
 *.d
 
@@ -55,6 +55,9 @@ CTestTestfile.cmake
 
 # build files; should be renamed according to the name of the directory
 build/debug
+
+# install directory
+installs
 
 # CMake dependencies directory
 _deps

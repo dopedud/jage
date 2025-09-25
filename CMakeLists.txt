@@ -26,9 +26,15 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/application)
 
-install(TARGETS ${EXECUTABLE_NAME} ${ENGINE_NAME} ${LIBRARIES}
+install(TARGETS
+    ${EXECUTABLE_NAME}
+    ${ENGINE_NAME}
+    ${PUBLIC_LIBRARIES}
+    ${PRIVATE_LIBRARIES}
+
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION bin
     ARCHIVE DESTINATION lib
 )
 
+install(DIRECTORY include/ DESTINATION include)
