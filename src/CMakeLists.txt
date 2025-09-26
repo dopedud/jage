@@ -1,7 +1,10 @@
 set(ENGINE_NAME JAGE CACHE STRING "" FORCE)
 
 set(SRC
+    jgpch.cxx
+
     logger.cxx
+    platform/opengl/opengl_window.cxx
 )
 
 set(SRC_FILES)
@@ -11,7 +14,10 @@ endforeach()
 
 add_library(${ENGINE_NAME} SHARED ${SRC_FILES})
 
-target_compile_definitions(${ENGINE_NAME} PRIVATE ${ENGINE_NAME}_EXPORT)
+target_compile_definitions(${ENGINE_NAME} PRIVATE
+    ${ENGINE_NAME}_EXPORT
+    ${ENGINE_NAME}_ENABLE_ASSERTS
+)
 
 set_target_properties(${ENGINE_NAME} PROPERTIES 
     OUTPUT_NAME ${ENGINE_NAME}
@@ -33,7 +39,7 @@ set(PRIVATE_LIBRARIES
 
 target_link_libraries(${ENGINE_NAME} PUBLIC ${PUBLIC_LIBRARIES})
 target_link_libraries(${ENGINE_NAME} PRIVATE ${PRIVATE_LIBRARIES})
-target_precompile_headers(${ENGINE_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/include/jgpch.h")
+target_precompile_headers(${ENGINE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include/jgpch.h)
 target_include_directories(${ENGINE_NAME}
     PUBLIC
         ${CMAKE_SOURCE_DIR}/include

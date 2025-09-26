@@ -12,5 +12,12 @@ int main()
     JAGE_MSG_ERROR("This is a error message!");
     APP_LOG_INFO("Hey {}!", "App World");
 
+    std::unique_ptr<JAGE::Window> window = std::make_unique<JAGE::Window>(JAGE::Window::create());
+
+    while (true)
+    {
+        window->OnUpdate();
+    }
+
     return 0;
 }
