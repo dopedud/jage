@@ -545,18 +545,20 @@ namespace JAGE
     public:
         using EventCallbackFn = std::function<void(Event&)>;
 
-        virtual ~Window() {}
+        Window(const WindowProperties& properties = WindowProperties());
+        ~Window();
 
-        virtual void OnUpdate() = 0;
+        unsigned int width();
+        unsigned int height();
 
-        virtual unsigned int width() const = 0;
-        virtual unsigned int height() const = 0;
+        void OnUpdate();
 
-        virtual void set_eventcallback(const EventCallbackFn& callback) = 0;
-        virtual void set_vsync(bool enabled) = 0;
-        virtual bool is_vsync() const = 0;
-
-        static Window* create(const WindowProperties& properties = WindowProperties());
+        void set_eventcallback(const EventCallbackFn& callback);
+        void set_vsync(bool enabled);
+        bool is_vsync();
+    private:
+        struct Window_Impl;
+        std::unique_ptr<Window_Impl> pImpl;
     };
 }
 /**

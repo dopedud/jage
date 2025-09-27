@@ -1,13 +1,12 @@
-#include "opengl_window.h"
+#include "core.h"
+
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 namespace JAGE
 {
     static bool s_GLFW_initialised = false;
-
-    Window* Window::create(const WindowProperties& properties)
-    {
-        return new OpenGLWindow(properties);
-    }
 
     OpenGLWindow::OpenGLWindow(const WindowProperties& properties)
     {
