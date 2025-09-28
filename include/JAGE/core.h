@@ -523,41 +523,43 @@ namespace JAGE
  */
 namespace JAGE
 {
+    using EventCallbackFn = std::function<void(Event&)>;
+
     struct WindowProperties
     {
         std::string title;
-        unsigned int width;
-        unsigned int height;
+        unsigned int width, height;
+        bool vsync;
 
         WindowProperties(
             const std::string& title = "JAGE Engine",
             unsigned int width = 1280,
-            unsigned int height = 720
+            unsigned int height = 720,
+            bool vsync = false
         )
         : title { title }
         , width { width }
         , height { height }
+        , vsync { vsync }
         {}
     };        
 
     class JAGE_API Window
     {
     public:
-        using EventCallbackFn = std::function<void(Event&)>;
-
-        Window(const WindowProperties& properties = WindowProperties());
+        Window(const WindowProperties& properties = WindowProperties{});
         ~Window();
 
-        unsigned int width();
-        unsigned int height();
+        unsigned int width() const;
+        unsigned int height() const;
 
         void OnUpdate();
 
         void set_eventcallback(const EventCallbackFn& callback);
         void set_vsync(bool enabled);
-        bool is_vsync();
+        bool is_vsync() const;
     private:
-        struct Window_Impl;
+        class Window_Impl;
         std::unique_ptr<Window_Impl> pImpl;
     };
 }

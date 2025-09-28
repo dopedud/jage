@@ -1,0 +1,56 @@
+#pragma once
+
+#include "JAGE/core.h"
+
+namespace JAGE
+{
+    /**
+     * @class Window_Impl class
+     * @brief The Window_Impl class that implements Window class.
+     * 
+     * NOTE: This class should follow the same state behaviours as the Window class in @c core.h (meaning the same set
+     * of functions and variables).
+     */
+    class Window::Window_Impl
+    {
+    public:
+        Window_Impl(const WindowProperties& properties = WindowProperties{});
+
+        unsigned int width() const;
+        unsigned int height() const;
+
+        void OnUpdate();
+
+        void set_eventcallback();
+        void set_vsync(bool enabled);
+        bool is_vsync() const;
+    private:
+        std::unique_ptr<WindowBackend> backend;
+    };
+
+    /**
+     * @class WindowBackend class
+     * @brief The WindowBackend class that act as an abstraction to window backends.
+     *
+     * NOTE: This class should follow the same state behaviours as the Window class in @c core.h (meaning the same set
+     * of functions and variables, except the fact that WindowBackend has purely virtual functions, but that's because
+     * of its abstraction nature).
+     */
+    class WindowBackend
+    {
+    public:
+        virtual ~WindowBackend() = default;
+
+        virtual unsigned int width() const = 0;
+        virtual unsigned int height() const = 0;
+
+        virtual void OnUpdate() = 0;
+
+        virtual void set_eventcallback(const EventCallbackFn& callback) = 0;
+        virtual void set_vsync(bool enabled) = 0;
+        virtual bool is_vsync() const = 0;
+    protected:
+        WindowProperties properties;
+        EventCallbackFn callback;
+    };
+}

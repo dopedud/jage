@@ -4,7 +4,8 @@ set(SRC
     jgpch.cxx
 
     logger.cxx
-    platform/opengl/opengl_window.cxx
+
+    platform/opengl/glfw_window.cxx
 )
 
 set(SRC_FILES)

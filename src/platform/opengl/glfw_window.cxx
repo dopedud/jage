@@ -1,28 +1,12 @@
-#include "core.h"
-
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
+#include "glfw_window.h"
 
 namespace JAGE
 {
     static bool s_GLFW_initialised = false;
 
-    OpenGLWindow::OpenGLWindow(const WindowProperties& properties)
+    GLFWWindow::GLFWWindow(const WindowProperties& properties = WindowProperties{})
     {
-        Init(properties);
-    }
-
-    OpenGLWindow::~OpenGLWindow()
-    {
-        Shutdown();
-    }
-
-    void OpenGLWindow::Init(const WindowProperties& properties)
-    {
-        m_data.title = properties.title;
-        m_data.width = properties.width;
-        m_data.height = properties.height;
+        this->properties = properties; 
 
         JAGE_LOG_INFO("Creating window {} ({}, {})", properties.title, properties.width, properties.height);
 
@@ -38,7 +22,7 @@ namespace JAGE
             s_GLFW_initialised = true;
         }
 
-        m_window = glfwCreateWindow(
+        handle = glfwCreateWindow(
             static_cast<int>(properties.width),
             static_cast<int>(properties.height),
             properties.title.c_str(), nullptr, nullptr
@@ -46,33 +30,31 @@ namespace JAGE
 
         JAGE_CORE_ASSERT(m_window, "Failed to create GLFW window.");
 
-        glfwMakeContextCurrent(m_window);
-        glfwSetWindowUserPointer(m_window, &m_data);
+        glfwMakeContextCurrent(handle);
+        glfwSetWindowUserPointer(handle, (void*)&properties);
 
         int glad_load_success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
         JAGE_CORE_ASSERT(glad_load_success, "Failed to initialise GLAD.");
     }
 
-    void OpenGLWindow::Shutdown()
+    GLFWWindow::~GLFWWindow()
     {
-        glfwDestroyWindow(m_window);
+        glfwDestroyWindow(handle); 
     }
 
-    void OpenGLWindow::OnUpdate()
+    void GLFWWindow::OnUpdate()
     {
+
         glfwPollEvents();
-        glfwSwapBuffers(m_window);
+        glfwSwapBuffers(handle);
     }
 
-    void OpenGLWindow::set_vsync(bool enabled)
+    void GLFWWindow::set_vsync(bool enabled)
     {
         if (enabled) glfwSwapInterval(1);
         else glfwSwapInterval(0);
 
-        m_data.vsync = enabled;
+        properties.vsync = enabled;
     }
-
-    bool OpenGLWindow::is_vsync() const { return m_data.vsync; }
 }
-
