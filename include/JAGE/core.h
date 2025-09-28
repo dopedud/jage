@@ -556,6 +556,7 @@ namespace JAGE
         void OnUpdate();
 
         void set_eventcallback(const EventCallbackFn& callback);
+
         void set_vsync(bool enabled);
         bool is_vsync() const;
     private:

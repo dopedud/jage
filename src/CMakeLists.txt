@@ -5,6 +5,7 @@ set(SRC
 
     logger.cxx
 
+    window.cxx
     platform/opengl/glfw_window.cxx
 )
 
@@ -16,6 +17,7 @@ endforeach()
 add_library(${ENGINE_NAME} SHARED ${SRC_FILES})
 
 target_compile_definitions(${ENGINE_NAME} PRIVATE
+    ENGINE_NAME_IN=${ENGINE_NAME}
     ${ENGINE_NAME}_EXPORT
     ${ENGINE_NAME}_ENABLE_ASSERTS
 )

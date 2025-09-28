@@ -4,7 +4,7 @@ namespace JAGE
 {
     static bool s_GLFW_initialised = false;
 
-    GLFWWindow::GLFWWindow(const WindowProperties& properties = WindowProperties{})
+    GLFWWindow::GLFWWindow(const WindowProperties& properties) 
     {
         this->properties = properties; 
 
@@ -28,7 +28,7 @@ namespace JAGE
             properties.title.c_str(), nullptr, nullptr
         );
 
-        JAGE_CORE_ASSERT(m_window, "Failed to create GLFW window.");
+        JAGE_CORE_ASSERT(handle, "Failed to create GLFW window.");
 
         glfwMakeContextCurrent(handle);
         glfwSetWindowUserPointer(handle, (void*)&properties);
