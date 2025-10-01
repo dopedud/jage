@@ -258,7 +258,7 @@ namespace JAGE
         {
             if (event.event_type() == T::static_type())
             {
-                event.set_handled(function(*(T*)&event));
+                event.set_handled(function(static_cast<T&>(event)));
                 return true;
             }
 
@@ -349,7 +349,7 @@ namespace JAGE
     public:
         int keycode() const { return m_keycode; }
 
-        EVENT_CLASS_CATEGORY(EventCategory::Keyboard | EventCategory::Input)
+        EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
     };
 
     class JAGE_API KeyPressedEvent : public KeyEvent
@@ -411,7 +411,7 @@ namespace JAGE
         }
 
         EVENT_CLASS_TYPE(MouseMoved)
-        EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
+        EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
     private:
         float m_mouseX, m_mouseY;
     };
@@ -434,7 +434,7 @@ namespace JAGE
         }
 
         EVENT_CLASS_TYPE(MouseScrolled)
-        EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
+        EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
     };
 
     class JAGE_API MouseButtonEvent : public Event
@@ -442,7 +442,7 @@ namespace JAGE
     public:
         int mouse_button() { return m_mouse_button; }
 
-        EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
+        EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
     protected:
         int m_mouse_button;
 

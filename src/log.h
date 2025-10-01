@@ -17,12 +17,12 @@
 #define JAGE_LOG_ERROR(LOG, ...) JAGE::EngineLogger::EngineLog_Error(LOG, __VA_ARGS__)
 
 #ifdef JAGE_ENABLE_ASSERTS
-#   define JAGE_CORE_ASSERT(x, ...) \
-    if (!(x)) { JAGE_LOG_ERROR("Assertion failed: {}", __VA_ARGS__); }
-#   define JAGE_CORE_ASSERT_CALLBACK(x, callback, ...) \
-    if (!(x)) { JAGE_LOG_ERROR("Assertion failed: {}", __VA_ARGS__); callback; }
+#   define JAGE_CORE_ASSERT(x, message) \
+    if (!(x)) { JAGE_LOG_ERROR("Assertion failed: {}", message); }
+#   define JAGE_CORE_ASSERT_CALLBACK(x, callback, message) \
+    if (!(x)) { JAGE_LOG_ERROR("Assertion failed: {}", message); callback; }
 #else
-#   define JAGE_CORE_ASSERT(x, ...)
+#   define JAGE_CORE_ASSERT(x, message)
 #   define JAGE_CORE_ASSERT_CALLBACK(x, callback, ...)
 #endif
 

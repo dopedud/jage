@@ -41,6 +41,8 @@ namespace JAGE
 
         glfwSetWindowCloseCallback(handle, [](GLFWwindow* window) -> void 
         {
+            JAGE_MSG_TRACE
+
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
             WindowCloseEvent event {};
             data.callback(event);
@@ -54,6 +56,8 @@ namespace JAGE
 
     void GLFWWindow::OnUpdate()
     {
+        glClearColor(1, 0, 1, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
         glfwPollEvents();
         glfwSwapBuffers(handle);
     }
