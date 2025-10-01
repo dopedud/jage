@@ -236,6 +236,7 @@ namespace JAGE
         virtual std::string_view to_string() const { return std::string{ name() } + "Event"; }
 
         bool is_category(EventCategory category) { return event_category_flags() & static_cast<int>(category); }
+        void set_handled(bool handled) { this->handled = handled; }
     protected:
         bool handled = false;
     };
@@ -257,7 +258,7 @@ namespace JAGE
         {
             if (event.event_type() == T::static_type())
             {
-                event.handled = function(*(T*)&event);
+                event.set_handled(function(*(T*)&event));
                 return true;
             }
 
