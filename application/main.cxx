@@ -1,18 +1,19 @@
 #include "JAGE/core.h"
 
-// int main(int argc, char** argv) <--- WE'LL USE THIS FOR LATER
-int main()
+int main(int argc, char** argv)
 {
-    JAGE::Logger::Init(spdlog::level::trace, spdlog::level::trace);
+    using namespace JAGE;
 
-    JAGE_MSG_INFO("Hey Engine World!");
-    JAGE_MSG_TRACE("This is a trace message!");
-    JAGE_MSG_DEBUG("This is a debug message!");
-    JAGE_MSG_WARN("This is a warn message!");
-    JAGE_MSG_ERROR("This is a error message!");
-    APP_LOG_INFO("Hey {}!", "App World");
+    JAGE::Init(argc, argv);
 
-    std::unique_ptr<JAGE::Window> window = std::make_unique<JAGE::Window>();
+    APP_MSG_INFO("Creating a window.");
+    std::unique_ptr<Window> window = std::make_unique<Window>();
+
+    APP_MSG_INFO("Setting event callback for window.");
+    window->set_eventcallback([](Event& e) -> void
+    {
+        APP_LOG_INFO("{}", e.to_string());
+    });
 
     while (true)
     {

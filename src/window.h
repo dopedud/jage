@@ -26,8 +26,13 @@ namespace JAGE
         virtual void set_vsync(bool enabled) = 0;
         virtual bool is_vsync() const = 0;
     protected:
-        WindowProperties properties;
-        EventCallbackFn callback;
+        struct WindowData
+        {
+            WindowProperties properties;
+            EventCallbackFn callback;
+        };
+
+        WindowData data;
     };
 
     /**

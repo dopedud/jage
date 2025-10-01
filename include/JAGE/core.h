@@ -7,11 +7,47 @@
 
 #include "jgpch.h"
 
-#include "api_export.h"
-
 /**
  * MACRO DEFINITIONS
  */
+
+/**
+ * MACRO FOR API EXPORT DEFINITIONS
+ */
+#ifdef _WIN32
+#   ifdef JAGE_EXPORT
+#       define JAGE_API __declspec(dllexport)
+#   else
+#       define JAGE_API __declspec(dllimport)
+#   endif
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#   define JAGE_API __attribute__((visibility("default")))
+#else
+#   define JAGE_API
+#endif
+/**
+ * END MACRO FOR API EXPORT DEFINITIONS
+ */
+
+/**
+ * MACRO FOR LOGGING DEFINITIONS
+ */
+#define APP_MSG_TRACE(MSG) JAGE::AppLogger::AppLog_Trace(MSG)
+#define APP_MSG_DEBUG(MSG) JAGE::AppLogger::AppLog_Debug(MSG)
+#define APP_MSG_INFO(MSG) JAGE::AppLogger::AppLog_Info(MSG)
+#define APP_MSG_WARN(MSG) JAGE::AppLogger::AppLog_Warn(MSG)
+#define APP_MSG_ERROR(MSG) JAGE::AppLogger::AppLog_Error(MSG)
+
+#define APP_LOG_TRACE(LOG, ...) JAGE::AppLogger::AppLog_Trace(LOG, __VA_ARGS__)
+#define APP_LOG_DEBUG(LOG, ...) JAGE::AppLogger::AppLog_Debug(LOG, __VA_ARGS__)
+#define APP_LOG_INFO(LOG, ...) JAGE::AppLogger::AppLog_Info(LOG, __VA_ARGS__)
+#define APP_LOG_WARN(LOG, ...) JAGE::AppLogger::AppLog_Warn(LOG, __VA_ARGS__)
+#define APP_LOG_ERROR(LOG, ...) JAGE::AppLogger::AppLog_Error(LOG, __VA_ARGS__)
+/**
+ * END MACRO FOR LOGGING DEFINITIONS
+ */
+
+#define BIT(x) (1 << x)
 
 /**
  * MACRO FOR BREAKPOINT INSTRUCTIONS DEFINITIONS
@@ -24,10 +60,10 @@
  * Setting breakpoints in code depends on the platform. Each platform has their own way of doing it, and this macro
  * helps to cover the cases for all platforms.
  */
-#if defined(MSC_VER)
+#ifdef MSC_VER
 #   define DEBUG_BREAK() __debugbreak()
 #elif defined(__clang__) || defined(__GNUC__)
-#   if defined(__has_builtin)
+#   ifdef __has_builtin
 #       if __has_builtin(__builtin_debugtrap)
 #           define DEBUG_BREAK() __builtin_debugtrap()
 #       else
@@ -40,54 +76,9 @@
 #   include <csignal>
 #   define DEBUG_BREAK() std::raise(SIGTRAP)
 #endif
+
 /**
  * END MACRO FOR BREAKPOINT INSTRUCTIONS DEFINITIONS
- */
-
-/**
- * MACRO FOR LOGGING DEFINITIONS
- */
-#define JAGE_MSG_TRACE(MSG) JAGE::Logger::EngineLog_Trace(MSG)
-#define JAGE_MSG_DEBUG(MSG) JAGE::Logger::EngineLog_Debug(MSG)
-#define JAGE_MSG_INFO(MSG) JAGE::Logger::EngineLog_Info(MSG)
-#define JAGE_MSG_WARN(MSG) JAGE::Logger::EngineLog_Warn(MSG)
-#define JAGE_MSG_ERROR(MSG) JAGE::Logger::EngineLog_Error(MSG)
-
-#define APP_MSG_TRACE(MSG) JAGE::Logger::AppLog_Trace(MSG)
-#define APP_MSG_DEBUG(MSG) JAGE::Logger::AppLog_Debug(MSG)
-#define APP_MSG_INFO(MSG) JAGE::Logger::AppLog_Info(MSG)
-#define APP_MSG_WARN(MSG) JAGE::Logger::AppLog_Warn(MSG)
-#define APP_MSG_ERROR(MSG) JAGE::Logger::AppLog_Error(MSG)
-
-#define JAGE_LOG_TRACE(LOG, ...) JAGE::Logger::EngineLog_Trace(LOG, __VA_ARGS__)
-#define JAGE_LOG_DEBUG(LOG, ...) JAGE::Logger::EngineLog_Debug(LOG, __VA_ARGS__)
-#define JAGE_LOG_INFO(LOG, ...) JAGE::Logger::EngineLog_Info(LOG, __VA_ARGS__)
-#define JAGE_LOG_WARN(LOG, ...) JAGE::Logger::EngineLog_Warn(LOG, __VA_ARGS__)
-#define JAGE_LOG_ERROR(LOG, ...) JAGE::Logger::EngineLog_Error(LOG, __VA_ARGS__)
-
-#define APP_LOG_TRACE(LOG, ...) JAGE::Logger::AppLog_Trace(LOG, __VA_ARGS__)
-#define APP_LOG_DEBUG(LOG, ...) JAGE::Logger::AppLog_Debug(LOG, __VA_ARGS__)
-#define APP_LOG_INFO(LOG, ...) JAGE::Logger::AppLog_Info(LOG, __VA_ARGS__)
-#define APP_LOG_WARN(LOG, ...) JAGE::Logger::AppLog_Warn(LOG, __VA_ARGS__)
-#define APP_LOG_ERROR(LOG, ...) JAGE::Logger::AppLog_Error(LOG, __VA_ARGS__)
-/**
- * END MACRO FOR LOGGING DEFINITIONS
- */
-
-/**
- * MACRO FOR ASSERTIONS DEFINITIONS
- */
-#ifdef JAGE_ENABLE_ASSERTS
-#   define JAGE_CORE_ASSERT(x, ...) \
-    if (!(x)) { JAGE_LOG_ERROR("Assertion failed: {}", __VA_ARGS__); }
-#   define JAGE_CORE_ASSERT_CALLBACK(x, callback, ...) \
-    if (!(x)) { JAGE_LOG_ERROR("Assertion failed: {}", __VA_ARGS__); callback; }
-#else
-#   define JAGE_CORE_ASSERT(x, ...)
-#   define JAGE_CORE_ASSERT_CALLBACK(x, callback, ...)
-#endif
-/**
- * END MACRO FOR ASSERTIONS DEFINITIONS
  */
 
 /**
@@ -109,6 +100,7 @@
 
 #define EVENT_CLASS_CATEGORY(category) \
     virtual int event_category_flags() const override { return static_cast<int>(category); }
+
 /**
  * END MACRO FOR EVENTS DEFINITIONS
  */
@@ -116,6 +108,11 @@
 /**
  * END MACRO DEFINITIONS
  */
+
+namespace JAGE
+{
+    void JAGE_API Init(int argc, char** argv);
+}
 
 /**
  * LOGGER DEFINITIONS
@@ -150,41 +147,18 @@ namespace JAGE
      * implementation to be exposed, while the @c PImpl pattern requires it to be hidden. Templates are chose over the
      * @c PImpl pattern since the flexibility that comes with it is more important.
      */
-    class JAGE_API Logger
+    class JAGE_API AppLogger
     {
     private:
-        inline static std::shared_ptr<spdlog::logger> enginelog = nullptr;
         inline static std::shared_ptr<spdlog::logger> applog = nullptr;
     public:
-        static void Init(spdlog::level::level_enum engine_level, spdlog::level::level_enum app_level);
-
-        inline static void EngineLog_Trace(std::string_view msg) { enginelog->trace(msg); }
-        inline static void EngineLog_Debug(std::string_view msg) { enginelog->debug(msg); }
-        inline static void EngineLog_Info(std::string_view msg) { enginelog->info(msg); }
-        inline static void EngineLog_Warn(std::string_view msg) { enginelog->warn(msg); }
-        inline static void EngineLog_Error(std::string_view msg) { enginelog->error(msg); }
+        static void Init(spdlog::level::level_enum app_level);
 
         inline static void AppLog_Trace(std::string_view msg) { applog->trace(msg); }
         inline static void AppLog_Debug(std::string_view msg) { applog->debug(msg); }
         inline static void AppLog_Info(std::string_view msg) { applog->info(msg); }
         inline static void AppLog_Warn(std::string_view msg) { applog->warn(msg); }
         inline static void AppLog_Error(std::string_view msg) { applog->error(msg); }
-
-        template<typename... Args>
-        inline static void EngineLog_Trace(std::string_view log, Args &&... args)
-        { enginelog->trace(log, std::forward<Args>(args)...); }
-        template<typename... Args>
-        inline static void EngineLog_Debug(std::string_view log, Args &&... args)
-        { enginelog->debug(log, std::forward<Args>(args)...); }
-        template<typename... Args>
-        inline static void EngineLog_Info(std::string_view log, Args &&... args)
-        { enginelog->info(log, std::forward<Args>(args)...); }
-        template<typename... Args>
-        inline static void EngineLog_Warn(std::string_view log, Args &&... args)
-        { enginelog->warn(log, std::forward<Args>(args)...); }
-        template<typename... Args>
-        inline static void EngineLog_Error(std::string_view log, Args &&... args)
-        { enginelog->error(log, std::forward<Args>(args)...); }
 
         template<typename... Args>
         inline static void AppLog_Trace(std::string_view log, Args &&... args)
@@ -225,8 +199,6 @@ namespace JAGE
         MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
     };   
 
-    #define BIT(x) (1 << x)
-
     enum class EventCategory : int
     {
         None = 0,
@@ -251,22 +223,26 @@ namespace JAGE
         return lhs_casted | rhs_casted;
     }
 
+    /**
+     * @class Event
+     * @brief The Event base class used to communicate events happening between the engine and the application.
+     */
     class JAGE_API Event
     {
     public:
         virtual std::string_view name() const = 0;
         virtual EventType event_type() const = 0;
         virtual int event_category_flags() const = 0;
-        virtual std::string_view ToString() const { return std::string{ name() } + "Event"; }
+        virtual std::string_view to_string() const { return std::string{ name() } + "Event"; }
 
-        inline bool is_category(EventCategory category) { return event_category_flags() & static_cast<int>(category); }
+        bool is_category(EventCategory category) { return event_category_flags() & static_cast<int>(category); }
     protected:
         bool handled = false;
     };
 
     inline std::ostream& operator<<(std::ostream& os, const Event& e)
     {
-        return os << e.ToString();
+        return os << e.to_string();
     }
 
     class EventDispatcher
@@ -274,21 +250,21 @@ namespace JAGE
         template<typename T>
         using EventFn = std::function<bool(T&)>;
     public:
-        EventDispatcher(Event& event) : m_event { event } {}
+        EventDispatcher(Event& event) : event { event } {}
 
         template<typename T>
-        inline bool dispatch(EventFn<T> function)
+        bool dispatch(EventFn<T> function)
         {
-            if (m_event.event_type() == T::static_type())
+            if (event.event_type() == T::static_type())
             {
-                m_event.handled = function(*(T*)&m_event);
+                event.handled = function(*(T*)&event);
                 return true;
             }
 
             return false;
         }
     private:
-        Event& m_event;
+        Event& event;
     };
 }
 /**
@@ -305,15 +281,12 @@ namespace JAGE
     private:
         unsigned int m_width, m_height;
     public:
-        WindowResizeEvent(unsigned int width, unsigned int height)
-        : m_width { width }
-        , m_height { height }
-        {}
+        WindowResizeEvent(unsigned int width, unsigned int height) : m_width { width }, m_height { height } {}
 
-        inline unsigned int width() const { return m_width; }
-        inline unsigned int height() const { return m_height; }
+        unsigned int width() const { return m_width; }
+        unsigned int height() const { return m_height; }
 
-        std::string_view ToString() const override
+        std::string_view to_string() const override
         {
             std::stringstream ss;
             ss << name() << "Event: " << m_width << ", " << m_height;
@@ -373,7 +346,7 @@ namespace JAGE
         
         KeyEvent(int keycode) : m_keycode { keycode } {}
     public:
-        inline int keycode() const { return m_keycode; }
+        int keycode() const { return m_keycode; }
 
         EVENT_CLASS_CATEGORY(EventCategory::Keyboard | EventCategory::Input)
     };
@@ -381,23 +354,20 @@ namespace JAGE
     class JAGE_API KeyPressedEvent : public KeyEvent
     {
     public:
-        KeyPressedEvent(int keycode, int repeat_count)
-        : KeyEvent { keycode }
-        , m_repeat_count { repeat_count }
-        {}
+        KeyPressedEvent(int keycode, bool isrepeat) : KeyEvent { keycode }, m_isrepeat { isrepeat } {}
 
-        inline int repeat_count() const { return m_repeat_count; }
+        bool repeat_count() const { return m_isrepeat; }
 
-        std::string_view ToString() const override
+        std::string_view to_string() const override
         {
             std::stringstream ss;
-            ss << name() << "Event: " << m_keycode << " (" << m_repeat_count << " repeats)";
+            ss << name() << "Event: " << m_keycode << " (" << m_isrepeat << " repeats)";
             return ss.str();
         }
 
         EVENT_CLASS_TYPE(KeyPressed)
     private:
-        int m_repeat_count;
+        bool m_isrepeat;
     };
 
     class JAGE_API KeyReleasedEvent : public KeyEvent
@@ -405,7 +375,7 @@ namespace JAGE
     public:
         KeyReleasedEvent(int keycode) : KeyEvent { keycode } {}
 
-        std::string_view ToString() const override
+        std::string_view to_string() const override
         {
             std::stringstream ss;
             ss << name() << "Event: " << m_keycode;
@@ -426,18 +396,13 @@ namespace JAGE
 {
     class JAGE_API MouseMovedEvent : public Event
     {
-    private:
-        float m_mouseX, m_mouseY;
     public:
-        MouseMovedEvent(float x, float y)
-        : m_mouseX { x }
-        , m_mouseY { y }
-        {}
+        MouseMovedEvent(float mouseX, float mouseY) : m_mouseX { mouseX }, m_mouseY { mouseY } {}
 
-        inline float x() const { return m_mouseX; }
-        inline float y() const { return m_mouseY; }
+        float mouseX() const { return m_mouseX; }
+        float mouseY() const { return m_mouseY; }
         
-        std::string_view ToString() const override
+        std::string_view to_string() const override
         {
             std::stringstream ss;
             ss << name() << "Event: " << m_mouseX << ", " << m_mouseY;
@@ -446,6 +411,8 @@ namespace JAGE
 
         EVENT_CLASS_TYPE(MouseMoved)
         EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
+    private:
+        float m_mouseX, m_mouseY;
     };
 
     class JAGE_API MouseScrolledEvent : public Event
@@ -453,15 +420,12 @@ namespace JAGE
     private:
         float m_offsetX, m_offsetY;
     public:
-        MouseScrolledEvent(float offsetX, float offsetY)
-        : m_offsetX { offsetX }
-        , m_offsetY { offsetY }
-        {}
+        MouseScrolledEvent(float offsetX, float offsetY) : m_offsetX { offsetX }, m_offsetY { offsetY } {}
 
-        inline float offsetX() const { return m_offsetX; }
-        inline float offsetY() const { return m_offsetY; }
+        float offsetX() const { return m_offsetX; }
+        float offsetY() const { return m_offsetY; }
         
-        std::string_view ToString() const override
+        std::string_view to_string() const override
         {
             std::stringstream ss;
             ss << name() << "Event: " << m_offsetX << ", " << m_offsetY;
@@ -475,7 +439,7 @@ namespace JAGE
     class JAGE_API MouseButtonEvent : public Event
     {
     public:
-        inline int mouse_button() { return m_mouse_button; }
+        int mouse_button() { return m_mouse_button; }
 
         EVENT_CLASS_CATEGORY(EventCategory::Mouse | EventCategory::Input)
     protected:
@@ -489,7 +453,7 @@ namespace JAGE
     public:
         MouseButtonPressedEvent(int mouse_button) : MouseButtonEvent{ mouse_button } {}
 
-        std::string_view ToString() const override
+        std::string_view to_string() const override
         {
             std::stringstream ss;
             ss << name() << "Event: " << m_mouse_button;
@@ -504,7 +468,7 @@ namespace JAGE
     public:
         MouseButtonReleasedEvent(int mouse_button) : MouseButtonEvent { mouse_button } {}
 
-        std::string_view ToString() const override
+        std::string_view to_string() const override
         {
             std::stringstream ss;
             ss << name() << "Event: " << m_mouse_button;

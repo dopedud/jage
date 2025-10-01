@@ -1,14 +1,16 @@
 #include "glfw_window.h"
 
+#include "log.h"
+
 namespace JAGE
 {
     static bool s_GLFW_initialised = false;
 
     GLFWWindow::GLFWWindow(const WindowProperties& properties) 
     {
-        this->properties = properties; 
+        JAGE_LOG_INFO("Creating a window; backend: OpenGL 4.6, title: \"{}\", dimensions: ({}, {}).", properties.title, properties.width, properties.height);
 
-        JAGE_LOG_INFO("Creating window {} ({}, {})", properties.title, properties.width, properties.height);
+        this->data.properties = properties; 
 
         if (!s_GLFW_initialised)
         {
@@ -31,11 +33,18 @@ namespace JAGE
         JAGE_CORE_ASSERT(handle, "Failed to create GLFW window.");
 
         glfwMakeContextCurrent(handle);
-        glfwSetWindowUserPointer(handle, (void*)&properties);
+        glfwSetWindowUserPointer(handle, &data);
 
         int glad_load_success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
         JAGE_CORE_ASSERT(glad_load_success, "Failed to initialise GLAD.");
+
+        glfwSetWindowCloseCallback(handle, [](GLFWwindow* window) -> void 
+        {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            WindowCloseEvent event {};
+            data.callback(event);
+        });
     }
 
     GLFWWindow::~GLFWWindow()
@@ -45,7 +54,6 @@ namespace JAGE
 
     void GLFWWindow::OnUpdate()
     {
-
         glfwPollEvents();
         glfwSwapBuffers(handle);
     }
@@ -55,6 +63,6 @@ namespace JAGE
         if (enabled) glfwSwapInterval(1);
         else glfwSwapInterval(0);
 
-        properties.vsync = enabled;
+        data.properties.vsync = enabled;
     }
 }

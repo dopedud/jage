@@ -2,8 +2,9 @@ set(ENGINE_NAME JAGE CACHE STRING "" FORCE)
 
 set(SRC
     jgpch.cxx
+    init.cxx
 
-    logger.cxx
+    "log.cxx"
 
     window.cxx
     platform/opengl/glfw_window.cxx
@@ -17,7 +18,7 @@ endforeach()
 add_library(${ENGINE_NAME} SHARED ${SRC_FILES})
 
 target_compile_definitions(${ENGINE_NAME} PRIVATE
-    ENGINE_NAME_IN=${ENGINE_NAME}
+    ENGINE_INNAME=${ENGINE_NAME}
     ${ENGINE_NAME}_EXPORT
     ${ENGINE_NAME}_ENABLE_ASSERTS
 )

@@ -6,6 +6,7 @@ namespace JAGE
 {
     Window::Window_Impl::Window_Impl(const WindowProperties& properties)
     {
+        // NOTE: backend can be initialised to any kind of window, provided it is derived from the Window base class
         backend = std::make_unique<GLFWWindow>(properties);
     }
 
