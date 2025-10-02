@@ -123,25 +123,26 @@ namespace JAGE
 namespace JAGE
 {
     /**
-     * @class Logger
-     * @brief The Logger class used for logging JAGE and the game.
+     * @class AppLogger
+     * @brief The AppLogger class used for logging the game.
      * 
-     * This Logger class uses @c spdlog as its logging backend. However, it is exposed to the end-user (i.e. the game),
-     * effectively making JAGE and the game depend on @c spdlog to log. This tightly-coupled dependency should pose no
-     * issues since logging rarely requires the developer to switch between different backends (compared to something
-     * like a physics engine where a developer might use different ones for different scenarios).
+     * Both JAGE and the game use @c spdlog as its logging backend. This means that the game won't really rely on JAGE
+     * to provide logging utilities, but instead rely directly from @c spdlog . Ideally, the opposite should happen
+     * (the game relying on JAGE and not having to fuss around with the implementation/backend), but this shouldn't
+     * cause any kinds of problems. A developer rarely needs to care about logging anyways, as long as it works as
+     * intended.
      * 
      * The reason for the tightly-coupled dependency is because @c spdlog uses variadic templates internally to enable
      * variable number and types of objects to log. By defnition, templates should have its implementation exposed, so
      * both JAGE and the game should know what @c spdlog is.
      * 
-     * It is possible to have only the JAGE know what logging backend it's using, and let the game use logging
-     * from the JAGE without knowing what's going on internally by using the @c PImpl (pointer-to-implementation)
-     * pattern. However, some sacrifices need to be made for templates and the @c PImpl pattern to work together.
-     * Templates must be explicitly instantiated in the translation unit for types that a developer wants to support.
-     * However, doing this would defeat the whole purpose of templates, which is to allow the flexibility of supporting
-     * any type and any number of them. In fact, it is better to just overload the same function with different types
-     * and amount of arguments a developer wants to support, since the intent is clearer.
+     * It is possible to have only JAGE know what logging backend it's using, and let the game use logging from JAGE
+     * without knowing what's going on internally by using the @c PImpl (pointer-to-implementation) pattern. However,
+     * some sacrifices had to be made for templates and the @c PImpl pattern to work together. Templates must be
+     * explicitly instantiated in translation units for types that a developer wants to support. However, doing this
+     * would defeat the whole purpose of templates, which is to allow the flexibility of supporting any type and any
+     * number of them. In fact, it is better to just overload the same function with different types and amount of
+     * arguments a developer wants to support, since the intent is clearer.
      * 
      * Templates and the @c PImpl pattern are programming patterns that go against each other. Templates require the
      * implementation to be exposed, while the @c PImpl pattern requires it to be hidden. Templates are chose over the
@@ -149,7 +150,7 @@ namespace JAGE
      */
     class JAGE_API AppLogger
     {
-    private:
+    protected:
         inline static std::shared_ptr<spdlog::logger> applog = nullptr;
     public:
         static void Init(spdlog::level::level_enum app_level);
