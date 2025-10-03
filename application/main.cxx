@@ -21,8 +21,6 @@ int main(int argc, char** argv)
     APP_MSG_INFO("Setting event callback for window.");
     window->set_eventcallback([OnWindowClose](Event& e) -> void
     {
-        APP_LOG_INFO("{}", e.to_string());
-
         EventDispatcher dispatcher { e };
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);
     });

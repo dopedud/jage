@@ -33,7 +33,7 @@ docs/html/index.html
 - **Build Tools:** CMake
 - **Rendering:** TBA
 - **Game GUI:** TBA
-- **Debug GUI:** Dear ImGui
+- **Editor GUI:** Dear ImGui
 - **Code Documentation:** Doxygen
 
 ## Compilation Notes
@@ -83,8 +83,8 @@ Here are some of the common build commands for use in terminal:
 
 ```bash
 cmake --build build --target clean_install
-cmake --build build --target full_clean
-cmake --build build --target full_clean_dependency
+cmake --build build --target clean_full
+cmake --build build --target clean_full_dependency
 cmake --fresh --preset user-debug .
 cmake --build build/debug
 cmake --install build/debug

@@ -1,60 +1,64 @@
 #pragma once
 
 #include "jgpch.h"
+#include "JAGE/core.h"
 
 #include "spdlog/spdlog.h"
 
-#define JAGE_MSG_TRACE(MSG) JAGE::EngineLogger::EngineLog_Trace(MSG)
-#define JAGE_MSG_DEBUG(MSG) JAGE::EngineLogger::EngineLog_Debug(MSG)
-#define JAGE_MSG_INFO(MSG) JAGE::EngineLogger::EngineLog_Info(MSG)
-#define JAGE_MSG_WARN(MSG) JAGE::EngineLogger::EngineLog_Warn(MSG)
-#define JAGE_MSG_ERROR(MSG) JAGE::EngineLogger::EngineLog_Error(MSG)
+#define JAGE_MSG_TRACE(MSG) JAGE::EngineLogger::Trace(MSG)
+#define JAGE_MSG_DEBUG(MSG) JAGE::EngineLogger::Debug(MSG)
+#define JAGE_MSG_INFO(MSG) JAGE::EngineLogger::Info(MSG)
+#define JAGE_MSG_WARN(MSG) JAGE::EngineLogger::Warn(MSG)
+#define JAGE_MSG_ERROR(MSG) JAGE::EngineLogger::Error(MSG)
 
-#define JAGE_LOG_TRACE(LOG, ...) JAGE::EngineLogger::EngineLog_Trace(LOG, __VA_ARGS__)
-#define JAGE_LOG_DEBUG(LOG, ...) JAGE::EngineLogger::EngineLog_Debug(LOG, __VA_ARGS__)
-#define JAGE_LOG_INFO(LOG, ...) JAGE::EngineLogger::EngineLog_Info(LOG, __VA_ARGS__)
-#define JAGE_LOG_WARN(LOG, ...) JAGE::EngineLogger::EngineLog_Warn(LOG, __VA_ARGS__)
-#define JAGE_LOG_ERROR(LOG, ...) JAGE::EngineLogger::EngineLog_Error(LOG, __VA_ARGS__)
+#define JAGE_LOG_TRACE(LOG, ...) JAGE::EngineLogger::Trace(LOG, __VA_ARGS__)
+#define JAGE_LOG_DEBUG(LOG, ...) JAGE::EngineLogger::Debug(LOG, __VA_ARGS__)
+#define JAGE_LOG_INFO(LOG, ...) JAGE::EngineLogger::Info(LOG, __VA_ARGS__)
+#define JAGE_LOG_WARN(LOG, ...) JAGE::EngineLogger::Warn(LOG, __VA_ARGS__)
+#define JAGE_LOG_ERROR(LOG, ...) JAGE::EngineLogger::Error(LOG, __VA_ARGS__)
 
 #ifdef JAGE_ENABLE_ASSERTS
-#   define JAGE_CORE_ASSERT(x, message) \
-    if (!(x)) { JAGE_LOG_ERROR("Assertion failed: {}", message); }
-#   define JAGE_CORE_ASSERT_CALLBACK(x, callback, message) \
-    if (!(x)) { JAGE_LOG_ERROR("Assertion failed: {}", message); callback; }
+#   define JAGE_ASSERT(x, message) \
+    if (!(x)) { JAGE_MSG_ERROR("Assertion failed: " + std::string{ message }); DEBUG_BREAK(); }
 #else
-#   define JAGE_CORE_ASSERT(x, message)
-#   define JAGE_CORE_ASSERT_CALLBACK(x, callback, ...)
+#   define JAGE_ASSERT(x, message)
 #endif
 
 namespace JAGE
 {
+    /**
+     * @class EngineLogger
+     * @brief The @c EngineLogger class used to log engine operations.
+     * 
+     * 
+     */
     class EngineLogger
     {
     private:
-        inline static std::shared_ptr<spdlog::logger> enginelog = nullptr;
+        inline static std::shared_ptr<spdlog::logger> logger = nullptr;
     public:
         static void Init(spdlog::level::level_enum engine_level);
 
-        inline static void EngineLog_Trace(std::string_view msg) { enginelog->trace(msg); }
-        inline static void EngineLog_Debug(std::string_view msg) { enginelog->debug(msg); }
-        inline static void EngineLog_Info(std::string_view msg) { enginelog->info(msg); }
-        inline static void EngineLog_Warn(std::string_view msg) { enginelog->warn(msg); }
-        inline static void EngineLog_Error(std::string_view msg) { enginelog->error(msg); }
+        inline static void Trace(std::string_view msg) { logger->trace(msg); }
+        inline static void Debug(std::string_view msg) { logger->debug(msg); }
+        inline static void Info(std::string_view msg) { logger->info(msg); }
+        inline static void Warn(std::string_view msg) { logger->warn(msg); }
+        inline static void Error(std::string_view msg) { logger->error(msg); }
 
         template<typename... Args>
-        inline static void EngineLog_Trace(std::string_view log, Args &&... args)
-        { enginelog->trace(log, std::forward<Args>(args)...); }
+        inline static void Trace(std::string_view log, Args &&... args)
+        { logger->trace(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void EngineLog_Debug(std::string_view log, Args &&... args)
-        { enginelog->debug(log, std::forward<Args>(args)...); }
+        inline static void Debug(std::string_view log, Args &&... args)
+        { logger->debug(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void EngineLog_Info(std::string_view log, Args &&... args)
-        { enginelog->info(log, std::forward<Args>(args)...); }
+        inline static void Info(std::string_view log, Args &&... args)
+        { logger->info(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void EngineLog_Warn(std::string_view log, Args &&... args)
-        { enginelog->warn(log, std::forward<Args>(args)...); }
+        inline static void Warn(std::string_view log, Args &&... args)
+        { logger->warn(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void EngineLog_Error(std::string_view log, Args &&... args)
-        { enginelog->error(log, std::forward<Args>(args)...); }
+        inline static void Error(std::string_view log, Args &&... args)
+        { logger->error(log, std::forward<Args>(args)...); }
     };
 }

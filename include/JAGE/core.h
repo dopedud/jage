@@ -32,17 +32,17 @@
 /**
  * MACRO FOR LOGGING DEFINITIONS
  */
-#define APP_MSG_TRACE(MSG) JAGE::AppLogger::AppLog_Trace(MSG)
-#define APP_MSG_DEBUG(MSG) JAGE::AppLogger::AppLog_Debug(MSG)
-#define APP_MSG_INFO(MSG) JAGE::AppLogger::AppLog_Info(MSG)
-#define APP_MSG_WARN(MSG) JAGE::AppLogger::AppLog_Warn(MSG)
-#define APP_MSG_ERROR(MSG) JAGE::AppLogger::AppLog_Error(MSG)
+#define APP_MSG_TRACE(MSG) JAGE::AppLogger::Trace(MSG)
+#define APP_MSG_DEBUG(MSG) JAGE::AppLogger::Debug(MSG)
+#define APP_MSG_INFO(MSG) JAGE::AppLogger::Info(MSG)
+#define APP_MSG_WARN(MSG) JAGE::AppLogger::Warn(MSG)
+#define APP_MSG_ERROR(MSG) JAGE::AppLogger::Error(MSG)
 
-#define APP_LOG_TRACE(LOG, ...) JAGE::AppLogger::AppLog_Trace(LOG, __VA_ARGS__)
-#define APP_LOG_DEBUG(LOG, ...) JAGE::AppLogger::AppLog_Debug(LOG, __VA_ARGS__)
-#define APP_LOG_INFO(LOG, ...) JAGE::AppLogger::AppLog_Info(LOG, __VA_ARGS__)
-#define APP_LOG_WARN(LOG, ...) JAGE::AppLogger::AppLog_Warn(LOG, __VA_ARGS__)
-#define APP_LOG_ERROR(LOG, ...) JAGE::AppLogger::AppLog_Error(LOG, __VA_ARGS__)
+#define APP_LOG_TRACE(LOG, ...) JAGE::AppLogger::Trace(LOG, __VA_ARGS__)
+#define APP_LOG_DEBUG(LOG, ...) JAGE::AppLogger::Debug(LOG, __VA_ARGS__)
+#define APP_LOG_INFO(LOG, ...) JAGE::AppLogger::Info(LOG, __VA_ARGS__)
+#define APP_LOG_WARN(LOG, ...) JAGE::AppLogger::Warn(LOG, __VA_ARGS__)
+#define APP_LOG_ERROR(LOG, ...) JAGE::AppLogger::Error(LOG, __VA_ARGS__)
 /**
  * END MACRO FOR LOGGING DEFINITIONS
  */
@@ -151,31 +151,31 @@ namespace JAGE
     class JAGE_API AppLogger
     {
     protected:
-        inline static std::shared_ptr<spdlog::logger> applog = nullptr;
+        inline static std::shared_ptr<spdlog::logger> logger = nullptr;
     public:
         static void Init(spdlog::level::level_enum app_level);
 
-        inline static void AppLog_Trace(std::string_view msg) { applog->trace(msg); }
-        inline static void AppLog_Debug(std::string_view msg) { applog->debug(msg); }
-        inline static void AppLog_Info(std::string_view msg) { applog->info(msg); }
-        inline static void AppLog_Warn(std::string_view msg) { applog->warn(msg); }
-        inline static void AppLog_Error(std::string_view msg) { applog->error(msg); }
+        inline static void Trace(std::string_view msg) { logger->trace(msg); }
+        inline static void Debug(std::string_view msg) { logger->debug(msg); }
+        inline static void Info(std::string_view msg) { logger->info(msg); }
+        inline static void Warn(std::string_view msg) { logger->warn(msg); }
+        inline static void Error(std::string_view msg) { logger->error(msg); }
 
         template<typename... Args>
-        inline static void AppLog_Trace(std::string_view log, Args &&... args)
-        { applog->trace(log, std::forward<Args>(args)...); }
+        inline static void Trace(std::string_view log, Args &&... args)
+        { logger->trace(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void AppLog_Debug(std::string_view log, Args &&... args)
-        { applog->debug(log, std::forward<Args>(args)...); }
+        inline static void Debug(std::string_view log, Args &&... args)
+        { logger->debug(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void AppLog_Info(std::string_view log, Args &&... args)
-        { applog->info(log, std::forward<Args>(args)...); }
+        inline static void Info(std::string_view log, Args &&... args)
+        { logger->info(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void AppLog_Warn(std::string_view log, Args &&... args)
-        { applog->warn(log, std::forward<Args>(args)...); }
+        inline static void Warn(std::string_view log, Args &&... args)
+        { logger->warn(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void AppLog_Error(std::string_view log, Args &&... args)
-        { applog->error(log, std::forward<Args>(args)...); }
+        inline static void Error(std::string_view log, Args &&... args)
+        { logger->error(log, std::forward<Args>(args)...); }
     };
 }
 /**
@@ -358,12 +358,13 @@ namespace JAGE
     public:
         KeyPressedEvent(int keycode, bool isrepeat) : KeyEvent { keycode }, m_isrepeat { isrepeat } {}
 
-        bool repeat_count() const { return m_isrepeat; }
+        bool is_repeat() const { return m_isrepeat; }
 
         std::string_view to_string() const override
         {
             std::stringstream ss;
-            ss << name() << "Event: " << m_keycode << " (" << m_isrepeat << " repeats)";
+            if (!m_isrepeat) ss << name() << "Event: " << m_keycode; 
+            else ss << name() << "Event: " << m_keycode << " (repeating)";
             return ss.str();
         }
 

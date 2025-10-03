@@ -18,13 +18,15 @@
             {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_C_FLAGS": "-g -O0 -Wall -Wextra -Wpedantic -DDEBUG",
-                "CMAKE_CXX_FLAGS": "-g -O0 -Wall -Wextra -Wpedantic -DDEBUG"
+                "CMAKE_CXX_FLAGS": "-g -O0 -Wall -Wextra -Wpedantic -DDEBUG",
+
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
         },
 
         {
             "name": "release",
-            "displayName": "Release Config", 
+            "displayName": "Release Config",
             "binaryDir": "${sourceDir}/build/release",
             "cacheVariables":
             {

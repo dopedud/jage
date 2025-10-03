@@ -19,8 +19,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build/lib)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/installs)
 
-include(CustomTargets)
 include(Dependencies)
+include(CustomTargets)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 

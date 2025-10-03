@@ -7,23 +7,23 @@ namespace JAGE
 {
     void AppLogger::Init(spdlog::level::level_enum app_level)
     {
-        applog = spdlog::stdout_color_mt("APP");
+        logger = spdlog::stdout_color_mt("APP");
 
 #ifdef DEBUG
-        applog->set_level(app_level);
+        logger->set_level(app_level);
 #else
-        applog->set_level(spdlog::level::off);
+        logger->set_level(spdlog::level::off);
 #endif
     }
 
     void EngineLogger::Init(spdlog::level::level_enum engine_level)
     {
-        enginelog = spdlog::stdout_color_mt("ENGINE");
+        logger = spdlog::stdout_color_mt("ENGINE");
 
 #ifdef DEBUG
-        enginelog->set_level(engine_level);
+        logger->set_level(engine_level);
 #else
-        enginelog->set_level(spdlog::level::off);
+        logger->set_level(spdlog::level::off);
 #endif
     }
 }
