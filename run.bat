@@ -1,0 +1,1 @@
+installs\bin\game.exe

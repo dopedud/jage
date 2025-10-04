@@ -51,5 +51,5 @@ FetchContent_MakeAvailable(glfw)
 # online from GitHub or other repositories, GLAD does not have that and instead let developers fetch them via a
 # download from a web service. Thus, it might seem like GLAD is part of the project, but really it's a dependency
 # handled manually and should be treated like one (that means no modifying willy-nilly!!!).
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/glad)
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/external/glad)
 # END BUILD GLAD

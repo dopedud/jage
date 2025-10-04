@@ -1,4 +1,5 @@
 #include "JAGE/core.h"
+#include "log.h"
 
 namespace JAGE
 {
@@ -17,6 +18,15 @@ namespace JAGE
     void LayerStack::OnUpdate()
     {
         for (Layer* layer : layers) layer->OnUpdate();
+    }
+
+    void LayerStack::OnEvent(const Event& e)
+    {
+        for (auto it = layers.end(); it != layers.begin();)
+        {
+            (*(--it))->OnEvent(e);
+            if (e.handled()) break;
+        }
     }
 
     void LayerStack::PushLayer(Layer* layer)

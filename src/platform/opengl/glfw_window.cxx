@@ -58,7 +58,6 @@ namespace JAGE
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
             WindowCloseEvent event {};
-            JAGE_MSG_INFO(event.to_string());
 
             data.callback(event);
         });
@@ -70,7 +69,6 @@ namespace JAGE
             data.properties.height = height;
 
             WindowResizeEvent event { width, height };
-            JAGE_MSG_INFO(event.to_string());
 
             data.callback(event);
         });
@@ -84,7 +82,6 @@ namespace JAGE
                 case GLFW_PRESS:
                 {
                     KeyPressedEvent event { key, false };
-                    JAGE_MSG_INFO(event.to_string());
 
                     data.callback(event);
                 }
@@ -93,7 +90,6 @@ namespace JAGE
                 case GLFW_RELEASE:
                 {
                     KeyReleasedEvent event { key };
-                    JAGE_MSG_INFO(event.to_string());
 
                     data.callback(event);
                 }
@@ -102,7 +98,6 @@ namespace JAGE
                 case GLFW_REPEAT:
                 {
                     KeyPressedEvent event { key, true };
-                    JAGE_MSG_INFO(event.to_string());
 
                     data.callback(event);
                 }
@@ -119,7 +114,6 @@ namespace JAGE
                 case GLFW_PRESS:
                 {
                     MouseButtonPressedEvent event { button };
-                    JAGE_MSG_INFO(event.to_string());
 
                     data.callback(event);
                 }
@@ -128,7 +122,6 @@ namespace JAGE
                 case GLFW_RELEASE:
                 {
                     MouseButtonReleasedEvent event { button };
-                    JAGE_MSG_INFO(event.to_string());
 
                     data.callback(event);
                 }
@@ -141,7 +134,6 @@ namespace JAGE
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
             MouseMovedEvent event { xpos, ypos };
-            JAGE_MSG_INFO(event.to_string());
 
             data.callback(event);
         });
@@ -151,7 +143,6 @@ namespace JAGE
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
             MouseScrolledEvent event { xoffset, yoffset };
-            JAGE_MSG_INFO(event.to_string());
 
             data.callback(event);
         });

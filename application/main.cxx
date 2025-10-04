@@ -1,12 +1,22 @@
 #include "JAGE/core.h"
 
+using namespace JAGE;
+
+class ExampleLayer : public Layer
+{
+public:
+    ExampleLayer() : Layer("Example") {}
+    
+    void OnEvent(const Event& e) override { APP_MSG_INFO(m_name + " - " + std::string{ e.to_string() }); }
+};
+
 int main(int argc, char** argv)
 {
-    using namespace JAGE;
 
     JAGE::Init(argc, argv);
 
     LayerStack layerstack;
+    layerstack.PushLayer(new ExampleLayer{});
 
     bool running = true;
 
@@ -26,11 +36,7 @@ int main(int argc, char** argv)
         EventDispatcher dispatcher { e };
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);
 
-        for (auto it = layerstack.end(); it != layerstack.begin(); --it)
-        {
-            (*it)->OnEvent(e);
-            if (e.handled()) break;
-        }
+        layerstack.OnEvent(e);
     });
 
     while (running)
@@ -38,6 +44,8 @@ int main(int argc, char** argv)
         layerstack.OnUpdate();
         window->OnUpdate();
     }
+
+    APP_MSG_DEBUG("SHOULD ONLY GET HERE WHEN EXIT IS INTENTIONAL");
 
     return 0;
 }
