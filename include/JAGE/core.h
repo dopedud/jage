@@ -30,6 +30,30 @@
  */
 
 /**
+ * MACRO FOR SUPPRESSING WARNINGS IN CODE
+ */
+#ifdef _MSC_VER
+#   define DISABLE_WARNING_PUSH __pragma(warning(push))
+#   define DISABLE_WARNING_POP __pragma(warning(pop))
+#   define DISABLE_WARNING_MSVC(w) __pragma(warning(disable : w))
+#   define DISABLE_WARNING_GCC_CLANG(w)
+#elif defined(__clang__) || defined(__GNUC__)
+#   define DO_PRAGMA(X) _Pragma(#X)
+#   define DISABLE_WARNING_PUSH DO_PRAGMA(GCC diagnostic push)
+#   define DISABLE_WARNING_POP DO_PRAGMA(GCC diagnostic pop)
+#   define DISABLE_WARNING_MSVC(w)
+#   define DISABLE_WARNING_GCC_CLANG(w) DO_PRAGMA(GCC diagnostic ignored w)
+#else
+#   define DISABLE_WARNING_PUSH
+#   define DISABLE_WARNING_POP
+#   define DISABLE_WARNING_MSVC(w)
+#   define DISABLE_WARNING_GCC_CLANG(w)
+#endif
+/**
+ * END MACRO FOR SUPPRESSING WARNINGS IN CODE
+ */
+
+/**
  * MACRO FOR LOGGING DEFINITIONS
  */
 #define APP_MSG_TRACE(MSG) JAGE::AppLogger::Trace(MSG)
@@ -60,7 +84,7 @@
  * Setting breakpoints in code depends on the platform. Each platform has their own way of doing it, and this macro
  * helps to cover the cases for all platforms.
  */
-#ifdef MSC_VER
+#ifdef _MSC_VER
 #   define DEBUG_BREAK() __debugbreak()
 #elif defined(__clang__) || defined(__GNUC__)
 #   ifdef __has_builtin
@@ -89,9 +113,9 @@
  * @def EVENT_CLASS_TYPE macro
  * @brief A macro to override virtual functions from @c Event at derived classes.
  *
- * The EVENT_CLASS_TYPE macro will expand to override virtual functions from @c Event at classes that derive @c
- * Event. It also includes expanding the static function @c static_type() which returns the event type for the
- * event class it is in.
+ * The EVENT_CLASS_TYPE macro will expand to override virtual functions from @c Event at classes that derive @c Event.
+ * It also includes expanding the static function @c static_type() which returns the event type for the event class it
+ * is in.
  */
 #define EVENT_CLASS_TYPE(type) \
     inline static EventType static_type() { return EventType::type; } \
@@ -124,25 +148,24 @@ namespace JAGE
 {
     /**
      * @class AppLogger
-     * @brief The AppLogger class used for logging the game.
+     * @brief The AppLogger class used to log game operations.
      * 
      * Both JAGE and the game use @c spdlog as its logging backend. This means that the game won't really rely on JAGE
      * to provide logging utilities, but instead rely directly from @c spdlog . Ideally, the opposite should happen
-     * (the game relying on JAGE and not having to fuss around with the implementation/backend), but this shouldn't
-     * cause any kinds of problems. A developer rarely needs to care about logging anyways, as long as it works as
-     * intended.
+     * (the game relying on JAGE and not having to fuss around with the implementation/backend), though for the case of
+     * logging, there's really no reason to switch between different backends as long as it works as intended. 
      * 
-     * The reason for the tightly-coupled dependency is because @c spdlog uses variadic templates internally to enable
-     * variable number and types of objects to log. By defnition, templates should have its implementation exposed, so
-     * both JAGE and the game should know what @c spdlog is.
+     * The reason for this tightly-coupled dependency is because @c spdlog uses variadic templates internally to enable
+     * variable number and types of objects to log. By defnition, templates should have its implementation exposed. As
+     * a consequence, both JAGE and the game should know what @c spdlog is.
      * 
      * It is possible to have only JAGE know what logging backend it's using, and let the game use logging from JAGE
      * without knowing what's going on internally by using the @c PImpl (pointer-to-implementation) pattern. However,
      * some sacrifices had to be made for templates and the @c PImpl pattern to work together. Templates must be
-     * explicitly instantiated in translation units for types that a developer wants to support. However, doing this
-     * would defeat the whole purpose of templates, which is to allow the flexibility of supporting any type and any
-     * number of them. In fact, it is better to just overload the same function with different types and amount of
-     * arguments a developer wants to support, since the intent is clearer.
+     * explicitly instantiated in translation units for types one wants to support. However, doing this would defeat
+     * the whole purpose of templates, which is to allow the flexibility of supporting any type and any number of them.
+     * In fact, it is better to just overload the same function with different types and different amount of arguments
+     * one wants to support, since the intent is clearer.
      * 
      * Templates and the @c PImpl pattern are programming patterns that go against each other. Templates require the
      * implementation to be exposed, while the @c PImpl pattern requires it to be hidden. Templates are chose over the
@@ -151,7 +174,7 @@ namespace JAGE
     class JAGE_API AppLogger
     {
     protected:
-        inline static std::shared_ptr<spdlog::logger> logger = nullptr;
+        inline static std::shared_ptr<spdlog::logger> logger { nullptr };
     public:
         static void Init(spdlog::level::level_enum app_level);
 
@@ -212,15 +235,15 @@ namespace JAGE
 
     inline int operator&(EventCategory lhs, EventCategory rhs)
     {
-        int lhs_casted = static_cast<int>(lhs);
-        int rhs_casted = static_cast<int>(rhs);
+        int lhs_casted { static_cast<int>(lhs) };
+        int rhs_casted { static_cast<int>(rhs) };
         return lhs_casted & rhs_casted;
     }
 
     inline int operator|(EventCategory lhs, EventCategory rhs)
     {
-        int lhs_casted = static_cast<int>(lhs);
-        int rhs_casted = static_cast<int>(rhs);
+        int lhs_casted { static_cast<int>(lhs) };
+        int rhs_casted { static_cast<int>(rhs) };
         return lhs_casted | rhs_casted;
     }
 
@@ -236,10 +259,11 @@ namespace JAGE
         virtual int event_category_flags() const = 0;
         virtual std::string_view to_string() const { return std::string{ name() } + "Event"; }
 
-        bool is_category(EventCategory category) { return event_category_flags() & static_cast<int>(category); }
-        void set_handled(bool handled) { this->handled = handled; }
+        bool is_category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
+        bool is_handled() const { return handled; }
+        void set_handled(bool handled) const { this->handled = handled; }
     protected:
-        bool handled = false;
+        mutable bool handled { false };
     };
 
     inline std::ostream& operator<<(std::ostream& os, const Event& e)
@@ -250,23 +274,23 @@ namespace JAGE
     class EventDispatcher
     {
         template<typename T>
-        using EventFn = std::function<bool(T&)>;
+        using EventFn = std::function<bool(const T&)>;
     public:
-        EventDispatcher(Event& event) : event { event } {}
+        EventDispatcher(const Event& event) : event { event } {}
 
         template<typename T>
         bool dispatch(EventFn<T> function)
         {
             if (event.event_type() == T::static_type())
             {
-                event.set_handled(function(static_cast<T&>(event)));
+                event.set_handled(function(static_cast<const T&>(event)));
                 return true;
             }
 
             return false;
         }
     private:
-        Event& event;
+        const Event& event;
     };
 }
 /**
@@ -281,7 +305,7 @@ namespace JAGE
     class JAGE_API WindowResizeEvent : public Event
     {
     private:
-        unsigned int m_width, m_height;
+        const unsigned int m_width, m_height;
     public:
         WindowResizeEvent(unsigned int width, unsigned int height) : m_width { width }, m_height { height } {}
 
@@ -344,7 +368,7 @@ namespace JAGE
     class JAGE_API KeyEvent : public Event
     {
     protected:
-        int m_keycode {};
+        const int m_keycode {};
         
         KeyEvent(int keycode) : m_keycode { keycode } {}
     public:
@@ -370,7 +394,7 @@ namespace JAGE
 
         EVENT_CLASS_TYPE(KeyPressed)
     private:
-        bool m_isrepeat;
+        const bool m_isrepeat;
     };
 
     class JAGE_API KeyReleasedEvent : public KeyEvent
@@ -415,13 +439,13 @@ namespace JAGE
         EVENT_CLASS_TYPE(MouseMoved)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
     private:
-        float m_mouseX, m_mouseY;
+        const float m_mouseX, m_mouseY;
     };
 
     class JAGE_API MouseScrolledEvent : public Event
     {
     private:
-        float m_offsetX, m_offsetY;
+        const float m_offsetX, m_offsetY;
     public:
         MouseScrolledEvent(float offsetX, float offsetY) : m_offsetX { offsetX }, m_offsetY { offsetY } {}
 
@@ -446,7 +470,7 @@ namespace JAGE
 
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
     protected:
-        int m_mouse_button;
+        const int m_mouse_button;
 
         MouseButtonEvent(int mouse_button) : m_mouse_button { mouse_button } {}
     };
@@ -490,7 +514,7 @@ namespace JAGE
  */
 namespace JAGE
 {
-    using EventCallbackFn = std::function<void(Event&)>;
+    using EventCallbackFn = std::function<void(const Event&)>;
 
     struct WindowProperties
     {
@@ -533,4 +557,47 @@ namespace JAGE
 }
 /**
  * END WINDOW DEFINITIONS
+ */
+
+/**
+ * LAYERS AND LAYERSTACK DEFINITIONS
+ */
+namespace JAGE
+{
+    class JAGE_API Layer
+    {
+    public:
+        Layer(std::string_view name = "Unnamed Layer");
+        virtual ~Layer() = default;
+
+        virtual void OnAttach() {}
+        virtual void OnDetach() {}
+        virtual void OnUpdate() {}
+        virtual void OnEvent(const Event& e) {}
+        
+        inline std::string_view name() const { return m_name; }
+    protected:
+        std::string m_name;
+    };
+
+    class JAGE_API LayerStack
+    {
+    public:
+        LayerStack();
+        ~LayerStack();
+
+        void PushLayer(Layer* layer);
+        void PushOverlay(Layer* overlay);
+        void PopLayer(Layer* layer);
+        void PopOverlay(Layer* overlay);
+
+        std::vector<Layer*>::iterator begin() { return layers.begin(); }
+        std::vector<Layer*>::iterator end() { return layers.end(); }
+    private:
+        std::vector<Layer*> layers;
+        std::vector<Layer*>::iterator layer_insert;
+    };
+}
+/**
+ * END LAYERS AND LAYERSTACK DEFINITIONS
  */

@@ -46,6 +46,13 @@ namespace JAGE
 
         // BUNCH OF CALLBACK DEFINITIONS
 
+        // NOTE: data.callback() COULD only be called for windows related event (such as the 2 window events written
+        // below) and have input related events be routed somewhere else; for now, all events are routed to the
+        // application
+
+        DISABLE_WARNING_PUSH
+        DISABLE_WARNING_GCC_CLANG("-Wnarrowing")
+
         glfwSetWindowCloseCallback(handle, [](GLFWwindow* window) -> void 
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -148,6 +155,8 @@ namespace JAGE
 
             data.callback(event);
         });
+
+        DISABLE_WARNING_POP
 
         // END BUNCH OF CALLBACK DEFINITIONS
     }

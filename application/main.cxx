@@ -6,20 +6,22 @@ int main(int argc, char** argv)
 
     JAGE::Init(argc, argv);
 
+    LayerStack layerstack;
+
     bool running = true;
 
     APP_MSG_INFO("Creating a window.");
     std::unique_ptr<Window> window = std::make_unique<Window>();
 
-    std::function<bool(WindowCloseEvent&)> OnWindowClose =
-    [&running](WindowCloseEvent& e) -> bool
+    std::function<bool(const WindowCloseEvent&)> OnWindowClose =
+    [&running](const WindowCloseEvent& e) -> bool
     {
         running = false;
         return true;
     };
 
     APP_MSG_INFO("Setting event callback for window.");
-    window->set_eventcallback([OnWindowClose](Event& e) -> void
+    window->set_eventcallback([OnWindowClose](const Event& e) -> void
     {
         EventDispatcher dispatcher { e };
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);

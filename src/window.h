@@ -5,12 +5,12 @@
 namespace JAGE
 {
     /**
-     * @class WindowBackend class
-     * @brief The WindowBackend class that act as an abstraction to window backends.
+     * @class WindowBackend
+     * @brief The @c WindowBackend class that act as an abstraction to window backends.
      *
-     * NOTE: This class should have the same states and behaviours as the Window class in @c core.h (meaning the same
-     * set of functions and variables, except the fact that WindowBackend has purely virtual functions, but that's
-     * because of its abstraction nature).
+     * This class should have the same states and behaviours as the @c Window class in @c core.h (meaning the same set
+     * of functions and variables, except the fact that @c WindowBackend has purely virtual functions, which is because
+     * of its abstraction nature).
      */
     class WindowBackend
     {
@@ -36,11 +36,11 @@ namespace JAGE
     };
 
     /**
-     * @class Window_Impl class
-     * @brief The Window_Impl class that implements Window class.
+     * @class Window_Impl
+     * @brief The @c Window_Impl class that implements Window class.
      * 
-     * NOTE: This class should have the same states and behaviours as the Window class in @c core.h (meaning the same
-     * set of functions and variables).
+     * This class should have the same states and behaviours as the @c Window class in @c core.h (meaning the same set
+     * of functions and variables).
      */
     class Window::Window_Impl
     {

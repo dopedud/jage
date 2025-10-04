@@ -8,6 +8,8 @@ set(SRC
 
     window.cxx
     platform/opengl/glfw_window.cxx
+    
+    layers.cxx
 )
 
 set(SRC_FILES)
@@ -34,6 +36,7 @@ set_target_properties(${ENGINE_NAME} PROPERTIES
 
 set(PUBLIC_LIBRARIES
     spdlog::spdlog
+    argparse
 )
 
 set(PRIVATE_LIBRARIES

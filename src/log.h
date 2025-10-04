@@ -30,7 +30,11 @@ namespace JAGE
      * @class EngineLogger
      * @brief The @c EngineLogger class used to log engine operations.
      * 
-     * 
+     * @c EngineLogger should have the same class structure as @c AppLogger (as in, having the same member variables and
+     * member functions). The reason for this separation despite being the exact same class is to hide engine logging
+     * from the game. The idea is that the game should only log game operations, and although the engine can log game
+     * operations within its own, the engine should also only log its operations. This helps reinforce separation of
+     * concerns and loose coupling between JAGE and the game.
      */
     class EngineLogger
     {

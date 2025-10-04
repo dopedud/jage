@@ -15,6 +15,19 @@ set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(spdlog)
 # END FETCH SPDLOG
 
+# FETCH ARGPARSE
+set(ARGPARSE_VERSION v3.2)
+FetchContent_Declare(
+    argparse
+    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
+    GIT_TAG ${ARGPARSE_VERSION}
+)
+
+set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
+set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(argparse)
+
 # FETCH GLFW
 set(GLFW_VERSION 3.3.10)
 FetchContent_Declare(
