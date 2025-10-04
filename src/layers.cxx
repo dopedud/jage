@@ -2,7 +2,7 @@
 
 namespace JAGE
 {
-    Layer::Layer(std::string_view name = "Unnamed Layer") : m_name { name } {}
+    Layer::Layer(std::string_view name) : m_name { name } {}
 
     LayerStack::LayerStack()
     {
@@ -12,6 +12,11 @@ namespace JAGE
     LayerStack::~LayerStack()
     {
         for (Layer* layer : layers) delete layer;
+    }
+
+    void LayerStack::OnUpdate()
+    {
+        for (Layer* layer : layers) layer->OnUpdate();
     }
 
     void LayerStack::PushLayer(Layer* layer)
@@ -26,7 +31,7 @@ namespace JAGE
 
     void LayerStack::PopLayer(Layer* layer)
     {
-        std::vector<Layer*>::iterator it { std::find(layers.begin(), layers.end(), layer) };
+        auto it { std::find(layers.begin(), layers.end(), layer) };
 
         if (it != layers.end())
         {
@@ -37,7 +42,7 @@ namespace JAGE
 
     void LayerStack::PopOverlay(Layer* overlay)
     {
-        std::vector<Layer*>::iterator it { std::find(layers.begin(), layers.end(), overlay) };
+        auto it { std::find(layers.begin(), layers.end(), overlay) };
 
         if (it != layers.end()) layers.erase(it);
     }

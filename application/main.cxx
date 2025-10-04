@@ -21,14 +21,21 @@ int main(int argc, char** argv)
     };
 
     APP_MSG_INFO("Setting event callback for window.");
-    window->set_eventcallback([OnWindowClose](const Event& e) -> void
+    window->set_eventcallback([&layerstack, OnWindowClose](const Event& e) -> void
     {
         EventDispatcher dispatcher { e };
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);
+
+        for (auto it = layerstack.end(); it != layerstack.begin(); --it)
+        {
+            (*it)->OnEvent(e);
+            if (e.handled()) break;
+        }
     });
 
     while (running)
     {
+        layerstack.OnUpdate();
         window->OnUpdate();
     }
 

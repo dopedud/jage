@@ -259,11 +259,11 @@ namespace JAGE
         virtual int event_category_flags() const = 0;
         virtual std::string_view to_string() const { return std::string{ name() } + "Event"; }
 
-        bool is_category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
-        bool is_handled() const { return handled; }
-        void set_handled(bool handled) const { this->handled = handled; }
+        bool category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
+        bool handled() const { return m_handled; }
+        void set_handled(bool handled) const { this->m_handled = handled; }
     protected:
-        mutable bool handled { false };
+        mutable bool m_handled { false };
     };
 
     inline std::ostream& operator<<(std::ostream& os, const Event& e)
@@ -590,6 +590,8 @@ namespace JAGE
         void PushOverlay(Layer* overlay);
         void PopLayer(Layer* layer);
         void PopOverlay(Layer* overlay);
+
+        void OnUpdate();
 
         std::vector<Layer*>::iterator begin() { return layers.begin(); }
         std::vector<Layer*>::iterator end() { return layers.end(); }
