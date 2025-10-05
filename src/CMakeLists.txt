@@ -42,6 +42,7 @@ set(PUBLIC_LIBRARIES
 set(PRIVATE_LIBRARIES
     glfw
     glad
+    dear_imgui
 )
 
 target_link_libraries(${ENGINE_NAME} PUBLIC ${PUBLIC_LIBRARIES})
