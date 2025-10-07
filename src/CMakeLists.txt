@@ -6,10 +6,11 @@ set(SRC
 
     "log.cxx"
 
+    layer.cxx
+
     window.cxx
-    platform/opengl/glfw_window.cxx
-    
-    layers.cxx
+    platform/glfw/window_impl.cxx
+    platform/glfw/opengl3/dear_imgui_layer.cxx
 )
 
 set(SRC_FILES)

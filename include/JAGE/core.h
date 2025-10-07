@@ -173,7 +173,7 @@ namespace JAGE
      */
     class JAGE_API AppLogger
     {
-    protected:
+    private:
         inline static std::shared_ptr<spdlog::logger> logger { nullptr };
     public:
         static void Init(spdlog::level::level_enum app_level);
@@ -249,7 +249,7 @@ namespace JAGE
 
     /**
      * @class Event
-     * @brief The Event base class used to communicate events happening between the engine and the application.
+     * @brief The @c Event base class used to communicate events happening between the engine and the application.
      */
     class JAGE_API Event
     {
@@ -367,14 +367,14 @@ namespace JAGE
 {
     class JAGE_API KeyEvent : public Event
     {
-    protected:
-        const int m_keycode {};
-        
-        KeyEvent(int keycode) : m_keycode { keycode } {}
     public:
         int keycode() const { return m_keycode; }
 
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
+    protected:
+        const int m_keycode {};
+        
+        KeyEvent(int keycode) : m_keycode { keycode } {}
     };
 
     class JAGE_API KeyPressedEvent : public KeyEvent
@@ -549,7 +549,9 @@ namespace JAGE
         void set_eventcallback(const EventCallbackFn& callback);
 
         void set_vsync(bool enabled);
-        bool is_vsync() const;
+        bool vsync() const;
+
+        void* handle();
     private:
         class Window_Impl;
         std::unique_ptr<Window_Impl> pImpl;
@@ -560,7 +562,7 @@ namespace JAGE
  */
 
 /**
- * LAYERS AND LAYERSTACK DEFINITIONS
+ * LAYER AND LAYERSTACK DEFINITIONS
  */
 namespace JAGE
 {
@@ -570,10 +572,10 @@ namespace JAGE
         Layer(std::string_view name = "Unnamed Layer");
         virtual ~Layer() = default;
 
-        virtual void OnAttach() {}
-        virtual void OnDetach() {}
-        virtual void OnUpdate() {}
-        virtual void OnEvent(const Event& e) {}
+        virtual void OnAttach() = 0;
+        virtual void OnDetach() = 0;
+        virtual void OnUpdate() = 0;
+        virtual void OnEvent(const Event& e) = 0;
         
         inline std::string_view name() const { return m_name; }
     protected:
@@ -602,5 +604,5 @@ namespace JAGE
     };
 }
 /**
- * END LAYERS AND LAYERSTACK DEFINITIONS
+ * END LAYER AND LAYERSTACK DEFINITIONS
  */

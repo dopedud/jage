@@ -53,8 +53,8 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 
-# build files; should be renamed according to the name of the directory
-build/debug
+# build files
+build
 
 # install directory
 installs

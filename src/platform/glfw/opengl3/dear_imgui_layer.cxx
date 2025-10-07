@@ -1,0 +1,67 @@
+#include "JAGE/layers/imgui_layer.h"
+#include "log.h"
+
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
+namespace JAGE
+{
+    ImguiLayer::ImguiLayer(Window* window) : Layer("IMGUI Layer"), window { window } {}
+
+    void ImguiLayer::OnAttach()
+    {
+        JAGE_MSG_TRACE("Attaching IMGUI layer to layer stack.");
+
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+        ImGui::StyleColorsDark();
+
+        bool imgui_glfw_success { ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window->handle()), false) };
+        bool imgui_opengl3_success { ImGui_ImplOpenGL3_Init("#version 460") };
+
+        JAGE_ASSERT(imgui_glfw_success, "IMGUI failed to load with GLFW backend.")
+        JAGE_ASSERT(imgui_opengl3_success, "IMGUI failed to load OpenGL loader.")
+
+        JAGE_MSG_TRACE("Attached IMGUI layer to layer stack.");
+    }
+
+    void ImguiLayer::OnDetach()
+    {
+        ImGui_ImplGlfw_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui::DestroyContext();
+    }
+
+    void ImguiLayer::OnUpdate()
+    {
+        JAGE_MSG_DEBUG("UPDATING IMGUI...");
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.IniFilename = nullptr;
+        io.DisplaySize = ImVec2{ window->width(), window->height() };
+        io.DeltaTime = 1.0f / 60.0f;
+
+        ImGui_ImplGlfw_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui::NewFrame();
+
+        static bool show = true;
+        ImGui::ShowDemoWindow(&show);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+    
+    void ImguiLayer::OnEvent(const Event& e)
+    {
+
+    }
+}

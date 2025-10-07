@@ -1,6 +1,8 @@
-#include "glfw_window.h"
+#include "window_impl.h"
 
 #include "log.h"
+
+#include <glad/glad.h>
 
 namespace JAGE
 {
@@ -19,7 +21,7 @@ namespace JAGE
 
         if (!s_GLFW_initialised)
         {
-            int success = glfwInit();
+            int success { glfwInit() };
             JAGE_ASSERT(success, "Failed to initialise GLFW.")
 
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -29,18 +31,18 @@ namespace JAGE
             s_GLFW_initialised = true;
         }
 
-        handle = glfwCreateWindow(
+        m_handle = glfwCreateWindow(
             static_cast<int>(properties.width),
             static_cast<int>(properties.height),
             properties.title.c_str(), nullptr, nullptr
         );
 
-        JAGE_ASSERT(handle, "Failed to create GLFW window.");
+        JAGE_ASSERT(m_handle, "Failed to create GLFW window.");
 
-        glfwMakeContextCurrent(handle);
-        glfwSetWindowUserPointer(handle, &data);
+        glfwMakeContextCurrent(m_handle);
+        glfwSetWindowUserPointer(m_handle, &data);
 
-        int glad_load_success = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+        int glad_load_success { gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) };
 
         JAGE_ASSERT(glad_load_success, "Failed to initialise GLAD.");
 
@@ -53,7 +55,7 @@ namespace JAGE
         DISABLE_WARNING_PUSH
         DISABLE_WARNING_GCC_CLANG("-Wnarrowing")
 
-        glfwSetWindowCloseCallback(handle, [](GLFWwindow* window) -> void 
+        glfwSetWindowCloseCallback(m_handle, [](GLFWwindow* window) -> void 
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -62,7 +64,7 @@ namespace JAGE
             data.callback(event);
         });
 
-        glfwSetWindowSizeCallback(handle, [](GLFWwindow* window, int width, int height) -> void
+        glfwSetWindowSizeCallback(m_handle, [](GLFWwindow* window, int width, int height) -> void
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
             data.properties.width = width;
@@ -73,7 +75,7 @@ namespace JAGE
             data.callback(event);
         });
 
-        glfwSetKeyCallback(handle, [](GLFWwindow* window, int key, int scancode, int action, int mods) -> void
+        glfwSetKeyCallback(m_handle, [](GLFWwindow* window, int key, int scancode, int action, int mods) -> void
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -105,7 +107,7 @@ namespace JAGE
             }
         });
 
-        glfwSetMouseButtonCallback(handle, [](GLFWwindow* window, int button, int action, int mods) -> void
+        glfwSetMouseButtonCallback(m_handle, [](GLFWwindow* window, int button, int action, int mods) -> void
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -129,7 +131,7 @@ namespace JAGE
             }
         });
 
-        glfwSetCursorPosCallback(handle, [](GLFWwindow* window, double xpos, double ypos) -> void
+        glfwSetCursorPosCallback(m_handle, [](GLFWwindow* window, double xpos, double ypos) -> void
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -138,7 +140,7 @@ namespace JAGE
             data.callback(event);
         });
 
-        glfwSetScrollCallback(handle, [](GLFWwindow* window, double xoffset, double yoffset) -> void
+        glfwSetScrollCallback(m_handle, [](GLFWwindow* window, double xoffset, double yoffset) -> void
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -154,7 +156,7 @@ namespace JAGE
 
     GLFWWindow::~GLFWWindow()
     {
-        glfwDestroyWindow(handle); 
+        glfwDestroyWindow(m_handle); 
     }
 
     void GLFWWindow::OnUpdate()
@@ -162,7 +164,7 @@ namespace JAGE
         glClearColor(1, 0, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         glfwPollEvents();
-        glfwSwapBuffers(handle);
+        glfwSwapBuffers(m_handle);
     }
 
     void GLFWWindow::set_vsync(bool enabled)

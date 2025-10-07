@@ -1,6 +1,6 @@
 #include "window.h"
 
-#include "platform/opengl/glfw_window.h"
+#include "platform/glfw/window_impl.h"
 
 namespace JAGE
 {
@@ -24,5 +24,7 @@ namespace JAGE
     void Window::set_eventcallback(const EventCallbackFn& callback) { pImpl->set_eventcallback(callback); }
 
     void Window::set_vsync(bool enabled) { pImpl->set_vsync(enabled); }
-    bool Window::is_vsync() const { return pImpl->is_vsync(); }
+    bool Window::vsync() const { return pImpl->vsync(); }
+
+    void* Window::handle() { return pImpl->handle(); }
 }

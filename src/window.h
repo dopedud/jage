@@ -24,7 +24,9 @@ namespace JAGE
 
         virtual void set_eventcallback(const EventCallbackFn& callback) = 0;
         virtual void set_vsync(bool enabled) = 0;
-        virtual bool is_vsync() const = 0;
+        virtual bool vsync() const = 0;
+
+        virtual void* handle() = 0;
     protected:
         struct WindowData
         {
@@ -47,14 +49,16 @@ namespace JAGE
     public:
         Window_Impl(const WindowProperties& properties = WindowProperties{});
 
-        inline unsigned int width() const { return backend->width(); }
-        inline unsigned int height() const { return backend->height(); }
+        unsigned int width() const { return backend->width(); }
+        unsigned int height() const { return backend->height(); }
 
-        inline void OnUpdate() { backend->OnUpdate(); }
+        void OnUpdate() { backend->OnUpdate(); }
 
-        inline void set_eventcallback(const EventCallbackFn& callback) { backend->set_eventcallback(callback); }
-        inline void set_vsync(bool enabled) { backend->set_vsync(enabled); }
-        inline bool is_vsync() const { return backend->is_vsync(); }
+        void set_eventcallback(const EventCallbackFn& callback) { backend->set_eventcallback(callback); }
+        void set_vsync(bool enabled) { backend->set_vsync(enabled); }
+        bool vsync() const { return backend->vsync(); }
+
+        void* handle() { return backend->handle(); }
     private:
         std::unique_ptr<WindowBackend> backend;
     };
