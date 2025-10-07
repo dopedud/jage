@@ -19,7 +19,7 @@
 
 #ifdef JAGE_ENABLE_ASSERTS
 #   define JAGE_ASSERT(x, message) \
-    if (!(x)) { JAGE_MSG_ERROR("Assertion failed: " + std::string{ message }); DEBUG_BREAK(); }
+    if (!(x)) { JAGE_MSG_ERROR("Assertion failed: " + std::string{ message }); DEBUG_BREAK; }
 #else
 #   define JAGE_ASSERT(x, message)
 #endif

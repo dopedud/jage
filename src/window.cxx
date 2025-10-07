@@ -1,6 +1,6 @@
 #include "window.h"
 
-#include "platform/glfw/window_impl.h"
+#include "platform/glfw/opengl3/window_impl.h"
 
 namespace JAGE
 {
@@ -19,8 +19,9 @@ namespace JAGE
     unsigned int Window::width() const { return pImpl->width(); }
     unsigned int Window::height() const { return pImpl->height(); }
 
+    void Window::OnPollEvents() { pImpl->OnPollEvents(); }
     void Window::OnClear() { pImpl->OnClear(); }
-    void Window::OnUpdate() { pImpl->OnUpdate(); }
+    void Window::OnRender() { pImpl->OnRender(); }
 
     void Window::set_eventcallback(const EventCallbackFn& callback) { pImpl->set_eventcallback(callback); }
 

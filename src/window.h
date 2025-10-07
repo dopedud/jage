@@ -20,8 +20,9 @@ namespace JAGE
         virtual unsigned int width() const = 0;
         virtual unsigned int height() const = 0;
 
+        virtual void OnPollEvents() = 0;
         virtual void OnClear() = 0;
-        virtual void OnUpdate() = 0;
+        virtual void OnRender() = 0;
 
         virtual void set_eventcallback(const EventCallbackFn& callback) = 0;
         virtual void set_vsync(bool enabled) = 0;
@@ -53,8 +54,9 @@ namespace JAGE
         unsigned int width() const { return backend->width(); }
         unsigned int height() const { return backend->height(); }
 
+        void OnPollEvents() { backend->OnPollEvents(); }
         void OnClear() { backend->OnClear(); }
-        void OnUpdate() { backend->OnUpdate(); }
+        void OnRender() { backend->OnRender(); }
 
         void set_eventcallback(const EventCallbackFn& callback) { backend->set_eventcallback(callback); }
         void set_vsync(bool enabled) { backend->set_vsync(enabled); }

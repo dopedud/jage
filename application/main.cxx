@@ -3,19 +3,6 @@
 
 using namespace JAGE;
 
-// TEMPORARY LAYER
-class ExampleLayer : public Layer
-{
-public:
-    ExampleLayer() : Layer("Example Layer") {}
-    
-    void OnAttach() override {}
-    void OnDetach() override {}
-    void OnUpdate() override {}
-    void OnEvent(const Event& e) override { APP_MSG_INFO(m_name + " - " + std::string{ e.to_string() }); }
-};
-// END TEMPORARY LAYER
-
 int main(int argc, char** argv)
 {
     JAGE::Init(argc, argv);
@@ -27,7 +14,6 @@ int main(int argc, char** argv)
 
     APP_MSG_INFO("Creating a layer stack.");
     LayerStack layerstack;
-    layerstack.PushLayer(new ExampleLayer{});
     layerstack.PushOverlay(new ImguiLayer{ window.get() });
 
     std::function<bool(const WindowCloseEvent&)> OnWindowClose {
@@ -50,11 +36,10 @@ int main(int argc, char** argv)
     while (running)
     {
         window->OnClear();
-        layerstack.OnUpdate();
-        window->OnUpdate();
+        window->OnPollEvents();
+        layerstack.OnRender();
+        window->OnRender();
     }
-
-    APP_MSG_DEBUG("SHOULD ONLY GET HERE WHEN EXIT IS INTENTIONAL");
 
     return 0;
 }

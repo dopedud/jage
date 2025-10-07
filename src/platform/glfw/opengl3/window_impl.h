@@ -17,7 +17,9 @@ namespace JAGE
         unsigned int width() const override { return data.properties.width; }
         unsigned int height() const override { return data.properties.height; }
 
-        void OnUpdate() override;
+        void OnPollEvents() override;
+        void OnClear() override;
+        void OnRender() override;
 
         void set_eventcallback(const EventCallbackFn& callback) override { this->data.callback = callback; }
         void set_vsync(bool enabled) override;

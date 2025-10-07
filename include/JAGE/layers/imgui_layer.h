@@ -11,7 +11,9 @@ namespace JAGE
 
         void OnAttach() override;
         void OnDetach() override;
-        void OnUpdate() override;
+
+        void OnRender() override;
+
         void OnEvent(const Event& e) override;
     private:
         Window* window;

@@ -46,6 +46,8 @@ namespace JAGE
 
         JAGE_ASSERT(glad_load_success, "Failed to initialise GLAD.");
 
+        glfwSwapInterval(data.properties.vsync);
+
         // BUNCH OF CALLBACK DEFINITIONS
 
         // NOTE: data.callback() COULD only be called for windows related event (such as the 2 window events written
@@ -159,15 +161,20 @@ namespace JAGE
         glfwDestroyWindow(m_handle); 
     }
 
+    void GLFWWindow::OnPollEvents()
+    {
+        glfwPollEvents();
+    }
+
     void GLFWWindow::OnClear()
     {
         glClearColor(1, 0, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT);
-        glfwPollEvents();
     }
 
-    void GLFWWindow::OnUpdate()
+    void GLFWWindow::OnRender()
     {
+        glViewport(0, 0, data.properties.width, data.properties.height);
         glfwSwapBuffers(m_handle);
     }
 

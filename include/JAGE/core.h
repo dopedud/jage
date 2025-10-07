@@ -78,27 +78,27 @@
  */
 
 /**
- * @define DEBUG_BREAK() macro
+ * @def DEBUG_BREAK
  * @brief A macro to set breakpoint inside the code itself.
  *
  * Setting breakpoints in code depends on the platform. Each platform has their own way of doing it, and this macro
  * helps to cover the cases for all platforms.
  */
 #ifdef _MSC_VER
-#   define DEBUG_BREAK() __debugbreak()
+#   define DEBUG_BREAK __debugbreak()
 #elif defined(__clang__) || defined(__GNUC__)
 #   ifdef __has_builtin
 #       if __has_builtin(__builtin_debugtrap)
-#           define DEBUG_BREAK() __builtin_debugtrap()
+#           define DEBUG_BREAK __builtin_debugtrap()
 #       else
-#           define DEBUG_BREAK() __builtin_trap()
+#           define DEBUG_BREAK __builtin_trap()
 #       endif
 #   else
-#       define DEBUG_BREAK() raise(SIGTRAP)
+#       define DEBUG_BREAK raise(SIGTRAP)
 #   endif
 #else
 #   include <csignal>
-#   define DEBUG_BREAK() std::raise(SIGTRAP)
+#   define DEBUG_BREAK std::raise(SIGTRAP)
 #endif
 
 /**
@@ -110,7 +110,7 @@
  */
 
 /**
- * @def EVENT_CLASS_TYPE macro
+ * @def EVENT_CLASS_TYPE
  * @brief A macro to override virtual functions from @c Event at derived classes.
  *
  * The EVENT_CLASS_TYPE macro will expand to override virtual functions from @c Event at classes that derive @c Event.
@@ -544,14 +544,21 @@ namespace JAGE
         unsigned int width() const;
         unsigned int height() const;
 
+        void OnPollEvents();
         void OnClear();
-        void OnUpdate();
+        void OnRender();
 
         void set_eventcallback(const EventCallbackFn& callback);
 
         void set_vsync(bool enabled);
         bool vsync() const;
 
+        /**
+         * @fn handle()
+         * @brief A function to expose backend implementation of a window.
+         * 
+         * This should be used only if you know what you're doing.
+         */
         void* handle();
     private:
         class Window_Impl;
@@ -575,7 +582,9 @@ namespace JAGE
 
         virtual void OnAttach() = 0;
         virtual void OnDetach() = 0;
-        virtual void OnUpdate() = 0;
+
+        virtual void OnRender() = 0;
+
         virtual void OnEvent(const Event& e) = 0;
         
         inline std::string_view name() const { return m_name; }
@@ -594,7 +603,8 @@ namespace JAGE
         void PopLayer(Layer* layer);
         void PopOverlay(Layer* overlay);
 
-        void OnUpdate();
+        void OnRender();
+
         void OnEvent(const Event& e);
 
         std::vector<Layer*>::iterator begin() { return layers.begin(); }

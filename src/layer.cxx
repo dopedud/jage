@@ -30,17 +30,17 @@ namespace JAGE
         JAGE_MSG_TRACE("Destroyed LayerStack.");
     }
 
-    void LayerStack::OnUpdate()
+    void LayerStack::OnRender()
     {
-        for (Layer* layer : layers) layer->OnUpdate();
+        for (Layer* layer : layers) layer->OnRender();
     }
 
     void LayerStack::OnEvent(const Event& e)
     {
         for (auto it = layers.end(); it != layers.begin();)
         {
-            (*(--it))->OnEvent(e);
             if (e.handled()) break;
+            (*(--it))->OnEvent(e);
         }
     }
 

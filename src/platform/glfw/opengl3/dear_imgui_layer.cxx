@@ -22,9 +22,13 @@ namespace JAGE
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+        io.IniFilename = nullptr;
+        // io.DisplaySize = ImVec2{ window->width(), window->height() };
+
+
         ImGui::StyleColorsDark();
 
-        bool imgui_glfw_success { ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window->handle()), false) };
+        bool imgui_glfw_success { ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window->handle()), true) };
         bool imgui_opengl3_success { ImGui_ImplOpenGL3_Init("#version 460") };
 
         JAGE_ASSERT(imgui_glfw_success, "IMGUI failed to load with GLFW backend.")
@@ -40,15 +44,8 @@ namespace JAGE
         ImGui::DestroyContext();
     }
 
-    void ImguiLayer::OnUpdate()
+    void ImguiLayer::OnRender()
     {
-        JAGE_MSG_DEBUG("UPDATING IMGUI...");
-
-        ImGuiIO& io = ImGui::GetIO();
-        io.IniFilename = nullptr;
-        io.DisplaySize = ImVec2{ window->width(), window->height() };
-        io.DeltaTime = 1.0f / 60.0f;
-
         ImGui_ImplGlfw_NewFrame();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui::NewFrame();
@@ -62,6 +59,6 @@ namespace JAGE
     
     void ImguiLayer::OnEvent(const Event& e)
     {
-
+        JAGE_MSG_INFO("IMGUI Layer: event received - " + std::string{ e.to_string() });
     }
 }
