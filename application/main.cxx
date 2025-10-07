@@ -49,8 +49,9 @@ int main(int argc, char** argv)
 
     while (running)
     {
-        window->OnUpdate();
+        window->OnClear();
         layerstack.OnUpdate();
+        window->OnUpdate();
     }
 
     APP_MSG_DEBUG("SHOULD ONLY GET HERE WHEN EXIT IS INTENTIONAL");

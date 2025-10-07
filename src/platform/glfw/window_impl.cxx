@@ -159,11 +159,15 @@ namespace JAGE
         glfwDestroyWindow(m_handle); 
     }
 
-    void GLFWWindow::OnUpdate()
+    void GLFWWindow::OnClear()
     {
         glClearColor(1, 0, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         glfwPollEvents();
+    }
+
+    void GLFWWindow::OnUpdate()
+    {
         glfwSwapBuffers(m_handle);
     }
 

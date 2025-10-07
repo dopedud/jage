@@ -544,6 +544,7 @@ namespace JAGE
         unsigned int width() const;
         unsigned int height() const;
 
+        void OnClear();
         void OnUpdate();
 
         void set_eventcallback(const EventCallbackFn& callback);

@@ -19,6 +19,7 @@ namespace JAGE
     unsigned int Window::width() const { return pImpl->width(); }
     unsigned int Window::height() const { return pImpl->height(); }
 
+    void Window::OnClear() { pImpl->OnClear(); }
     void Window::OnUpdate() { pImpl->OnUpdate(); }
 
     void Window::set_eventcallback(const EventCallbackFn& callback) { pImpl->set_eventcallback(callback); }

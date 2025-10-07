@@ -20,6 +20,7 @@ namespace JAGE
         virtual unsigned int width() const = 0;
         virtual unsigned int height() const = 0;
 
+        virtual void OnClear() = 0;
         virtual void OnUpdate() = 0;
 
         virtual void set_eventcallback(const EventCallbackFn& callback) = 0;
@@ -52,6 +53,7 @@ namespace JAGE
         unsigned int width() const { return backend->width(); }
         unsigned int height() const { return backend->height(); }
 
+        void OnClear() { backend->OnClear(); }
         void OnUpdate() { backend->OnUpdate(); }
 
         void set_eventcallback(const EventCallbackFn& callback) { backend->set_eventcallback(callback); }
