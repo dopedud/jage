@@ -6,7 +6,8 @@ This repository is a project about making a game engine from scratch.
 
 ## Key Features
 
-TBA
+This engine focuses on exposing as much game development tools as possible to the end user, while abstracting away
+low-level implementations and maintain extensibility as much as possible.
 
 ## Documentation Generation
 
@@ -30,8 +31,8 @@ docs/html/index.html
 ### Tech Stack
 
 - **Programming Languages:** C, C++
-- **Build Tools:** CMake
-- **Rendering:** TBA
+- **Build System:** CMake
+- **Rendering:** OpenGL
 - **Game GUI:** TBA
 - **Editor GUI:** Dear ImGui
 - **Code Documentation:** Doxygen

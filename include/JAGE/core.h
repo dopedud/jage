@@ -130,6 +130,13 @@
  */
 
 /**
+ * MACRO FOR INPUT DEFINITIONS
+ */
+#define JAGE_KEY_RELEASE 0
+#define JAGE_KEY_PRESS 1
+#define JAGE_KEY_REPEAT 2
+
+/**
  * END MACRO DEFINITIONS
  */
 
@@ -217,10 +224,10 @@ namespace JAGE
     enum class EventType : int
     {
         None = 0,
-        WindowClose, WindowResize, WindowFocus, WindowUnFocus, WindowMoved,
+        WindowClose, WindowResize, WindowFocus, WindowMoved,
         AppTick, AppUpdate, AppRender,
-        KeyPressed, KeyReleased,
-        MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
+        Key,
+        MouseButton, MouseMoved, MouseScrolled
     };   
 
     enum class EventCategory : int
@@ -260,6 +267,7 @@ namespace JAGE
         virtual std::string_view to_string() const { return std::string{ name() } + "Event"; }
 
         bool category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
+
         bool handled() const { return m_handled; }
         void set_handled(bool handled) const { this->m_handled = handled; }
     protected:
@@ -271,7 +279,7 @@ namespace JAGE
         return os << e.to_string();
     }
 
-    class EventDispatcher
+    class JAGE_API EventDispatcher
     {
         template<typename T>
         using EventFn = std::function<bool(const T&)>;
@@ -302,6 +310,15 @@ namespace JAGE
  */
 namespace JAGE
 {
+    class JAGE_API WindowCloseEvent : public Event
+    {
+    public:
+        WindowCloseEvent() {}
+
+        EVENT_CLASS_TYPE(WindowClose)
+        EVENT_CLASS_CATEGORY(EventCategory::Application)
+    };
+
     class JAGE_API WindowResizeEvent : public Event
     {
     private:
@@ -323,12 +340,23 @@ namespace JAGE
         EVENT_CLASS_CATEGORY(EventCategory::Application)
     };
 
-    class JAGE_API WindowCloseEvent : public Event
+    class JAGE_API WindowFocusEvent : public Event
     {
+    private:
+        const bool m_focus;
     public:
-        WindowCloseEvent() {}
+        WindowFocusEvent(bool focus) : m_focus { focus } {}
 
-        EVENT_CLASS_TYPE(WindowClose)
+        bool focus() const { return m_focus; }
+
+        std::string_view to_string() const override
+        {
+            std::stringstream ss;
+            ss << name() << "Event: " << (m_focus ? "window focused" : "window unfocused");
+            return ss.str();
+        }
+
+        EVENT_CLASS_TYPE(WindowFocus)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
     };
 
@@ -368,48 +396,42 @@ namespace JAGE
     class JAGE_API KeyEvent : public Event
     {
     public:
-        int keycode() const { return m_keycode; }
+        KeyEvent(int key, int scancode, int action, int mods)
+        : m_key { key }
+        , m_scancode { scancode }
+        , m_action { action }
+        , m_mods { mods }
+        {}
 
+        int key() const { return m_key; }
+        int scancode() const { return m_scancode; }
+        int action() const { return m_action; }
+        int mods() const { return m_mods; }
+
+        std::string_view to_string() const override
+        {
+            std::stringstream ss;
+
+            ss << name() << "Event: " << m_key << ", " << m_scancode << ", ";
+
+            switch(m_action)
+            {
+                case JAGE_KEY_PRESS: ss << "PRESSED, "; break;
+                case JAGE_KEY_RELEASE: ss << "RELEASED, "; break;
+                case JAGE_KEY_REPEAT: ss << "REPEATED, "; break;
+            }
+
+            ss << m_mods;
+            return ss.str();
+        }
+
+        EVENT_CLASS_TYPE(Key)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
-    protected:
-        const int m_keycode {};
-        
-        KeyEvent(int keycode) : m_keycode { keycode } {}
-    };
-
-    class JAGE_API KeyPressedEvent : public KeyEvent
-    {
-    public:
-        KeyPressedEvent(int keycode, bool isrepeat) : KeyEvent { keycode }, m_isrepeat { isrepeat } {}
-
-        bool is_repeat() const { return m_isrepeat; }
-
-        std::string_view to_string() const override
-        {
-            std::stringstream ss;
-            if (!m_isrepeat) ss << name() << "Event: " << m_keycode; 
-            else ss << name() << "Event: " << m_keycode << " (repeating)";
-            return ss.str();
-        }
-
-        EVENT_CLASS_TYPE(KeyPressed)
     private:
-        const bool m_isrepeat;
-    };
-
-    class JAGE_API KeyReleasedEvent : public KeyEvent
-    {
-    public:
-        KeyReleasedEvent(int keycode) : KeyEvent { keycode } {}
-
-        std::string_view to_string() const override
-        {
-            std::stringstream ss;
-            ss << name() << "Event: " << m_keycode;
-            return ss.str();
-        }
-
-        EVENT_CLASS_TYPE(KeyReleased)
+        const int m_key {};
+        const int m_scancode {};
+        const int m_action {};
+        const int m_mods {};
     };
 }
 /**
@@ -421,6 +443,44 @@ namespace JAGE
  */
 namespace JAGE
 {
+    class JAGE_API MouseButtonEvent : public Event
+    {
+    public:
+        MouseButtonEvent(int button, int action, int mods)
+        : m_button { button }
+        , m_action { action }
+        , m_mods { mods }
+        {}
+
+        int button() const { return m_button; }
+        int action() const { return m_action; }
+        int mods() const { return m_mods; }
+
+        std::string_view to_string() const override
+        {
+            std::stringstream ss;
+
+            ss << name() << "Event: " << m_button << ", ";
+
+            switch(m_action)
+            {
+                case JAGE_KEY_PRESS: ss << "PRESSED, "; break;
+                case JAGE_KEY_RELEASE: ss << "RELEASED, "; break;
+                case JAGE_KEY_REPEAT: ss << "REPEATED, "; break;
+            }
+
+            ss << m_mods;
+            return ss.str();
+        }
+
+        EVENT_CLASS_TYPE(MouseButton)
+        EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
+    private:
+        const int m_button;
+        const int m_action;
+        const int m_mods;
+    };
+
     class JAGE_API MouseMovedEvent : public Event
     {
     public:
@@ -461,48 +521,6 @@ namespace JAGE
 
         EVENT_CLASS_TYPE(MouseScrolled)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
-    };
-
-    class JAGE_API MouseButtonEvent : public Event
-    {
-    public:
-        int mouse_button() { return m_mouse_button; }
-
-        EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
-    protected:
-        const int m_mouse_button;
-
-        MouseButtonEvent(int mouse_button) : m_mouse_button { mouse_button } {}
-    };
-
-    class JAGE_API MouseButtonPressedEvent : public MouseButtonEvent
-    {
-    public:
-        MouseButtonPressedEvent(int mouse_button) : MouseButtonEvent{ mouse_button } {}
-
-        std::string_view to_string() const override
-        {
-            std::stringstream ss;
-            ss << name() << "Event: " << m_mouse_button;
-            return ss.str();
-        }
-
-        EVENT_CLASS_TYPE(MouseButtonPressed)
-    };
-
-    class JAGE_API MouseButtonReleasedEvent : public MouseButtonEvent
-    {
-    public:
-        MouseButtonReleasedEvent(int mouse_button) : MouseButtonEvent { mouse_button } {}
-
-        std::string_view to_string() const override
-        {
-            std::stringstream ss;
-            ss << name() << "Event: " << m_mouse_button;
-            return ss.str();
-        }
-
-        EVENT_CLASS_TYPE(MouseButtonReleased)
     };
 }
 /**
@@ -585,11 +603,20 @@ namespace JAGE
 
         virtual void OnRender() = 0;
 
-        virtual void OnEvent(const Event& e) = 0;
+        void OnEvent(const Event& e)
+        {
+            // APP_MSG_DEBUG("OnEvent CALLED AT " + m_name + ": " + std::string{ e.to_string() });
+            EventDispatcher dispatcher { e };
+            dispatcher.dispatch<MouseMovedEvent>([this](const MouseMovedEvent& e) -> bool { return OnMouseMovedEvent(e); });
+            dispatcher.dispatch<MouseButtonEvent>([this](const MouseButtonEvent& e) -> bool { return OnMouseButtonEvent(e); });
+        }
         
         inline std::string_view name() const { return m_name; }
     protected:
         std::string m_name;
+
+        virtual bool OnMouseButtonEvent(const MouseButtonEvent& e) { return false; }
+        virtual bool OnMouseMovedEvent(const MouseMovedEvent& e) { return false; }
     };
 
     class JAGE_API LayerStack

@@ -66,6 +66,12 @@ namespace JAGE
             data.callback(event);
         });
 
+        // TODO: IMPLEMENT THIS
+        glfwSetWindowFocusCallback(m_handle, [](GLFWwindow* window, int focused) -> void
+        {
+
+        });
+
         glfwSetWindowSizeCallback(m_handle, [](GLFWwindow* window, int width, int height) -> void
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -81,56 +87,34 @@ namespace JAGE
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-            switch(action)
+            int jage_action;
+            switch (action)
             {
-                case GLFW_PRESS:
-                {
-                    KeyPressedEvent event { key, false };
-
-                    data.callback(event);
-                }
-                break;
-                
-                case GLFW_RELEASE:
-                {
-                    KeyReleasedEvent event { key };
-
-                    data.callback(event);
-                }
-                break;
-                
-                case GLFW_REPEAT:
-                {
-                    KeyPressedEvent event { key, true };
-
-                    data.callback(event);
-                }
-                break;
+                case GLFW_RELEASE: jage_action = JAGE_KEY_RELEASE; break;
+                case GLFW_PRESS: jage_action = JAGE_KEY_PRESS; break;
+                case GLFW_REPEAT: jage_action = JAGE_KEY_REPEAT; break;
             }
+
+            KeyEvent event { key, scancode, jage_action, mods };
+
+            data.callback(event);
         });
 
         glfwSetMouseButtonCallback(m_handle, [](GLFWwindow* window, int button, int action, int mods) -> void
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-            switch(action)
+            int jage_action;
+            switch (action)
             {
-                case GLFW_PRESS:
-                {
-                    MouseButtonPressedEvent event { button };
-
-                    data.callback(event);
-                }
-                break;
-
-                case GLFW_RELEASE:
-                {
-                    MouseButtonReleasedEvent event { button };
-
-                    data.callback(event);
-                }
-                break;
+                case GLFW_RELEASE: jage_action = JAGE_KEY_RELEASE; break;
+                case GLFW_PRESS: jage_action = JAGE_KEY_PRESS; break;
+                case GLFW_REPEAT: jage_action = JAGE_KEY_REPEAT; break;
             }
+
+            MouseButtonEvent event { button, jage_action, mods };
+
+            data.callback(event);
         });
 
         glfwSetCursorPosCallback(m_handle, [](GLFWwindow* window, double xpos, double ypos) -> void

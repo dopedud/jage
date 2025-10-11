@@ -4,7 +4,7 @@
 
 namespace JAGE
 {
-    class JAGE_API ImguiLayer : public Layer
+    class JAGE_API ImguiLayer final : public Layer
     {
     public:
         ImguiLayer(Window* window);
@@ -13,9 +13,10 @@ namespace JAGE
         void OnDetach() override;
 
         void OnRender() override;
-
-        void OnEvent(const Event& e) override;
     private:
         Window* window;
+
+        bool OnMouseButtonEvent(const MouseButtonEvent& e) override;
+        bool OnMouseMovedEvent(const MouseMovedEvent& e) override;
     };
 }

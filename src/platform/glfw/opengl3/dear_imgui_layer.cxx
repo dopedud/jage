@@ -28,7 +28,7 @@ namespace JAGE
 
         ImGui::StyleColorsDark();
 
-        bool imgui_glfw_success { ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window->handle()), true) };
+        bool imgui_glfw_success { ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window->handle()), false) };
         bool imgui_opengl3_success { ImGui_ImplOpenGL3_Init("#version 460") };
 
         JAGE_ASSERT(imgui_glfw_success, "IMGUI failed to load with GLFW backend.")
@@ -57,8 +57,17 @@ namespace JAGE
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
     
-    void ImguiLayer::OnEvent(const Event& e)
+    bool ImguiLayer::OnMouseButtonEvent(const MouseButtonEvent& e)
     {
-        JAGE_MSG_INFO("IMGUI Layer: event received - " + std::string{ e.to_string() });
+        ImGui_ImplGlfw_MouseButtonCallback(static_cast<GLFWwindow*>(window->handle()), e.button(), e.action(), e.mods());
+
+        return true;
+    }
+    
+    bool ImguiLayer::OnMouseMovedEvent(const MouseMovedEvent& e)
+    {
+        ImGui_ImplGlfw_CursorPosCallback(static_cast<GLFWwindow*>(window->handle()), e.mouseX(), e.mouseY());
+
+        return true;
     }
 }
