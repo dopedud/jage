@@ -56,18 +56,52 @@ namespace JAGE
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
+
+    void ImguiLayer::OnEvent(const Event& e)
+    {
+        // APP_MSG_DEBUG("OnEvent CALLED AT " + m_name + ": " + std::string{ e.to_string() });
+        EventDispatcher dispatcher { e };
+        dispatcher.dispatch<KeyEvent>([this](const KeyEvent& e) -> bool { return OnKeyEvent(e); });
+        dispatcher.dispatch<CharEvent>([this](const CharEvent& e) -> bool { return OnCharEvent(e); });
+        dispatcher.dispatch<MouseButtonEvent>([this](const MouseButtonEvent& e) -> bool { return OnMouseButtonEvent(e); });
+        dispatcher.dispatch<MouseEnterEvent>([this](const MouseEnterEvent& e) -> bool { return OnMouseEnterEvent(e); });
+        dispatcher.dispatch<MouseMovedEvent>([this](const MouseMovedEvent& e) -> bool { return OnMouseMovedEvent(e); });
+        dispatcher.dispatch<MouseScrolledEvent>([this](const MouseScrolledEvent& e) -> bool { return OnMouseScrolledEvent(e); });
+    }
+
+    bool ImguiLayer::OnKeyEvent(const KeyEvent& e)
+    {
+        ImGui_ImplGlfw_KeyCallback(static_cast<GLFWwindow*>(window->handle()), e.key(), e.scancode(), e.action(), e.mods());
+        return true;
+    }
+
+    bool ImguiLayer::OnCharEvent(const CharEvent& e)
+    {
+        ImGui_ImplGlfw_CharCallback(static_cast<GLFWwindow*>(window->handle()), e.codepoint());
+        return true;
+    }
     
     bool ImguiLayer::OnMouseButtonEvent(const MouseButtonEvent& e)
     {
         ImGui_ImplGlfw_MouseButtonCallback(static_cast<GLFWwindow*>(window->handle()), e.button(), e.action(), e.mods());
-
+        return true;
+    }
+    
+    bool ImguiLayer::OnMouseEnterEvent(const MouseEnterEvent& e)
+    {
+        ImGui_ImplGlfw_CursorEnterCallback(static_cast<GLFWwindow*>(window->handle()), e.entered());
         return true;
     }
     
     bool ImguiLayer::OnMouseMovedEvent(const MouseMovedEvent& e)
     {
         ImGui_ImplGlfw_CursorPosCallback(static_cast<GLFWwindow*>(window->handle()), e.mouseX(), e.mouseY());
-
+        return true;
+    }
+    
+    bool ImguiLayer::OnMouseScrolledEvent(const MouseScrolledEvent& e)
+    {
+        ImGui_ImplGlfw_ScrollCallback(static_cast<GLFWwindow*>(window->handle()), e.offsetX(), e.offsetY());
         return true;
     }
 }

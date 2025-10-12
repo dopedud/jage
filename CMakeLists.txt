@@ -38,3 +38,4 @@ install(TARGETS
 )
 
 install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY resources/ DESTINATION resources)

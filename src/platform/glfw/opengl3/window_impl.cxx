@@ -69,7 +69,11 @@ namespace JAGE
         // TODO: IMPLEMENT THIS
         glfwSetWindowFocusCallback(m_handle, [](GLFWwindow* window, int focused) -> void
         {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
+            WindowFocusEvent event { focused };
+
+            data.callback(event);
         });
 
         glfwSetWindowSizeCallback(m_handle, [](GLFWwindow* window, int width, int height) -> void
@@ -79,6 +83,15 @@ namespace JAGE
             data.properties.height = height;
 
             WindowResizeEvent event { width, height };
+
+            data.callback(event);
+        });
+
+        glfwSetCharCallback(m_handle, [](GLFWwindow* window, unsigned int codepoint) -> void
+        {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+            CharEvent event { codepoint };
 
             data.callback(event);
         });
@@ -113,6 +126,16 @@ namespace JAGE
             }
 
             MouseButtonEvent event { button, jage_action, mods };
+
+            data.callback(event);
+        });
+
+        // TODO: IMPLEMENT THIS
+        glfwSetCursorEnterCallback(m_handle, [](GLFWwindow* window, int entered) -> void
+        {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+            MouseEnterEvent event { entered };
 
             data.callback(event);
         });

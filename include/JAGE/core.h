@@ -226,8 +226,8 @@ namespace JAGE
         None = 0,
         WindowClose, WindowResize, WindowFocus, WindowMoved,
         AppTick, AppUpdate, AppRender,
-        Key,
-        MouseButton, MouseMoved, MouseScrolled
+        Key, Char,
+        MouseButton, MouseEnter, MouseMoved, MouseScrolled
     };   
 
     enum class EventCategory : int
@@ -352,7 +352,7 @@ namespace JAGE
         std::string_view to_string() const override
         {
             std::stringstream ss;
-            ss << name() << "Event: " << (m_focus ? "window focused" : "window unfocused");
+            ss << name() << "Event: " << (m_focus ? "window focused." : "window unfocused.");
             return ss.str();
         }
 
@@ -389,7 +389,7 @@ namespace JAGE
  */
 
 /**
- * KEY EVENT DEFINITIONS
+ * KEY/CHAR EVENT DEFINITIONS
  */
 namespace JAGE
 {
@@ -428,14 +428,34 @@ namespace JAGE
         EVENT_CLASS_TYPE(Key)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
     private:
-        const int m_key {};
-        const int m_scancode {};
-        const int m_action {};
-        const int m_mods {};
+        const int m_key;
+        const int m_scancode;
+        const int m_action;
+        const int m_mods;
+    };
+
+    class JAGE_API CharEvent : public Event
+    {
+    public:
+        CharEvent(unsigned int codepoint) : m_codepoint { codepoint } {}
+
+        unsigned int codepoint() const { return m_codepoint; }
+
+        std::string_view to_string() const override
+        {
+            std::stringstream ss;
+            ss << name() << "Event: " << m_codepoint;
+            return ss.str();
+        }
+
+        EVENT_CLASS_TYPE(Char)
+        EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
+    private:
+        const unsigned int m_codepoint;
     };
 }
 /**
- * END KEY EVENT DEFINITIONS
+ * END KEY/CHAR EVENT DEFINITIONS
  */
 
 /**
@@ -481,6 +501,26 @@ namespace JAGE
         const int m_mods;
     };
 
+    class JAGE_API MouseEnterEvent : public Event
+    {
+    public:
+        MouseEnterEvent(int entered) : m_entered { entered } {}
+
+        int entered() const { return m_entered; }
+
+        std::string_view to_string() const override
+        {
+            std::stringstream ss;
+            ss << name() << "Event: " << (m_entered ? "mouse entered." : "mouse exited."); 
+            return ss.str();
+        }
+        
+        EVENT_CLASS_TYPE(MouseEnter)
+        EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
+    private:
+        const int m_entered;
+    };
+
     class JAGE_API MouseMovedEvent : public Event
     {
     public:
@@ -504,8 +544,6 @@ namespace JAGE
 
     class JAGE_API MouseScrolledEvent : public Event
     {
-    private:
-        const float m_offsetX, m_offsetY;
     public:
         MouseScrolledEvent(float offsetX, float offsetY) : m_offsetX { offsetX }, m_offsetY { offsetY } {}
 
@@ -521,6 +559,8 @@ namespace JAGE
 
         EVENT_CLASS_TYPE(MouseScrolled)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
+    private:
+        const float m_offsetX, m_offsetY;
     };
 }
 /**
@@ -603,20 +643,11 @@ namespace JAGE
 
         virtual void OnRender() = 0;
 
-        void OnEvent(const Event& e)
-        {
-            // APP_MSG_DEBUG("OnEvent CALLED AT " + m_name + ": " + std::string{ e.to_string() });
-            EventDispatcher dispatcher { e };
-            dispatcher.dispatch<MouseMovedEvent>([this](const MouseMovedEvent& e) -> bool { return OnMouseMovedEvent(e); });
-            dispatcher.dispatch<MouseButtonEvent>([this](const MouseButtonEvent& e) -> bool { return OnMouseButtonEvent(e); });
-        }
+        virtual void OnEvent(const Event& e) = 0;
         
-        inline std::string_view name() const { return m_name; }
+        std::string_view name() const { return m_name; }
     protected:
         std::string m_name;
-
-        virtual bool OnMouseButtonEvent(const MouseButtonEvent& e) { return false; }
-        virtual bool OnMouseMovedEvent(const MouseMovedEvent& e) { return false; }
     };
 
     class JAGE_API LayerStack

@@ -13,10 +13,16 @@ namespace JAGE
         void OnDetach() override;
 
         void OnRender() override;
+        
+        void OnEvent(const Event& e) override;
     private:
         Window* window;
 
-        bool OnMouseButtonEvent(const MouseButtonEvent& e) override;
-        bool OnMouseMovedEvent(const MouseMovedEvent& e) override;
+        bool OnKeyEvent(const KeyEvent& e);
+        bool OnCharEvent(const CharEvent& e);
+        bool OnMouseButtonEvent(const MouseButtonEvent& e);
+        bool OnMouseEnterEvent(const MouseEnterEvent& e);
+        bool OnMouseMovedEvent(const MouseMovedEvent& e);
+        bool OnMouseScrolledEvent(const MouseScrolledEvent& e);
     };
 }
