@@ -132,9 +132,12 @@
 /**
  * MACRO FOR INPUT DEFINITIONS
  */
-#define JAGE_KEY_RELEASE 0
-#define JAGE_KEY_PRESS 1
-#define JAGE_KEY_REPEAT 2
+#define JAGE_KEY_STATE_RELEASE 0
+#define JAGE_KEY_STATE_PRESS 1
+#define JAGE_KEY_STATE_REPEAT 2
+/**
+ * END MACRO FOR INPUT DEFINITIONS
+ */
 
 /**
  * END MACRO DEFINITIONS
@@ -343,44 +346,20 @@ namespace JAGE
     class JAGE_API WindowFocusEvent : public Event
     {
     private:
-        const bool m_focus;
+        const bool m_focused;
     public:
-        WindowFocusEvent(bool focus) : m_focus { focus } {}
+        WindowFocusEvent(bool focused) : m_focused { focused } {}
 
-        bool focus() const { return m_focus; }
+        bool focused() const { return m_focused; }
 
         std::string_view to_string() const override
         {
             std::stringstream ss;
-            ss << name() << "Event: " << (m_focus ? "window focused." : "window unfocused.");
+            ss << name() << "Event: " << (m_focused ? "window focused." : "window unfocused.");
             return ss.str();
         }
 
         EVENT_CLASS_TYPE(WindowFocus)
-        EVENT_CLASS_CATEGORY(EventCategory::Application)
-    };
-
-    class JAGE_API AppTickEvent : public Event
-    {
-        AppTickEvent() {}
-
-        EVENT_CLASS_TYPE(AppTick)
-        EVENT_CLASS_CATEGORY(EventCategory::Application)
-    };
-
-    class JAGE_API AppUpdateEvent : public Event
-    {
-        AppUpdateEvent() {}
-
-        EVENT_CLASS_TYPE(AppUpdate)
-        EVENT_CLASS_CATEGORY(EventCategory::Application)
-    };
-
-    class JAGE_API AppRenderEvent : public Event
-    {
-        AppRenderEvent() {}
-
-        EVENT_CLASS_TYPE(AppRender)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
     };
 }
@@ -416,9 +395,9 @@ namespace JAGE
 
             switch(m_action)
             {
-                case JAGE_KEY_PRESS: ss << "PRESSED, "; break;
-                case JAGE_KEY_RELEASE: ss << "RELEASED, "; break;
-                case JAGE_KEY_REPEAT: ss << "REPEATED, "; break;
+                case JAGE_KEY_STATE_PRESS: ss << "PRESSED, "; break;
+                case JAGE_KEY_STATE_RELEASE: ss << "RELEASED, "; break;
+                case JAGE_KEY_STATE_REPEAT: ss << "REPEATED, "; break;
             }
 
             ss << m_mods;
@@ -484,9 +463,9 @@ namespace JAGE
 
             switch(m_action)
             {
-                case JAGE_KEY_PRESS: ss << "PRESSED, "; break;
-                case JAGE_KEY_RELEASE: ss << "RELEASED, "; break;
-                case JAGE_KEY_REPEAT: ss << "REPEATED, "; break;
+                case JAGE_KEY_STATE_PRESS: ss << "PRESSED, "; break;
+                case JAGE_KEY_STATE_RELEASE: ss << "RELEASED, "; break;
+                case JAGE_KEY_STATE_REPEAT: ss << "REPEATED, "; break;
             }
 
             ss << m_mods;
@@ -568,67 +547,7 @@ namespace JAGE
  */
 
 /**
- * WINDOW DEFINITIONS
- */
-namespace JAGE
-{
-    using EventCallbackFn = std::function<void(const Event&)>;
-
-    struct WindowProperties
-    {
-        std::string title;
-        unsigned int width, height;
-        bool vsync;
-
-        WindowProperties(
-            const std::string& title = "JAGE Engine",
-            unsigned int width = 1280,
-            unsigned int height = 720,
-            bool vsync = false
-        )
-        : title { title }
-        , width { width }
-        , height { height }
-        , vsync { vsync }
-        {}
-    };        
-
-    class JAGE_API Window
-    {
-    public:
-        Window(const WindowProperties& properties = WindowProperties{});
-        ~Window();
-
-        unsigned int width() const;
-        unsigned int height() const;
-
-        void OnPollEvents();
-        void OnClear();
-        void OnRender();
-
-        void set_eventcallback(const EventCallbackFn& callback);
-
-        void set_vsync(bool enabled);
-        bool vsync() const;
-
-        /**
-         * @fn handle()
-         * @brief A function to expose backend implementation of a window.
-         * 
-         * This should be used only if you know what you're doing.
-         */
-        void* handle();
-    private:
-        class Window_Impl;
-        std::unique_ptr<Window_Impl> pImpl;
-    };
-}
-/**
- * END WINDOW DEFINITIONS
- */
-
-/**
- * LAYER AND LAYERSTACK DEFINITIONS
+ * WINDOW AND LAYERS DEFINITIONS
  */
 namespace JAGE
 {
@@ -650,28 +569,89 @@ namespace JAGE
         std::string m_name;
     };
 
-    class JAGE_API LayerStack
+    using EventCallbackFn = std::function<void(const Event&)>;
+
+    struct WindowProperties
+    {
+        std::string title;
+        unsigned int width, height;
+        bool vsync;
+
+        WindowProperties(
+            const std::string& title = "JAGE Engine",
+            unsigned int width = 1280,
+            unsigned int height = 720,
+            bool vsync = false
+        )
+        : title { title }
+        , width { width }
+        , height { height }
+        , vsync { vsync }
+        {}
+    };
+
+    class JAGE_API Window
     {
     public:
-        LayerStack();
-        ~LayerStack();
+        static std::unique_ptr<Window> create(const WindowProperties& properties = WindowProperties{});
+
+        virtual ~Window() = default;
+
+        unsigned int width() const { return data.properties.width; }
+        unsigned int height() const { return data.properties.height; }
+
+        virtual void OnClear() = 0;
+        virtual void OnPollEvents() = 0;
+        virtual void OnRender() = 0;
+
+        void set_eventcallback(const EventCallbackFn& callback) { data.callback = callback; }
+
+        virtual void set_vsync(bool enabled) = 0;
+        bool vsync() const { return data.properties.vsync; }
+
+        /**
+         * @fn handle()
+         * @brief A function to expose backend implementation of a window.
+         * 
+         * This should be used only if you know what you're doing.
+         */
+        virtual void* handle() = 0;
 
         void PushLayer(Layer* layer);
         void PushOverlay(Layer* overlay);
         void PopLayer(Layer* layer);
         void PopOverlay(Layer* overlay);
 
-        void OnRender();
-
         void OnEvent(const Event& e);
 
-        std::vector<Layer*>::iterator begin() { return layers.begin(); }
-        std::vector<Layer*>::iterator end() { return layers.end(); }
-    private:
+        std::vector<Layer*>::iterator layers_begin() { return layers.begin(); }
+        std::vector<Layer*>::iterator layers_end() { return layers.end(); }
+    protected:
         std::vector<Layer*> layers {};
         std::vector<Layer*>::iterator layer_insert;
+
+        struct WindowData
+        {
+            WindowProperties properties;
+            EventCallbackFn callback;
+            EventCallbackFn OnEvent;
+        };
+
+        WindowData data;
     };
 }
 /**
- * END LAYER AND LAYERSTACK DEFINITIONS
+ * END WINDOW AND LAYERS DEFINITIONS
  */
+
+ /**
+  * INPUT DEFINITIONS
+  */
+namespace JAGE
+{
+    class JAGE_API Input
+    {
+    public:
+        static bool IsKeyPressed(int keycode);
+    };
+}

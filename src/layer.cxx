@@ -12,12 +12,8 @@ namespace JAGE
         JAGE_MSG_TRACE("Initialised a layer with name: " + m_name);
     }
 
-    LayerStack::LayerStack()
+    LayerStack::LayerStack(Window* window) : window { window }, layer_insert { layers.begin() }
     {
-        JAGE_MSG_TRACE("Initialising LayerStack.");
-
-        layer_insert = layers.begin();
-
         JAGE_MSG_TRACE("Initialised LayerStack.");
     }
 

@@ -59,14 +59,20 @@ namespace JAGE
 
     void ImguiLayer::OnEvent(const Event& e)
     {
-        // APP_MSG_DEBUG("OnEvent CALLED AT " + m_name + ": " + std::string{ e.to_string() });
         EventDispatcher dispatcher { e };
+        dispatcher.dispatch<WindowFocusEvent>([this](const WindowFocusEvent& e) -> bool { return OnWindowFocusEvent(e); });
         dispatcher.dispatch<KeyEvent>([this](const KeyEvent& e) -> bool { return OnKeyEvent(e); });
         dispatcher.dispatch<CharEvent>([this](const CharEvent& e) -> bool { return OnCharEvent(e); });
         dispatcher.dispatch<MouseButtonEvent>([this](const MouseButtonEvent& e) -> bool { return OnMouseButtonEvent(e); });
         dispatcher.dispatch<MouseEnterEvent>([this](const MouseEnterEvent& e) -> bool { return OnMouseEnterEvent(e); });
         dispatcher.dispatch<MouseMovedEvent>([this](const MouseMovedEvent& e) -> bool { return OnMouseMovedEvent(e); });
         dispatcher.dispatch<MouseScrolledEvent>([this](const MouseScrolledEvent& e) -> bool { return OnMouseScrolledEvent(e); });
+    }
+
+    bool ImguiLayer::OnWindowFocusEvent(const WindowFocusEvent& e)
+    {
+        ImGui_ImplGlfw_WindowFocusCallback(static_cast<GLFWwindow*>(window->handle()), e.focused());        // Since 1.84
+        return true;
     }
 
     bool ImguiLayer::OnKeyEvent(const KeyEvent& e)

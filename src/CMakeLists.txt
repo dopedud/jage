@@ -6,10 +6,8 @@ set(SRC
 
     "log.cxx"
 
-    layer.cxx
-
     window.cxx
-    platform/glfw/opengl3/window_impl.cxx
+    platform/glfw/input.cxx
     platform/glfw/opengl3/dear_imgui_layer.cxx
 )
 
