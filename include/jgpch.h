@@ -4,9 +4,11 @@
 #include <memory>
 #include <utility>
 #include <functional>
-#include <cstdint>
 #include <chrono>
 #include <thread>
+#include <stdexcept>
+#include <cstdint>
+#include <csignal>
 
 #include <string>
 #include <string_view>

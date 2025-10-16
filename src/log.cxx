@@ -1,10 +1,20 @@
-#include "JAGE/core.h"
 #include "log.h"
 
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 namespace JAGE
 {
+    void LogInit()
+    {
+        spdlog::set_pattern("%^[%Y/%m/%d | %T][%n][%L] :- %v%$");
+
+        AppLogger::Init(spdlog::level::trace);
+        EngineLogger::Init(spdlog::level::trace);
+
+        JAGE_MSG_TRACE("Initialised logger for engine.");
+        APP_MSG_TRACE("Initialised logger for application.");
+    }
+
     void AppLogger::Init(spdlog::level::level_enum app_level)
     {
         logger = spdlog::stdout_color_mt("APP");

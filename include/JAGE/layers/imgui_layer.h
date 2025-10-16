@@ -16,8 +16,6 @@ namespace JAGE
         
         void OnEvent(const Event& e) override;
     private:
-        Window* window;
-
         bool OnWindowFocusEvent(const WindowFocusEvent& e);
         bool OnKeyEvent(const KeyEvent& e);
         bool OnCharEvent(const CharEvent& e);

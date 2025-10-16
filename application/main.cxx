@@ -5,13 +5,15 @@ using namespace JAGE;
 
 int main(int argc, char** argv)
 {
-    JAGE::Init(argc, argv);
+    LogInit();
 
     bool running { true };
 
     APP_MSG_INFO("Creating a window.");
     std::unique_ptr<Window> window { Window::create() };
     window->PushOverlay(new ImguiLayer{ window.get() });
+
+    Input::SetActiveWindow(window.get());
 
     std::function<bool(const WindowCloseEvent&)> OnWindowClose {
         [&running](const WindowCloseEvent& e) -> bool
@@ -34,6 +36,8 @@ int main(int argc, char** argv)
         window->OnPollEvents();
         window->OnRender();
     }
+
+    APP_MSG_INFO("Exiting application.");
 
     return 0;
 }

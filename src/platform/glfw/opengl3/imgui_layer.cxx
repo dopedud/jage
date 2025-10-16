@@ -1,4 +1,5 @@
 #include "JAGE/layers/imgui_layer.h"
+#include "platform/input.h"
 #include "log.h"
 
 #define GLFW_INCLUDE_NONE
@@ -10,7 +11,12 @@
 
 namespace JAGE
 {
-    ImguiLayer::ImguiLayer(Window* window) : Layer("IMGUI Layer"), window { window } {}
+    static GLFWwindow* glfw_handle;
+
+    ImguiLayer::ImguiLayer(Window* window) : Layer("IMGUI Layer")
+    {
+        glfw_handle = static_cast<GLFWwindow*>(window->handle());
+    }
 
     void ImguiLayer::OnAttach()
     {
@@ -28,7 +34,7 @@ namespace JAGE
 
         ImGui::StyleColorsDark();
 
-        bool imgui_glfw_success { ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window->handle()), false) };
+        bool imgui_glfw_success { ImGui_ImplGlfw_InitForOpenGL(glfw_handle, false) };
         bool imgui_opengl3_success { ImGui_ImplOpenGL3_Init("#version 460") };
 
         JAGE_ASSERT(imgui_glfw_success, "IMGUI failed to load with GLFW backend.")
@@ -71,43 +77,43 @@ namespace JAGE
 
     bool ImguiLayer::OnWindowFocusEvent(const WindowFocusEvent& e)
     {
-        ImGui_ImplGlfw_WindowFocusCallback(static_cast<GLFWwindow*>(window->handle()), e.focused());        // Since 1.84
+        ImGui_ImplGlfw_WindowFocusCallback(glfw_handle, e.focused());
         return true;
     }
 
     bool ImguiLayer::OnKeyEvent(const KeyEvent& e)
     {
-        ImGui_ImplGlfw_KeyCallback(static_cast<GLFWwindow*>(window->handle()), e.key(), e.scancode(), e.action(), e.mods());
+        ImGui_ImplGlfw_KeyCallback(glfw_handle, Input::ToGLFWKey(e.key()), e.scancode(), Input::ToGLFWAction(e.action()), Input::ToGLFWMods(e.mods()));
         return true;
     }
 
     bool ImguiLayer::OnCharEvent(const CharEvent& e)
     {
-        ImGui_ImplGlfw_CharCallback(static_cast<GLFWwindow*>(window->handle()), e.codepoint());
+        ImGui_ImplGlfw_CharCallback(glfw_handle, e.codepoint());
         return true;
     }
     
     bool ImguiLayer::OnMouseButtonEvent(const MouseButtonEvent& e)
     {
-        ImGui_ImplGlfw_MouseButtonCallback(static_cast<GLFWwindow*>(window->handle()), e.button(), e.action(), e.mods());
+        ImGui_ImplGlfw_MouseButtonCallback(glfw_handle, Input::ToGLFWMouseButton(e.button()), Input::ToGLFWAction(e.action()), Input::ToGLFWMods(e.mods()));
         return true;
     }
     
     bool ImguiLayer::OnMouseEnterEvent(const MouseEnterEvent& e)
     {
-        ImGui_ImplGlfw_CursorEnterCallback(static_cast<GLFWwindow*>(window->handle()), e.entered());
+        ImGui_ImplGlfw_CursorEnterCallback(glfw_handle, e.entered());
         return true;
     }
     
     bool ImguiLayer::OnMouseMovedEvent(const MouseMovedEvent& e)
     {
-        ImGui_ImplGlfw_CursorPosCallback(static_cast<GLFWwindow*>(window->handle()), e.mouseX(), e.mouseY());
+        ImGui_ImplGlfw_CursorPosCallback(glfw_handle, e.mouseX(), e.mouseY());
         return true;
     }
     
     bool ImguiLayer::OnMouseScrolledEvent(const MouseScrolledEvent& e)
     {
-        ImGui_ImplGlfw_ScrollCallback(static_cast<GLFWwindow*>(window->handle()), e.offsetX(), e.offsetY());
+        ImGui_ImplGlfw_ScrollCallback(glfw_handle, e.offsetX(), e.offsetY());
         return true;
     }
 }

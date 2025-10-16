@@ -1,28 +1,8 @@
 #pragma once
 
-#include "jgpch.h"
 #include "JAGE/core.h"
 
 #include "spdlog/spdlog.h"
-
-#define JAGE_MSG_TRACE(MSG) JAGE::EngineLogger::Trace(MSG)
-#define JAGE_MSG_DEBUG(MSG) JAGE::EngineLogger::Debug(MSG)
-#define JAGE_MSG_INFO(MSG) JAGE::EngineLogger::Info(MSG)
-#define JAGE_MSG_WARN(MSG) JAGE::EngineLogger::Warn(MSG)
-#define JAGE_MSG_ERROR(MSG) JAGE::EngineLogger::Error(MSG)
-
-#define JAGE_LOG_TRACE(LOG, ...) JAGE::EngineLogger::Trace(LOG, __VA_ARGS__)
-#define JAGE_LOG_DEBUG(LOG, ...) JAGE::EngineLogger::Debug(LOG, __VA_ARGS__)
-#define JAGE_LOG_INFO(LOG, ...) JAGE::EngineLogger::Info(LOG, __VA_ARGS__)
-#define JAGE_LOG_WARN(LOG, ...) JAGE::EngineLogger::Warn(LOG, __VA_ARGS__)
-#define JAGE_LOG_ERROR(LOG, ...) JAGE::EngineLogger::Error(LOG, __VA_ARGS__)
-
-#ifdef JAGE_ENABLE_ASSERTS
-#   define JAGE_ASSERT(x, message) \
-    if (!(x)) { JAGE_MSG_ERROR("Assertion failed: " + std::string{ message }); DEBUG_BREAK; }
-#else
-#   define JAGE_ASSERT(x, message)
-#endif
 
 namespace JAGE
 {
@@ -39,7 +19,7 @@ namespace JAGE
     class EngineLogger
     {
     private:
-        inline static std::shared_ptr<spdlog::logger> logger = nullptr;
+        inline static std::shared_ptr<spdlog::logger> logger { nullptr };
     public:
         static void Init(spdlog::level::level_enum engine_level);
 
@@ -65,4 +45,23 @@ namespace JAGE
         inline static void Error(std::string_view log, Args &&... args)
         { logger->error(log, std::forward<Args>(args)...); }
     };
+
+    #define JAGE_MSG_TRACE(MSG) JAGE::EngineLogger::Trace(MSG)
+    #define JAGE_MSG_DEBUG(MSG) JAGE::EngineLogger::Debug(MSG)
+    #define JAGE_MSG_INFO(MSG) JAGE::EngineLogger::Info(MSG)
+    #define JAGE_MSG_WARN(MSG) JAGE::EngineLogger::Warn(MSG)
+    #define JAGE_MSG_ERROR(MSG) JAGE::EngineLogger::Error(MSG)
+
+    #define JAGE_LOG_TRACE(LOG, ...) JAGE::EngineLogger::Trace(LOG, __VA_ARGS__)
+    #define JAGE_LOG_DEBUG(LOG, ...) JAGE::EngineLogger::Debug(LOG, __VA_ARGS__)
+    #define JAGE_LOG_INFO(LOG, ...) JAGE::EngineLogger::Info(LOG, __VA_ARGS__)
+    #define JAGE_LOG_WARN(LOG, ...) JAGE::EngineLogger::Warn(LOG, __VA_ARGS__)
+    #define JAGE_LOG_ERROR(LOG, ...) JAGE::EngineLogger::Error(LOG, __VA_ARGS__)
+
+    #ifdef JAGE_ENABLE_ASSERTS
+    #   define JAGE_ASSERT(x, message) \
+        if (!(x)) { JAGE_MSG_ERROR("Assertion failed: " + std::string{ message }); DEBUG_BREAK; }
+    #else
+    #   define JAGE_ASSERT(x, message)
+    #endif
 }

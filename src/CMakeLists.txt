@@ -2,13 +2,13 @@ set(ENGINE_NAME JAGE CACHE STRING "" FORCE)
 
 set(SRC
     jgpch.cxx
-    init.cxx
-
     "log.cxx"
+    event.cxx
+    "input.cxx"
 
-    window.cxx
     platform/glfw/input.cxx
-    platform/glfw/opengl3/dear_imgui_layer.cxx
+    platform/glfw/opengl3/window.cxx
+    platform/glfw/opengl3/imgui_layer.cxx
 )
 
 set(SRC_FILES)

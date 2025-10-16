@@ -1,4 +1,4 @@
-#include "window.h"
+#include "platform/glfw/window.h"
 
 #include "log.h"
 
@@ -25,7 +25,7 @@ namespace JAGE
             JAGE_LOG_ERROR("GLFW error ({}): {}", error_code, desc);
         });
 
-        static bool s_GLFW_initialised = false;
+        static bool s_GLFW_initialised { false };
 
         if (!s_GLFW_initialised)
         {
@@ -93,6 +93,16 @@ namespace JAGE
             data.OnEvent(event);
         });
 
+        glfwSetKeyCallback(m_handle, [](GLFWwindow* window, int key, int scancode, int action, int mods) -> void
+        {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+            KeyEvent event { Input::FromGLFWKey(key), scancode, Input::FromGLFWAction(action), Input::FromGLFWMods(mods) };
+
+            data.callback(event);
+            data.OnEvent(event);
+        });
+
         glfwSetCharCallback(m_handle, [](GLFWwindow* window, unsigned int codepoint) -> void
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -103,37 +113,11 @@ namespace JAGE
             data.OnEvent(event);
         });
 
-        glfwSetKeyCallback(m_handle, [](GLFWwindow* window, int key, int scancode, int action, int mods) -> void
-        {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-            int jage_action;
-            switch (action)
-            {
-                case GLFW_RELEASE: jage_action = JAGE_KEY_STATE_RELEASE; break;
-                case GLFW_PRESS: jage_action = JAGE_KEY_STATE_PRESS; break;
-                case GLFW_REPEAT: jage_action = JAGE_KEY_STATE_REPEAT; break;
-            }
-
-            KeyEvent event { key, scancode, jage_action, mods };
-
-            data.callback(event);
-            data.OnEvent(event);
-        });
-
         glfwSetMouseButtonCallback(m_handle, [](GLFWwindow* window, int button, int action, int mods) -> void
         {
             WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-            int jage_action;
-            switch (action)
-            {
-                case GLFW_RELEASE: jage_action = JAGE_KEY_STATE_RELEASE; break;
-                case GLFW_PRESS: jage_action = JAGE_KEY_STATE_PRESS; break;
-                case GLFW_REPEAT: jage_action = JAGE_KEY_STATE_REPEAT; break;
-            }
-
-            MouseButtonEvent event { button, jage_action, mods };
+            MouseButtonEvent event { Input::FromGLFWMouseButton(button), Input::FromGLFWAction(action), Input::FromGLFWMods(mods) };
 
             data.callback(event);
             data.OnEvent(event);
@@ -171,7 +155,7 @@ namespace JAGE
     GLFWWindow::~GLFWWindow()
     {
         for (Layer* layer : layers) delete layer;
-        glfwDestroyWindow(m_handle); 
+        glfwDestroyWindow(m_handle);
     }
 
     void GLFWWindow::OnPollEvents()
@@ -195,8 +179,8 @@ namespace JAGE
 
     void GLFWWindow::set_vsync(bool enabled)
     {
-        if (enabled) glfwSwapInterval(1);
-        else glfwSwapInterval(0);
+        if (enabled) glfwSwapInterval(true);
+        else glfwSwapInterval(false);
 
         data.properties.vsync = enabled;
     }

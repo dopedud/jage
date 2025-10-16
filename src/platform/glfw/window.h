@@ -1,9 +1,6 @@
 #pragma once
 
-#include "JAGE/core.h"
-
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include "platform/input.h"
 
 namespace JAGE
 {
