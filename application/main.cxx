@@ -1,5 +1,5 @@
 #include "JAGE/core.h"
-#include "JAGE/layers/imgui_layer.h"
+#include "JAGE/layers.h"
 
 using namespace JAGE;
 
@@ -11,6 +11,7 @@ int main(int argc, char** argv)
 
     APP_MSG_INFO("Creating a window.");
     std::unique_ptr<Window> window { Window::create() };
+    window->PushLayer(new GameLayer{ window.get() });
     window->PushOverlay(new ImguiLayer{ window.get() });
 
     Input::SetActiveWindow(window.get());

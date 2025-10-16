@@ -110,7 +110,7 @@ namespace JAGE
             CharEvent event { codepoint };
 
             data.callback(event);
-            data.OnEvent(event);
+            // data.OnEvent(event);
         });
 
         glfwSetMouseButtonCallback(m_handle, [](GLFWwindow* window, int button, int action, int mods) -> void

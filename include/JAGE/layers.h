@@ -4,6 +4,20 @@
 
 namespace JAGE
 {
+    class JAGE_API GameLayer final : public Layer
+    {
+    public:
+        GameLayer(Window* window);
+
+        void OnAttach() override;
+        void OnDetach() override;
+
+        void OnRender() override;
+        
+        void OnEvent(const Event& e) override;
+    private:
+    };
+
     class JAGE_API ImguiLayer final : public Layer
     {
     public:

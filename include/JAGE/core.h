@@ -304,7 +304,7 @@ namespace JAGE
 
             F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
 
-            NP1, NP2, NP3, NP4, NP5, NP6, NP7, NP8, NP9, NP0
+            KP1, KP2, KP3, KP4, KP5, KP6, KP7, KP8, KP9, KP0
         };
 
         enum class MouseButton : uint8_t
@@ -323,7 +323,6 @@ namespace JAGE
             SHIFT       = BIT(0),
             CONTROL     = BIT(1),
             ALT         = BIT(2),
-            SUPER       = BIT(3)
         };
 
         int JAGE_API operator&(Modifier lhs, Modifier rhs);
@@ -439,18 +438,20 @@ namespace JAGE
         #define JAGE_KEY_F7 JAGE::Input::KeyCode::F7
         #define JAGE_KEY_F8 JAGE::Input::KeyCode::F8
         #define JAGE_KEY_F9 JAGE::Input::KeyCode::F9
-        #define JAGE_KEY_F0 JAGE::Input::KeyCode::F0
+        #define JAGE_KEY_F10 JAGE::Input::KeyCode::F10
+        #define JAGE_KEY_F11 JAGE::Input::KeyCode::F11
+        #define JAGE_KEY_F12 JAGE::Input::KeyCode::F12
 
-        #define JAGE_KEY_NP1 JAGE::Input::KeyCode::NP1
-        #define JAGE_KEY_NP2 JAGE::Input::KeyCode::NP2
-        #define JAGE_KEY_NP3 JAGE::Input::KeyCode::NP3
-        #define JAGE_KEY_NP4 JAGE::Input::KeyCode::NP4
-        #define JAGE_KEY_NP5 JAGE::Input::KeyCode::NP5
-        #define JAGE_KEY_NP6 JAGE::Input::KeyCode::NP6
-        #define JAGE_KEY_NP7 JAGE::Input::KeyCode::NP7
-        #define JAGE_KEY_NP8 JAGE::Input::KeyCode::NP8
-        #define JAGE_KEY_NP9 JAGE::Input::KeyCode::NP9
-        #define JAGE_KEY_NP0 JAGE::Input::KeyCode::NP0
+        #define JAGE_KEY_KP1 JAGE::Input::KeyCode::KP1
+        #define JAGE_KEY_KP2 JAGE::Input::KeyCode::KP2
+        #define JAGE_KEY_KP3 JAGE::Input::KeyCode::KP3
+        #define JAGE_KEY_KP4 JAGE::Input::KeyCode::KP4
+        #define JAGE_KEY_KP5 JAGE::Input::KeyCode::KP5
+        #define JAGE_KEY_KP6 JAGE::Input::KeyCode::KP6
+        #define JAGE_KEY_KP7 JAGE::Input::KeyCode::KP7
+        #define JAGE_KEY_KP8 JAGE::Input::KeyCode::KP8
+        #define JAGE_KEY_KP9 JAGE::Input::KeyCode::KP9
+        #define JAGE_KEY_KP0 JAGE::Input::KeyCode::KP0
 
         #define JAGE_MOUSE_BUTTON_1             JAGE::Input::MouseButton::_1
         #define JAGE_MOUSE_BUTTON_2             JAGE::Input::MouseButton::_2
@@ -469,7 +470,6 @@ namespace JAGE
         #define JAGE_MOD_SHIFT      JAGE::Input::Modifier::SHIFT
         #define JAGE_MOD_CONTROL    JAGE::Input::Modifier::CONTROL
         #define JAGE_MOD_ALT        JAGE::Input::Modifier::ALT
-        #define JAGE_MOD_SUPER      JAGE::Input::Modifier::SUPER
     };
 }
 /**
@@ -527,7 +527,7 @@ namespace JAGE
         mutable bool m_handled { false };
     };
 
-    inline std::ostream& JAGE_API operator<<(std::ostream& os, const Event& e) { return os << e.to_string(); }
+    inline std::ostream& operator<<(std::ostream& os, const Event& e) { return os << e.to_string(); }
 
     class JAGE_API EventDispatcher
     {
