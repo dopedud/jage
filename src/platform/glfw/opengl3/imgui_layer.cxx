@@ -66,7 +66,7 @@ namespace JAGE
 
     void ImguiLayer::OnEvent(const Event& e)
     {
-        JAGE_MSG_DEBUG("IMGUI Layer | " + std::string{ e.to_string() });
+        // JAGE_MSG_DEBUG("IMGUI Layer | " + std::string{ e.to_string() });
         EventDispatcher dispatcher { e };
         dispatcher.dispatch<WindowFocusEvent>([this](const WindowFocusEvent& e) -> bool { return OnWindowFocusEvent(e); });
         dispatcher.dispatch<KeyEvent>([this](const KeyEvent& e) -> bool { return OnKeyEvent(e); });

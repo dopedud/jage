@@ -46,6 +46,19 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glfw)
 # END FETCH GLFW
 
+# FETCH GLM
+set(GLM_VERSION 1.0.2)
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG ${GLM_VERSION}
+)
+
+set(GLM_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(glm)
+# END FETCH GLM
+
 # FETCH DEAR IMGUI
 set(DEAR_IMGUI_VERSION v1.92.3-docking)
 FetchContent_Declare(

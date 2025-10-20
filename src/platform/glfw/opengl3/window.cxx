@@ -18,8 +18,6 @@ namespace JAGE
         this->data.properties = properties;
         this->data.OnEvent = [this](const Event& e) -> void { OnEvent(e); };
 
-        layer_insert = layers.begin();
-
         glfwSetErrorCallback([](int error_code, const char* desc) -> void
         {
             JAGE_LOG_ERROR("GLFW error ({}): {}", error_code, desc);
@@ -183,69 +181,5 @@ namespace JAGE
         else glfwSwapInterval(false);
 
         data.properties.vsync = enabled;
-    }
-
-    Layer::Layer(std::string_view name) : m_name { name }
-    {
-        JAGE_MSG_TRACE("Initialised a layer with name: " + m_name);
-    }
-
-    void Window::OnEvent(const Event& e)
-    {
-        for (auto it = layers.end(); it != layers.begin();)
-        {
-            if (e.handled()) break;
-            (*(--it))->OnEvent(e);
-        }
-    }
-
-    void Window::PushLayer(Layer* layer)
-    {
-        JAGE_MSG_TRACE("Pushing layer named: " + std::string{ layer->name() });
-        
-        layer_insert = layers.emplace(layer_insert, layer);
-        layer->OnAttach();
-
-        JAGE_MSG_TRACE("Pushed layer named: " + std::string{ layer->name() });
-    }
-
-    void Window::PushOverlay(Layer* overlay)
-    {
-        JAGE_MSG_TRACE("Pushing overlay named: " + std::string{ overlay->name() });
-
-        layers.emplace_back(overlay);
-        overlay->OnAttach();
-        
-        JAGE_MSG_TRACE("Pushed overlay named: " + std::string{ overlay->name() });
-    }
-
-    void Window::PopLayer(Layer* layer)
-    {
-        JAGE_MSG_TRACE("Poping layer named: " + std::string{ layer->name() });
-
-        auto it { std::find(layers.begin(), layers.end(), layer) };
-
-        if (it != layers.end())
-        {
-            layers.erase(it);
-            layer_insert--;
-        }
-
-        layer->OnDetach();
-
-        JAGE_MSG_TRACE("Poped layer named: " + std::string{ layer->name() });
-    }
-
-    void Window::PopOverlay(Layer* overlay)
-    {
-        JAGE_MSG_TRACE("Poping overlay named: " + std::string{ overlay->name() });
-
-        auto it { std::find(layers.begin(), layers.end(), overlay) };
-
-        if (it != layers.end()) layers.erase(it);
-
-        overlay->OnDetach();
-
-        JAGE_MSG_TRACE("Poped overlay named: " + std::string{ overlay->name() });
     }
 }

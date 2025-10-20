@@ -5,6 +5,7 @@ set(SRC
     "log.cxx"
     event.cxx
     "input.cxx"
+    window.cxx
 
     platform/glfw/input.cxx
     platform/glfw/opengl3/window.cxx
@@ -42,6 +43,7 @@ set(PUBLIC_LIBRARIES
 set(PRIVATE_LIBRARIES
     glfw
     glad
+    glm
     dear_imgui
 )
 

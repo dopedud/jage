@@ -17,6 +17,6 @@ namespace JAGE
 
     void GameLayer::OnEvent(const Event& e)
     {
-        JAGE_MSG_DEBUG("Game Layer | " + std::string{ e.to_string() });
+        // JAGE_MSG_DEBUG("Game Layer | " + std::string{ e.to_string() });
     }
 }

@@ -253,7 +253,7 @@ namespace JAGE
         std::vector<Layer*>::iterator layers_end() { return layers.end(); }
     protected:
         std::vector<Layer*> layers {};
-        std::vector<Layer*>::iterator layer_insert;
+        unsigned int layer_insert_index {};
 
         struct WindowData
         {
