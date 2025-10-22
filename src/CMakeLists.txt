@@ -6,19 +6,21 @@ set(SRC
     event.cxx
     "input.cxx"
     window.cxx
+    graphics_context.cxx
 
     platform/glfw/input.cxx
     platform/glfw/opengl3/window.cxx
+    platform/glfw/opengl3/opengl_context.cxx
     platform/glfw/opengl3/game_layer.cxx
     platform/glfw/opengl3/imgui_layer.cxx
 )
 
-set(SRC_FILES)
+set(ENGINE_SOURCES)
 foreach(src ${SRC})
-    list(APPEND SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${src})
+    list(APPEND ENGINE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${src})
 endforeach()
 
-add_library(${ENGINE_NAME} SHARED ${SRC_FILES})
+add_library(${ENGINE_NAME} SHARED ${ENGINE_SOURCES})
 
 target_compile_definitions(${ENGINE_NAME} PRIVATE
     ENGINE_INNAME=${ENGINE_NAME}

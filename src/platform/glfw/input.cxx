@@ -37,6 +37,9 @@ namespace JAGE
 
         // REALLY LONG CONVERSIONS LIST
 
+        DISABLE_WARNING_PUSH
+        DISABLE_WARNING_GCC_CLANG("-Wreturn-type")
+
         int ToGLFWKey(KeyCode key)
         {
             switch (key)
@@ -305,6 +308,8 @@ namespace JAGE
 
             return jage_mods;
         }
+
+        DISABLE_WARNING_POP
 
         // END REALLY LONG CONVERSIONS LIST
     }

@@ -1,8 +1,7 @@
 #include "platform/glfw/window.h"
 
+#include "platform/glfw/opengl3/opengl_context.h"
 #include "log.h"
-
-#include <glad/glad.h>
 
 namespace JAGE
 {
@@ -15,8 +14,8 @@ namespace JAGE
     {
         JAGE_LOG_INFO("Creating a window; backend: OpenGL 4.6, title: \"{}\", dimensions: ({}, {}).", properties.title, properties.width, properties.height);
 
-        this->data.properties = properties;
-        this->data.OnEvent = [this](const Event& e) -> void { OnEvent(e); };
+        data.properties = properties;
+        data.OnEvent = [this](const Event& e) -> void { OnEvent(e); };
 
         glfwSetErrorCallback([](int error_code, const char* desc) -> void
         {
@@ -45,12 +44,10 @@ namespace JAGE
 
         JAGE_ASSERT(m_handle, "Failed to create GLFW window.");
 
-        glfwMakeContextCurrent(m_handle);
+        graphics_context = std::make_unique<OpenGLContext>(this);
+        graphics_context->Init();
+
         glfwSetWindowUserPointer(m_handle, &data);
-
-        int glad_load_success { gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) };
-
-        JAGE_ASSERT(glad_load_success, "Failed to initialise GLAD.");
 
         glfwSwapInterval(data.properties.vsync);
 
@@ -163,16 +160,14 @@ namespace JAGE
 
     void GLFWWindow::OnClear()
     {
-        glClearColor(1, 0, 1, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
+        graphics_context->Clear();
     }
 
     void GLFWWindow::OnRender()
     {
         for (Layer* layer : layers) layer->OnRender();
 
-        glViewport(0, 0, data.properties.width, data.properties.height);
-        glfwSwapBuffers(m_handle);
+        graphics_context->SwapBuffers();
     }
 
     void GLFWWindow::set_vsync(bool enabled)

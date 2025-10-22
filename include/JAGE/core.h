@@ -94,16 +94,16 @@ namespace JAGE
     /**
      * @class AppLogger
      * @brief The AppLogger class used to log game operations.
-     * 
+     *
      * Both JAGE and the game use @c spdlog as its logging backend. This means that the game won't really rely on JAGE
      * to provide logging utilities, but instead rely directly from @c spdlog . Ideally, the opposite should happen
      * (the game relying on JAGE and not having to fuss around with the implementation/backend), though for the case of
      * logging, there's really no reason to switch between different backends as long as it works as intended. 
-     * 
+     *
      * The reason for this tightly-coupled dependency is because @c spdlog uses variadic templates internally to enable
      * variable number and types of objects to log. By defnition, templates should have its implementation exposed. As
      * a consequence, both JAGE and the game should know what @c spdlog is.
-     * 
+     *
      * It is possible to have only JAGE know what logging backend it's using, and let the game use logging from JAGE
      * without knowing what's going on internally by using the @c PImpl (pointer-to-implementation) pattern. However,
      * some sacrifices had to be made for templates and the @c PImpl pattern to work together. Templates must be
@@ -111,7 +111,7 @@ namespace JAGE
      * the whole purpose of templates, which is to allow the flexibility of supporting any type and any number of them.
      * In fact, it is better to just overload the same function with different types and different amount of arguments
      * one wants to support, since the intent is clearer.
-     * 
+     *
      * Templates and the @c PImpl pattern are programming patterns that go against each other. Templates require the
      * implementation to be exposed, while the @c PImpl pattern requires it to be hidden. Templates are chose over the
      * @c PImpl pattern since the flexibility that comes with it is more important.
@@ -123,11 +123,11 @@ namespace JAGE
     public:
         static void Init(spdlog::level::level_enum app_level);
 
-        inline static void Trace(std::string_view msg) { logger->trace(msg); }
-        inline static void Debug(std::string_view msg) { logger->debug(msg); }
-        inline static void Info(std::string_view msg) { logger->info(msg); }
-        inline static void Warn(std::string_view msg) { logger->warn(msg); }
-        inline static void Error(std::string_view msg) { logger->error(msg); }
+        inline static void Trace(std::string_view msg)  { logger->trace(msg); }
+        inline static void Debug(std::string_view msg)  { logger->debug(msg); }
+        inline static void Info(std::string_view msg)   { logger->info(msg); }
+        inline static void Warn(std::string_view msg)   { logger->warn(msg); }
+        inline static void Error(std::string_view msg)  { logger->error(msg); }
 
         template<typename... Args>
         inline static void Trace(std::string_view log, Args &&... args)
@@ -166,6 +166,32 @@ namespace JAGE
 }
 /**
  * END LOGGER DEFINITIONS
+ */
+
+/**
+ * GRAPHICS CONTEXT DEFINITIONS
+ */
+
+namespace JAGE
+{
+    // forward declare Window class to be used by GraphicsContext class
+    class JAGE_API Window;
+
+    class JAGE_API GraphicsContext
+    {
+    public:
+        GraphicsContext(Window* window);
+
+        virtual void Init() = 0;
+        virtual void Clear() = 0;
+        virtual void SwapBuffers() = 0;
+    protected:
+        Window* window;
+    };
+}
+
+/**
+ * END GRAPHICS CONTEXT DEFINITIONS
  */
 
 /**
@@ -252,6 +278,8 @@ namespace JAGE
         std::vector<Layer*>::iterator layers_begin() { return layers.begin(); }
         std::vector<Layer*>::iterator layers_end() { return layers.end(); }
     protected:
+        std::unique_ptr<GraphicsContext> graphics_context;
+
         std::vector<Layer*> layers {};
         unsigned int layer_insert_index {};
 
@@ -336,7 +364,7 @@ namespace JAGE
          * @fn SetActiveWindow
          * @brief Sets the active window to query input from.
          * 
-         * Querying input should only be for a single window at any point in time.
+         * Querying input should only be for a single window at any given moment in time.
          * 
          * @param window The window to query input from. 
          */

@@ -44,6 +44,9 @@ namespace JAGE
             return lhs | rhs_casted;
         }
 
+        DISABLE_WARNING_PUSH
+        DISABLE_WARNING_GCC_CLANG("-Wreturn-type")
+
         std::string_view to_string(KeyCode key)
         {
             switch(key)
@@ -179,6 +182,8 @@ namespace JAGE
 
             return str;
         }
+
+        DISABLE_WARNING_POP
 
         std::ostream& operator<<(std::ostream& os, const KeyCode& key)          { return os << to_string(key); }
         std::ostream& operator<<(std::ostream& os, const Action& action)        { return os << to_string(action); }
