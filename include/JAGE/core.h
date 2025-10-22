@@ -8,7 +8,22 @@
 #include "jgpch.h"
 
 /**
+ * (use CTRL + F or the corresponding finding text tool in your text editor for the sections below)
+ * CODE SECTIONS:
+ * 
+ * - MACRO FOR API EXPORT DEFINITIONS
+ * - MACRO FOR SUPPRESSING WARNINGS IN CODE
+ * - MACRO FOR BREAKPOINT INSTRUCTIONS DEFINITIONS
+ * - MACRO FOR SHIFT-LEFT BIT OPERATION
+ * - LOGGER DEFINITIONS
+ */
+
+/**
+ * 
+ * 
  * MACRO FOR API EXPORT DEFINITIONS
+ * 
+ * 
  */
 #ifdef _WIN32
 #   ifdef JAGE_EXPORT
@@ -21,12 +36,13 @@
 #else
 #   define JAGE_API
 #endif
-/**
- * END MACRO FOR API EXPORT DEFINITIONS
- */
 
 /**
+ * 
+ * 
  * MACRO FOR SUPPRESSING WARNINGS IN CODE
+ * 
+ * 
  */
 #ifdef _MSC_VER
 #   define DISABLE_WARNING_PUSH __pragma(warning(push))
@@ -45,12 +61,13 @@
 #   define DISABLE_WARNING_MSVC(w)
 #   define DISABLE_WARNING_GCC_CLANG(w)
 #endif
-/**
- * END MACRO FOR SUPPRESSING WARNINGS IN CODE
- */
 
 /**
+ * 
+ * 
  * MACRO FOR BREAKPOINT INSTRUCTIONS DEFINITIONS
+ * 
+ * 
  */
 
 /**
@@ -77,13 +94,20 @@
 #endif
 
 /**
- * END MACRO FOR BREAKPOINT INSTRUCTIONS DEFINITIONS
+ * 
+ * 
+ * MACRO FOR SHIFT-LEFT BIT OPERATION
+ * 
+ * 
  */
-
 #define BIT(x) (1 << x)
 
 /**
+ * 
+ * 
  * LOGGER DEFINITIONS
+ * 
+ * 
  */
 #include "spdlog/spdlog.h"
 
@@ -146,9 +170,6 @@ namespace JAGE
         { logger->error(log, std::forward<Args>(args)...); }
     };
 
-    /**
-     * MACRO FOR LOGGING DEFINITIONS
-     */
     #define APP_MSG_TRACE(MSG) JAGE::AppLogger::Trace(MSG)
     #define APP_MSG_DEBUG(MSG) JAGE::AppLogger::Debug(MSG)
     #define APP_MSG_INFO(MSG) JAGE::AppLogger::Info(MSG)
@@ -160,18 +181,15 @@ namespace JAGE
     #define APP_LOG_INFO(LOG, ...) JAGE::AppLogger::Info(LOG, __VA_ARGS__)
     #define APP_LOG_WARN(LOG, ...) JAGE::AppLogger::Warn(LOG, __VA_ARGS__)
     #define APP_LOG_ERROR(LOG, ...) JAGE::AppLogger::Error(LOG, __VA_ARGS__)
-    /**
-     * END MACRO FOR LOGGING DEFINITIONS
-     */
 }
-/**
- * END LOGGER DEFINITIONS
- */
 
 /**
+ * 
+ * 
  * GRAPHICS CONTEXT DEFINITIONS
+ * 
+ * 
  */
-
 namespace JAGE
 {
     // forward declare Window class to be used by GraphicsContext class
@@ -191,11 +209,11 @@ namespace JAGE
 }
 
 /**
- * END GRAPHICS CONTEXT DEFINITIONS
- */
-
-/**
+ * 
+ * 
  * WINDOW AND LAYERS DEFINITIONS
+ * 
+ * 
  */
 namespace JAGE
 {
@@ -293,12 +311,13 @@ namespace JAGE
         WindowData data;
     };
 }
-/**
- * END WINDOW AND LAYERS DEFINITIONS
- */
 
  /**
+  * 
+  * 
   * INPUT DEFINITIONS
+  * 
+  * 
   */
 namespace JAGE
 {
@@ -500,12 +519,13 @@ namespace JAGE
         #define JAGE_MOD_ALT        JAGE::Input::Modifier::ALT
     };
 }
-/**
- * END INPUT DEFINITIONS
- */
 
 /**
+ * 
+ * 
  * CORE EVENT DEFINITIONS
+ * 
+ * 
  */
 namespace JAGE
 {
@@ -557,6 +577,10 @@ namespace JAGE
 
     inline std::ostream& operator<<(std::ostream& os, const Event& e) { return os << e.to_string(); }
 
+    /**
+     * @class EventDispatcher
+     * @brief The @c EventDispatcher class used to dispatch events based on their event type.
+     */
     class JAGE_API EventDispatcher
     {
         template<typename T>
@@ -579,12 +603,13 @@ namespace JAGE
         const Event& event;
     };
 }
-/**
- * END CORE EVENT DEFINITIONS
- */
 
 /**
+ * 
+ * 
  * MACRO FOR EVENTS DEFINITIONS
+ * 
+ * 
  */
 
 /**
@@ -604,11 +629,11 @@ namespace JAGE
     virtual int event_category_flags() const override { return static_cast<int>(category); }
 
 /**
- * END MACRO FOR EVENTS DEFINITIONS
- */
-
-/**
+ * 
+ * 
  * APPLICATION/WINDOW EVENT DEFINITIONS
+ * 
+ * 
  */
 namespace JAGE
 {
@@ -652,12 +677,13 @@ namespace JAGE
         EVENT_CLASS_CATEGORY(EventCategory::Application)
     };
 }
-/**
- * END APPLICATION/WINDOW EVENT DEFINITIONS
- */
 
 /**
+ * 
+ * 
  * KEY/CHAR EVENT DEFINITIONS
+ * 
+ * 
  */
 namespace JAGE
 {
@@ -702,12 +728,13 @@ namespace JAGE
         const unsigned int m_codepoint;
     };
 }
-/**
- * END KEY/CHAR EVENT DEFINITIONS
- */
 
 /**
+ * 
+ * 
  * MOUSE EVENT DEFINITIONS
+ * 
+ * 
  */
 namespace JAGE
 {
@@ -781,6 +808,3 @@ namespace JAGE
         const float m_offsetX, m_offsetY;
     };
 }
-/**
- * END MOUSE EVENT DEFINITIONS
- */
