@@ -10,8 +10,6 @@ namespace JAGE
         GLFWWindow(const WindowProperties& properties = WindowProperties{});
         ~GLFWWindow() override;
 
-        void OnPollEvents() override;
-        void OnClear() override;
         void OnRender() override;
 
         void set_vsync(bool enabled) override;

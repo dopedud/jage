@@ -14,7 +14,5 @@ namespace JAGE
         void Init() override;
         void Clear() override;
         void SwapBuffers() override;
-    private:
-        GLFWwindow* glfw_window;
     };
 }

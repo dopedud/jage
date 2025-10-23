@@ -1,5 +1,5 @@
-set(EXECUTABLE_NAME game CACHE STRING "" FORCE)
+set(GAME_NAME game CACHE STRING "" FORCE)
 
-add_executable(${EXECUTABLE_NAME} main.cxx)
+add_executable(${GAME_NAME} main.cxx)
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${ENGINE_NAME})
+target_link_libraries(${GAME_NAME} PRIVATE ${ENGINE_NAME})

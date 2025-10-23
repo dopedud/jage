@@ -6,17 +6,18 @@
 
 namespace JAGE
 {
-    OpenGLContext::OpenGLContext(Window* window)
-    : GraphicsContext(window)
-    , glfw_window { static_cast<GLFWwindow*>(window->handle()) }
-    {
-    }
+    OpenGLContext::OpenGLContext(Window* window) : GraphicsContext(window) {}
 
     void OpenGLContext::Init()
     {
-        glfwMakeContextCurrent(glfw_window);
+        glViewport(0, 0, window->width(), window->height());
         int glad_load_success { gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) };
         JAGE_ASSERT(glad_load_success, "Failed to initialise GLAD.");
+
+        glfwSetFramebufferSizeCallback(static_cast<GLFWwindow*>(window->handle()), [](GLFWwindow* window, int width, int height) -> void 
+        {
+            glViewport(0, 0, width, height);
+        });
     }
 
     void OpenGLContext::Clear()
@@ -27,7 +28,7 @@ namespace JAGE
 
     void OpenGLContext::SwapBuffers()
     {
-        glViewport(0, 0, window->width(), window->height());
-        glfwSwapBuffers(glfw_window);
+        glfwPollEvents();
+        glfwSwapBuffers(static_cast<GLFWwindow*>(window->handle()));
     }
 }

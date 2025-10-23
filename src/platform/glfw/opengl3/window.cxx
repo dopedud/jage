@@ -37,19 +37,20 @@ namespace JAGE
         }
 
         m_handle = glfwCreateWindow(
-            static_cast<int>(properties.width),
-            static_cast<int>(properties.height),
+            properties.width,
+            properties.height,
             properties.title.c_str(), nullptr, nullptr
         );
 
         JAGE_ASSERT(m_handle, "Failed to create GLFW window.");
 
-        graphics_context = std::make_unique<OpenGLContext>(this);
-        graphics_context->Init();
-
+        glfwMakeContextCurrent(m_handle);
         glfwSetWindowUserPointer(m_handle, &data);
 
         glfwSwapInterval(data.properties.vsync);
+
+        graphics_context = std::make_unique<OpenGLContext>(this);
+        graphics_context->Init();
 
         // BUNCH OF CALLBACK DEFINITIONS
 
@@ -98,15 +99,15 @@ namespace JAGE
             data.OnEvent(event);
         });
 
-        glfwSetCharCallback(m_handle, [](GLFWwindow* window, unsigned int codepoint) -> void
-        {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+        // glfwSetCharCallback(m_handle, [](GLFWwindow* window, unsigned int codepoint) -> void
+        // {
+        //     WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-            CharEvent event { codepoint };
+        //     CharEvent event { codepoint };
 
-            data.callback(event);
-            // data.OnEvent(event);
-        });
+        //     data.callback(event);
+        //     data.OnEvent(event);
+        // });
 
         glfwSetMouseButtonCallback(m_handle, [](GLFWwindow* window, int button, int action, int mods) -> void
         {
@@ -151,20 +152,13 @@ namespace JAGE
     {
         for (Layer* layer : layers) delete layer;
         glfwDestroyWindow(m_handle);
-    }
-
-    void GLFWWindow::OnPollEvents()
-    {
-        glfwPollEvents();
-    }
-
-    void GLFWWindow::OnClear()
-    {
-        graphics_context->Clear();
+        m_handle = nullptr;
     }
 
     void GLFWWindow::OnRender()
     {
+        graphics_context->Clear();
+
         for (Layer* layer : layers) layer->OnRender();
 
         graphics_context->SwapBuffers();

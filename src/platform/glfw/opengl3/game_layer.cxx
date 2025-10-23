@@ -3,17 +3,33 @@
 #include "platform/input.h"
 #include "log.h"
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 namespace JAGE
 {
-    GameLayer::GameLayer(Window* window) : Layer("Game Layer") {}
+    GameLayer::GameLayer(Window* window) : Layer(window, "Game Layer") {}
 
-    void GameLayer::OnAttach() {}
-    void GameLayer::OnDetach() {}
+    void GameLayer::OnAttach()
+    {
+        JAGE_MSG_TRACE("Attaching Game layer to layer stack.");
 
-    void GameLayer::OnRender() {}
+
+
+        JAGE_MSG_TRACE("Attaching IMGUI layer to layer stack.");
+    }
+    void GameLayer::OnDetach()
+    {
+        JAGE_MSG_TRACE("Detaching IMGUI layer to layer stack.");
+
+
+
+        JAGE_MSG_TRACE("Detached IMGUI layer to layer stack.");
+    }
+
+    void GameLayer::OnRender()
+    {
+
+    }
 
     void GameLayer::OnEvent(const Event& e)
     {

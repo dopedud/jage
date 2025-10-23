@@ -24,6 +24,8 @@ include(CustomTargets)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 
+# add_subdirectory(${CMAKE_SOURCE_DIR}/editor)
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/application)
 
 install(TARGETS

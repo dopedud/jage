@@ -33,8 +33,6 @@ int main(int argc, char** argv)
 
     while (running)
     {
-        window->OnClear();
-        window->OnPollEvents();
         window->OnRender();
     }
 

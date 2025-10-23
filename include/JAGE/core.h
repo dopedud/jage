@@ -13,11 +13,12 @@
  * 
  * - MACRO FOR API EXPORT DEFINITIONS
  * - MACRO FOR SUPPRESSING WARNINGS IN CODE
- * - MACRO FOR BREAKPOINT INSTRUCTIONS DEFINITIONS
+ * - MACRO FOR SETTING BREAKPOINTS
  * - MACRO FOR SHIFT-LEFT BIT OPERATION
  * - LOGGER DEFINITIONS
+ * - WINDOW DEFINITIONS
+ * - LAYER DEFINITIONS
  * - GRAPHICS CONTEXT DEFINITIONS
- * - WINDOW AND LAYERS DEFINITIONS
  * - INPUT DEFINITIONS
  * - CORE EVENT DEFINITIONS
  * - MACRO FOR EVENTS DEFINITIONS
@@ -73,7 +74,7 @@
 /**
  * 
  * 
- * MACRO FOR BREAKPOINT INSTRUCTIONS DEFINITIONS
+ * MACRO FOR SETTING BREAKPOINTS
  * 
  * 
  */
@@ -194,32 +195,7 @@ namespace JAGE
 /**
  * 
  * 
- * GRAPHICS CONTEXT DEFINITIONS
- * 
- * 
- */
-namespace JAGE
-{
-    // forward declare Window class to be used by GraphicsContext class
-    class JAGE_API Window;
-
-    class JAGE_API GraphicsContext
-    {
-    public:
-        GraphicsContext(Window* window);
-
-        virtual void Init() = 0;
-        virtual void Clear() = 0;
-        virtual void SwapBuffers() = 0;
-    protected:
-        Window* window;
-    };
-}
-
-/**
- * 
- * 
- * WINDOW AND LAYERS DEFINITIONS
+ * WINDOW DEFINITIONS
  * 
  * 
  */
@@ -228,23 +204,9 @@ namespace JAGE
     // forward declare Event class to be used by Layer class and Window class
     class JAGE_API Event;
 
-    class JAGE_API Layer
-    {
-    public:
-        Layer(std::string_view name = "Unnamed Layer");
-        virtual ~Layer() = default;
-
-        virtual void OnAttach() = 0;
-        virtual void OnDetach() = 0;
-
-        virtual void OnRender() = 0;
-
-        virtual void OnEvent(const Event& e) = 0;
-        
-        std::string_view name() const { return m_name; }
-    protected:
-        std::string m_name;
-    };
+    // forward declare GraphicsContext class and Layer class to be used by Window class
+    class JAGE_API GraphicsContext;
+    class JAGE_API Layer;
 
     struct WindowProperties
     {
@@ -277,8 +239,6 @@ namespace JAGE
         unsigned int width() const { return data.properties.width; }
         unsigned int height() const { return data.properties.height; }
 
-        virtual void OnClear() = 0;
-        virtual void OnPollEvents() = 0;
         virtual void OnRender() = 0;
 
         void set_eventcallback(const EventCallbackFn& callback) { data.callback = callback; }
@@ -317,6 +277,57 @@ namespace JAGE
         };
 
         WindowData data;
+    };
+}
+
+/**
+ * 
+ * 
+ * LAYER DEFINITIONS
+ * 
+ * 
+ */
+namespace JAGE
+{
+    class JAGE_API Layer
+    {
+    public:
+        Layer(Window* window, std::string_view name = "Unnamed Layer");
+        virtual ~Layer() = default;
+
+        virtual void OnAttach() = 0;
+        virtual void OnDetach() = 0;
+
+        virtual void OnRender() = 0;
+
+        virtual void OnEvent(const Event& e) = 0;
+        
+        std::string_view name() const { return m_name; }
+    protected:
+        Window* window;
+        std::string m_name;
+    };
+}
+
+/**
+ * 
+ * 
+ * GRAPHICS CONTEXT DEFINITIONS
+ * 
+ * 
+ */
+namespace JAGE
+{
+    class JAGE_API GraphicsContext
+    {
+    public:
+        GraphicsContext(Window* window);
+
+        virtual void Init() = 0;
+        virtual void Clear() = 0;
+        virtual void SwapBuffers() = 0;
+    protected:
+        Window* window;
     };
 }
 
