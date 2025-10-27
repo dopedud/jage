@@ -301,7 +301,7 @@ namespace JAGE
         virtual void OnRender() = 0;
 
         virtual void OnEvent(const Event& e) = 0;
-        
+
         std::string_view name() const { return m_name; }
     protected:
         Window* window;
@@ -559,7 +559,7 @@ namespace JAGE
         AppTick, AppUpdate, AppRender,
         Key, Char,
         MouseButton, MouseEnter, MouseMoved, MouseScrolled
-    };   
+    };
 
     enum class EventCategory : uint8_t
     {
@@ -788,7 +788,7 @@ namespace JAGE
         int entered() const { return m_entered; }
 
         std::string_view to_string() const override;
-        
+
         EVENT_CLASS_TYPE(MouseEnter)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
     private:
@@ -802,7 +802,7 @@ namespace JAGE
 
         float mouseX() const { return m_mouseX; }
         float mouseY() const { return m_mouseY; }
-        
+
         std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(MouseMoved)
@@ -818,7 +818,7 @@ namespace JAGE
 
         float offsetX() const { return m_offsetX; }
         float offsetY() const { return m_offsetY; }
-        
+
         std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(MouseScrolled)
