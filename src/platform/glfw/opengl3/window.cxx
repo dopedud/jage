@@ -1,18 +1,18 @@
 #include "platform/glfw/window.h"
 
-#include "platform/glfw/opengl3/opengl_context.h"
+#include "platform/glfw/opengl3/opengl_renderer.h"
 #include "log.h"
 
 namespace JAGE
 {
-    std::unique_ptr<Window> Window::create(const WindowProperties& properties)
+    std::unique_ptr<Window> Window::Create(const WindowProperties& properties)
     {
         return std::make_unique<GLFWWindow>(properties);
     }
 
     GLFWWindow::GLFWWindow(const WindowProperties& properties)
     {
-        JAGE_LOG_INFO("Creating a window; backend: OpenGL 4.6, title: \"{}\", dimensions: ({}, {}).", properties.title, properties.width, properties.height);
+        JAGE_LOG_INFO("Creating a window; backend: GLFW, title: \"{}\", dimensions: ({}, {}).", properties.title, properties.width, properties.height);
 
         data.properties = properties;
         data.OnEvent = [this](const Event& e) -> void { OnEvent(e); };

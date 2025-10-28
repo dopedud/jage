@@ -1,4 +1,4 @@
-#include "opengl_context.h"
+#include "opengl_renderer.h"
 
 #include "log.h"
 
@@ -12,6 +12,11 @@ namespace JAGE
     {
         int glad_load_success { gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) };
         JAGE_ASSERT(glad_load_success, "Failed to initialise GLAD.");
+
+        JAGE_MSG_INFO("OpenGL Info:");
+        JAGE_LOG_INFO("    Vendor:      {}", (const char *)glGetString(GL_VENDOR));
+        JAGE_LOG_INFO("    Renderer:    {}", (const char *)glGetString(GL_RENDERER));
+        JAGE_LOG_INFO("    Version:     {}", (const char *)glGetString(GL_VERSION));
 
         glViewport(0, 0, window->width(), window->height());
 

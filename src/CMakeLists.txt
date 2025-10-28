@@ -10,7 +10,7 @@ set(SRC
 
     platform/glfw/input.cxx
     platform/glfw/opengl3/window.cxx
-    platform/glfw/opengl3/opengl_context.cxx
+    platform/glfw/opengl3/opengl_renderer.cxx
     platform/glfw/opengl3/game_layer.cxx
     platform/glfw/opengl3/imgui_layer.cxx
 )

@@ -10,7 +10,7 @@ int main(int argc, char** argv)
     bool running { true };
 
     APP_MSG_INFO("Creating a window.");
-    std::unique_ptr<Window> window { Window::create() };
+    std::unique_ptr<Window> window { Window::Create() };
     window->PushLayer(new GameLayer{ window.get() });
     window->PushOverlay(new ImguiLayer{ window.get() });
 

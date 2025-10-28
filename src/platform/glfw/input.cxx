@@ -39,6 +39,7 @@ namespace JAGE
 
         DISABLE_WARNING_PUSH
         DISABLE_WARNING_GCC_CLANG("-Wreturn-type")
+        DISABLE_WARNING_GCC_CLANG("-Wswitch")
 
         int ToGLFWKey(KeyCode key)
         {
@@ -136,9 +137,9 @@ namespace JAGE
                 case JAGE_KEY_KP8:  return GLFW_KEY_KP_8;
                 case JAGE_KEY_KP9:  return GLFW_KEY_KP_9;
                 case JAGE_KEY_KP0:  return GLFW_KEY_KP_0;
-
-                default: JAGE_LOG_ERROR("Key Conversion Error: unknown key {} from JAGE.", to_string(key)); return GLFW_KEY_UNKNOWN;
             }
+
+            JAGE_LOG_ERROR("Key Conversion Error: unknown key {} from JAGE.", to_string(key)); return GLFW_KEY_UNKNOWN;
         }
 
         int ToGLFWMouseButton(MouseButton button)
@@ -271,9 +272,9 @@ namespace JAGE
                 case GLFW_KEY_KP_8:  return JAGE_KEY_KP8;
                 case GLFW_KEY_KP_9:  return JAGE_KEY_KP9;
                 case GLFW_KEY_KP_0:  return JAGE_KEY_KP0;
-
-                default: JAGE_LOG_ERROR("Key Conversion Error: unknown key numbered {} from GLFW.", key); return JAGE_KEY_UNKNOWN;
             }
+
+           JAGE_LOG_ERROR("Key Conversion Error: unknown key numbered {} from GLFW.", key); return JAGE_KEY_UNKNOWN;
         }
 
         MouseButton FromGLFWMouseButton(int button)

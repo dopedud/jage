@@ -232,7 +232,7 @@ namespace JAGE
     class JAGE_API Window
     {
     public:
-        static std::unique_ptr<Window> create(const WindowProperties& properties = WindowProperties{});
+        static std::unique_ptr<Window> Create(const WindowProperties& properties = WindowProperties{});
 
         virtual ~Window() = default;
 
@@ -584,7 +584,12 @@ namespace JAGE
         virtual std::string_view name() const = 0;
         virtual EventType event_type() const = 0;
         virtual int event_category_flags() const = 0;
-        virtual std::string_view to_string() const { return std::string{ name() } + "Event"; }
+        virtual std::string_view to_string() const
+        {
+            static std::string str {};
+            str = std::string { name() } + "Event";
+            return str;
+        }
 
         bool category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
 

@@ -46,7 +46,7 @@ namespace JAGE
         ImGui_ImplGlfw_Shutdown();
         ImGui_ImplOpenGL3_Shutdown();
         ImGui::DestroyContext();
-        
+
         JAGE_MSG_TRACE("Detached IMGUI layer from layer stack.");
     }
 
@@ -93,25 +93,25 @@ namespace JAGE
         ImGui_ImplGlfw_CharCallback(static_cast<GLFWwindow*>(window->handle()), e.codepoint());
         return true;
     }
-    
+
     bool ImguiLayer::OnMouseButtonEvent(const MouseButtonEvent& e)
     {
         ImGui_ImplGlfw_MouseButtonCallback(static_cast<GLFWwindow*>(window->handle()), Input::ToGLFWMouseButton(e.button()), Input::ToGLFWAction(e.action()), Input::ToGLFWMods(e.mods()));
         return true;
     }
-    
+
     bool ImguiLayer::OnMouseEnterEvent(const MouseEnterEvent& e)
     {
         ImGui_ImplGlfw_CursorEnterCallback(static_cast<GLFWwindow*>(window->handle()), e.entered());
         return true;
     }
-    
+
     bool ImguiLayer::OnMouseMovedEvent(const MouseMovedEvent& e)
     {
         ImGui_ImplGlfw_CursorPosCallback(static_cast<GLFWwindow*>(window->handle()), e.mouseX(), e.mouseY());
         return true;
     }
-    
+
     bool ImguiLayer::OnMouseScrolledEvent(const MouseScrolledEvent& e)
     {
         ImGui_ImplGlfw_ScrollCallback(static_cast<GLFWwindow*>(window->handle()), e.offsetX(), e.offsetY());

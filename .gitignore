@@ -69,8 +69,9 @@ CMakeUserPresets.json
 # VSCode configuration directory
 .vscode
 
-# clangd cache files
+# clangd cache and configuration files
 .cache
+.clangd
 
 # Doxygen generated documentation
 docs

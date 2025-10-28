@@ -3,8 +3,6 @@
 #include "platform/input.h"
 #include "log.h"
 
-#include <glad/glad.h>
-
 namespace JAGE
 {
     GameLayer::GameLayer(Window* window) : Layer(window, "Game Layer") {}
@@ -28,6 +26,12 @@ namespace JAGE
 
     void GameLayer::OnRender()
     {
+        float vertices[] = {
+            -0.5f, -0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f,
+            0.0f,  0.5f, 0.0f
+        };
+
 
     }
 

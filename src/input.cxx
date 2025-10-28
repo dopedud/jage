@@ -46,6 +46,7 @@ namespace JAGE
 
         DISABLE_WARNING_PUSH
         DISABLE_WARNING_GCC_CLANG("-Wreturn-type")
+        DISABLE_WARNING_GCC_CLANG("-Wswitch")
 
         std::string_view to_string(KeyCode key)
         {
@@ -143,9 +144,9 @@ namespace JAGE
                 case JAGE_KEY_KP8: return "KP8";
                 case JAGE_KEY_KP9: return "KP9";
                 case JAGE_KEY_KP0: return "KP0";
-
-                default: JAGE_LOG_ERROR("ToString Error: unknown key numbered {}.", static_cast<int>(key)); return "UNKNOWN";
             }
+
+            JAGE_LOG_ERROR("ToString Error: unknown key numbered {}.", static_cast<int>(key)); return "UNKNOWN";
         }
 
         std::string_view to_string(MouseButton button)
@@ -172,7 +173,10 @@ namespace JAGE
 
         std::string_view to_string(int mods)
         {
-            std::string str {};
+            static std::string str {};
+
+            // reset str since it's a static variable
+            str = "";
 
             if (mods & JAGE_MOD_SHIFT)      str += "SHIFT, ";
             if (mods & JAGE_MOD_CONTROL)    str += "CONTROL, ";

@@ -23,7 +23,7 @@ namespace JAGE
     void Window::PushLayer(Layer* layer)
     {
         JAGE_MSG_TRACE("Pushing layer named: " + std::string{ layer->name() });
-        
+
         layers.emplace(layers.begin() + layer_insert_index, layer);
         layer_insert_index++;
         layer->OnAttach();
@@ -37,7 +37,7 @@ namespace JAGE
 
         layers.emplace_back(overlay);
         overlay->OnAttach();
-        
+
         JAGE_MSG_TRACE("Pushed overlay named: " + std::string{ overlay->name() });
     }
 
