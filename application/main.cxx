@@ -11,6 +11,7 @@ int main(int argc, char** argv)
 
     APP_MSG_INFO("Creating a window.");
     std::unique_ptr<Window> window { Window::Create() };
+
     window->PushLayer(new GameLayer{ window.get() });
     window->PushOverlay(new ImguiLayer{ window.get() });
 
@@ -35,6 +36,8 @@ int main(int argc, char** argv)
     {
         window->OnRender();
     }
+
+    window.reset();
 
     APP_MSG_INFO("Exiting application.");
 

@@ -6,11 +6,11 @@ set(SRC
     event.cxx
     "input.cxx"
     window.cxx
-    graphics_context.cxx
+    renderer.cxx
 
     platform/glfw/input.cxx
     platform/glfw/opengl3/window.cxx
-    platform/glfw/opengl3/opengl_renderer.cxx
+    platform/glfw/opengl3/renderer.cxx
     platform/glfw/opengl3/game_layer.cxx
     platform/glfw/opengl3/imgui_layer.cxx
 )

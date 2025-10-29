@@ -1,10 +1,7 @@
 #include "JAGE/layers.h"
 
-#include "platform/input.h"
+#include "platform/glfw/opengl3/renderer.h"
 #include "log.h"
-
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "JAGE/core.h"
+#include "JAGE/renderer/core.h"
 
 namespace JAGE
 {
@@ -13,8 +14,10 @@ namespace JAGE
         void OnDetach() override;
 
         void OnRender() override;
-        
+
         void OnEvent(const Event& e) override;
+    private:
+        std::unique_ptr<Shader> shader;
     };
 
     class JAGE_API ImguiLayer final : public Layer
@@ -26,7 +29,7 @@ namespace JAGE
         void OnDetach() override;
 
         void OnRender() override;
-        
+
         void OnEvent(const Event& e) override;
     private:
         bool OnWindowFocusEvent(const WindowFocusEvent& e);

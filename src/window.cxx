@@ -43,7 +43,7 @@ namespace JAGE
 
     void Window::PopLayer(Layer* layer)
     {
-        JAGE_MSG_TRACE("Poping layer named: " + std::string{ layer->name() });
+        JAGE_MSG_TRACE("Popping layer named: " + std::string{ layer->name() });
 
         auto it { std::find(layers.begin(), layers.end(), layer) };
 
@@ -55,12 +55,12 @@ namespace JAGE
 
         layer->OnDetach();
 
-        JAGE_MSG_TRACE("Poped layer named: " + std::string{ layer->name() });
+        JAGE_MSG_TRACE("Popped layer named: " + std::string{ layer->name() });
     }
 
     void Window::PopOverlay(Layer* overlay)
     {
-        JAGE_MSG_TRACE("Poping overlay named: " + std::string{ overlay->name() });
+        JAGE_MSG_TRACE("Popping overlay named: " + std::string{ overlay->name() });
 
         auto it { std::find(layers.begin(), layers.end(), overlay) };
 
@@ -68,6 +68,6 @@ namespace JAGE
 
         overlay->OnDetach();
 
-        JAGE_MSG_TRACE("Poped overlay named: " + std::string{ overlay->name() });
+        JAGE_MSG_TRACE("Popped overlay named: " + std::string{ overlay->name() });
     }
 }

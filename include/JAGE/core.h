@@ -215,7 +215,7 @@ namespace JAGE
         bool vsync;
 
         WindowProperties(
-            const std::string& title = "JAGE Engine",
+            std::string_view title = "JAGE Engine",
             unsigned int width = 1280,
             unsigned int height = 720,
             bool vsync = false
@@ -233,7 +233,6 @@ namespace JAGE
     {
     public:
         static std::unique_ptr<Window> Create(const WindowProperties& properties = WindowProperties{});
-
         virtual ~Window() = default;
 
         unsigned int width() const { return data.properties.width; }
@@ -305,7 +304,7 @@ namespace JAGE
         std::string_view name() const { return m_name; }
     protected:
         Window* window;
-        std::string m_name;
+        const std::string m_name;
     };
 }
 

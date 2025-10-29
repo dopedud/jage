@@ -1,6 +1,6 @@
 #include "platform/glfw/window.h"
 
-#include "platform/glfw/opengl3/opengl_renderer.h"
+#include "platform/glfw/opengl3/renderer.h"
 #include "log.h"
 
 namespace JAGE
@@ -12,17 +12,20 @@ namespace JAGE
 
     GLFWWindow::GLFWWindow(const WindowProperties& properties)
     {
-        JAGE_LOG_INFO("Creating a window; backend: GLFW, title: \"{}\", dimensions: ({}, {}).", properties.title, properties.width, properties.height);
+        JAGE_MSG_INFO("Creating a window:");
+        JAGE_MSG_INFO("    backend:         GLFW");
+        JAGE_LOG_INFO("    title:           \"{}\"", properties.title);
+        JAGE_LOG_INFO("    dimensions:      {} x {}", properties.width, properties.height);
 
         data.properties = properties;
         data.OnEvent = [this](const Event& e) -> void { OnEvent(e); };
 
         glfwSetErrorCallback([](int error_code, const char* desc) -> void
         {
-            JAGE_LOG_ERROR("GLFW error ({}): {}", error_code, desc);
+            JAGE_LOG_ERROR("GLFW error {}: {}.", error_code, desc);
         });
 
-        static bool s_GLFW_initialised { false };
+        static bool s_GLFW_initialised {};
 
         if (!s_GLFW_initialised)
         {
@@ -150,7 +153,12 @@ namespace JAGE
 
     GLFWWindow::~GLFWWindow()
     {
-        for (Layer* layer : layers) delete layer;
+        for (Layer* layer : layers)
+        {
+            layer->OnDetach();
+            delete layer;
+        }
+
         glfwDestroyWindow(m_handle);
         m_handle = nullptr;
     }
