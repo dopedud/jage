@@ -16,9 +16,9 @@ namespace JAGE
 
         JAGE_MSG_INFO("Graphics Info:");
         JAGE_MSG_INFO("     Graphics Backend:   OpenGL");
-        JAGE_LOG_INFO("     Vendor:             {}", (const char*)glGetString(GL_VENDOR));
-        JAGE_LOG_INFO("     Renderer:           {}", (const char*)glGetString(GL_RENDERER));
-        JAGE_LOG_INFO("     Version:            {}", (const char*)glGetString(GL_VERSION));
+        JAGE_LOG_INFO("     Vendor:     {}", (const char*)glGetString(GL_VENDOR));
+        JAGE_LOG_INFO("     Renderer:   {}", (const char*)glGetString(GL_RENDERER));
+        JAGE_LOG_INFO("     Version:    {}", (const char*)glGetString(GL_VERSION));
 
         glViewport(0, 0, window->width(), window->height());
 
@@ -40,46 +40,95 @@ namespace JAGE
         glfwSwapBuffers(static_cast<GLFWwindow*>(window->handle()));
     }
 
-    unsigned int shader_datatype_size(ShaderDataType type)
+    namespace ShaderData
+    {
+        unsigned int size(ShaderDataType type)
+        {
+            switch (type)
+            {
+                case ShaderDataType::None:      return 0;
+                case ShaderDataType::Float:     return 4;
+                case ShaderDataType::Float2:    return 4 * 2;
+                case ShaderDataType::Float3:    return 4 * 3;
+                case ShaderDataType::Float4:    return 4 * 4;
+                case ShaderDataType::Int:       return 4;
+                case ShaderDataType::Int2:      return 4 * 2;
+                case ShaderDataType::Int3:      return 4 * 3;
+                case ShaderDataType::Int4:      return 4 * 4;
+                case ShaderDataType::Mat3:      return 4 * 3 * 3;
+                case ShaderDataType::Mat4:      return 4 * 4 * 4;
+                case ShaderDataType::Bool:      return 1;
+            }
+
+            JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
+
+            return 0;
+        }
+    }
+
+    static GLenum to_opengltype(ShaderData::ShaderDataType type)
     {
         switch (type)
         {
-            case ShaderDataType::None:      return 0; break;
-            case ShaderDataType::Float:     return 4; break;
-            case ShaderDataType::Float2:    return 4 * 2; break;
-            case ShaderDataType::Float3:    return 4 * 3; break;
-            case ShaderDataType::Float4:    return 4 * 4; break;
-            case ShaderDataType::Int:       return 4; break;
-            case ShaderDataType::Int2:      return 4 * 2; break;
-            case ShaderDataType::Int3:      return 4 * 3; break;
-            case ShaderDataType::Int4:      return 4 * 4; break;
-            case ShaderDataType::Mat3:      return 4 * 3 * 3; break;
-            case ShaderDataType::Mat4:      return 4 * 4 * 4; break;
-            case ShaderDataType::Bool:       return 1; break;
+            case ShaderData::ShaderDataType::None:      return GL_NONE;
+            case ShaderData::ShaderDataType::Mat3:
+            case ShaderData::ShaderDataType::Mat4:
+            case ShaderData::ShaderDataType::Float:
+            case ShaderData::ShaderDataType::Float2:
+            case ShaderData::ShaderDataType::Float3:
+            case ShaderData::ShaderDataType::Float4:    return GL_FLOAT;
+            case ShaderData::ShaderDataType::Int:
+            case ShaderData::ShaderDataType::Int2:
+            case ShaderData::ShaderDataType::Int3:
+            case ShaderData::ShaderDataType::Int4:      return GL_INT;
+            case ShaderData::ShaderDataType::Bool:      return GL_BOOL;
         }
 
-        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
+        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
 
         return 0;
     }
 
-    BufferElement::BufferElement(ShaderDataType type, std::string_view name)
+    BufferElement::BufferElement(ShaderData::ShaderDataType type, std::string_view name)
     : shader_datatype { type }
     , name { name }
-    , size { shader_datatype_size(type) }
+    , size { ShaderData::size(type) }
     {}
+
+    unsigned int BufferElement::component_count() const
+    {
+        switch (shader_datatype)
+        {
+            case ShaderData::ShaderDataType::None:      return 0;
+            case ShaderData::ShaderDataType::Float:     return 1;
+            case ShaderData::ShaderDataType::Float2:    return 2;
+            case ShaderData::ShaderDataType::Float3:    return 3;
+            case ShaderData::ShaderDataType::Float4:    return 4;
+            case ShaderData::ShaderDataType::Int:       return 1;
+            case ShaderData::ShaderDataType::Int2:      return 2;
+            case ShaderData::ShaderDataType::Int3:      return 3;
+            case ShaderData::ShaderDataType::Int4:      return 4;
+            case ShaderData::ShaderDataType::Mat3:      return 3 * 3;
+            case ShaderData::ShaderDataType::Mat4:      return 4 * 4;
+            case ShaderData::ShaderDataType::Bool:      return 1;
+        }
+
+        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning count 0.");
+
+        return 0;
+    }
 
     BufferLayout::BufferLayout(const std::initializer_list<BufferElement>& elements)
     : m_elements { elements }
     {
         unsigned int offset {};
-        stride = 0;
+        m_stride = 0;
 
         for (auto& element : m_elements)
         {
             element.offset = offset;
             offset += element.size;
-            stride += element.size;
+            m_stride += element.size;
         }
     }
 

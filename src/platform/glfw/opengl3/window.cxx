@@ -13,9 +13,9 @@ namespace JAGE
     GLFWWindow::GLFWWindow(const WindowProperties& properties)
     {
         JAGE_MSG_INFO("Creating a window:");
-        JAGE_MSG_INFO("    backend:         GLFW");
-        JAGE_LOG_INFO("    title:           \"{}\"", properties.title);
-        JAGE_LOG_INFO("    dimensions:      {} x {}", properties.width, properties.height);
+        JAGE_MSG_INFO("    backend:     GLFW");
+        JAGE_LOG_INFO("    title:       \"{}\"", properties.title);
+        JAGE_LOG_INFO("    dimensions:  {} x {}", properties.width, properties.height);
 
         data.properties = properties;
         data.OnEvent = [this](const Event& e) -> void { OnEvent(e); };

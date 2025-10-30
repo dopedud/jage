@@ -8,39 +8,48 @@ namespace JAGE
     {
     };
 
-    enum class ShaderDataType : uint8_t
+    namespace ShaderData
     {
-        None = 0,
-        Float, Float2, Float3, Float4,
-        Int, Int2, Int3, Int4,
-        Mat3, Mat4,
-        Bool
-    };
+        enum class ShaderDataType : uint8_t
+        {
+            None = 0,
+            Float, Float2, Float3, Float4,
+            Int, Int2, Int3, Int4,
+            Mat3, Mat4,
+            Bool
+        };
 
-    unsigned int JAGE_API shader_datatype_size(ShaderDataType type);
+        unsigned int JAGE_API size(ShaderDataType type);
+    }
+
 
     struct JAGE_API BufferElement
     {
-        ShaderDataType shader_datatype;
+        ShaderData::ShaderDataType shader_datatype;
         std::string name;
         unsigned int size;
         unsigned int offset;
 
-        BufferElement(ShaderDataType type, std::string_view name);
+        BufferElement();
+        BufferElement(ShaderData::ShaderDataType type, std::string_view name);
+
+        unsigned int component_count() const;
     };
 
     class JAGE_API BufferLayout
     {
     public:
+        BufferLayout();
         BufferLayout(const std::initializer_list<BufferElement>& elements);
 
         const std::vector<BufferElement>& elements() const { return m_elements; };
+        unsigned int stride() const { return m_stride; }
 
         std::vector<BufferElement>::iterator elements_begin() { return m_elements.begin(); }
         std::vector<BufferElement>::iterator elements_end() { return m_elements.end(); }
     private:
         std::vector<BufferElement> m_elements;
-        unsigned int stride;
+        unsigned int m_stride;
     };
 
     class JAGE_API Shader
@@ -59,6 +68,7 @@ namespace JAGE
     {
     public:
         static std::unique_ptr<VertexBuffer> Create(float* vertices, unsigned int size);
+        VertexBuffer();
         virtual ~VertexBuffer() = default;
 
         virtual void Bind() const = 0;
