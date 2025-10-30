@@ -9,14 +9,14 @@ namespace JAGE
             out[0] = codepoint;
             out[1] = '\0';
         }
-        
+
         else if (codepoint <= 0x7FF)
         {
             out[0] = 0xC0 | ((codepoint >> 6) & 0x1F);
             out[1] = 0x80 | (codepoint & 0x3F);
             out[2] = '\0';
         }
-        
+
         else if (codepoint <= 0xFFFF)
         {
             out[0] = 0xE0 | ((codepoint >> 12) & 0x0F);
@@ -24,7 +24,7 @@ namespace JAGE
             out[2] = 0x80 | (codepoint & 0x3F);
             out[3] = '\0';
         }
-        
+
         else if (codepoint <= 0x10FFFF)
         {
             out[0] = 0xF0 | ((codepoint >> 18) & 0x07);
@@ -49,21 +49,21 @@ namespace JAGE
         return lhs_casted | rhs_casted;
     }
 
-    std::string_view WindowResizeEvent::to_string() const
+    std::string WindowResizeEvent::to_string() const
     {
         std::stringstream ss;
         ss << name() << "Event: " << m_width << ", " << m_height;
         return ss.str();
     }
 
-    std::string_view WindowFocusEvent::to_string() const
+    std::string WindowFocusEvent::to_string() const
     {
         std::stringstream ss;
         ss << name() << "Event: " << (m_focused ? "window focused." : "window unfocused.");
         return ss.str();
     }
 
-    std::string_view KeyEvent::to_string() const
+    std::string KeyEvent::to_string() const
     {
         std::stringstream ss;
         ss << name() << "Event: " << m_key << ", " << m_scancode << ", " << m_action << ", ";
@@ -71,7 +71,7 @@ namespace JAGE
         return ss.str();
     }
 
-    std::string_view CharEvent::to_string() const
+    std::string CharEvent::to_string() const
     {
         char utf8_str[5] { 0 };
         encode_utf8(utf8_str, m_codepoint);
@@ -81,7 +81,7 @@ namespace JAGE
         return ss.str();
     }
 
-    std::string_view MouseButtonEvent::to_string() const
+    std::string MouseButtonEvent::to_string() const
     {
         std::stringstream ss;
         ss << name() << "Event: " << m_button << ", " << m_action << ", ";
@@ -89,23 +89,24 @@ namespace JAGE
         return ss.str();
     }
 
-    std::string_view MouseEnterEvent::to_string() const 
+    std::string MouseEnterEvent::to_string() const 
     {
         std::stringstream ss;
         ss << name() << "Event: " << (m_entered ? "mouse entered." : "mouse exited."); 
         return ss.str();
     }
 
-    std::string_view MouseMovedEvent::to_string() const
+    std::string MouseMovedEvent::to_string() const
     {
         std::stringstream ss;
         ss << name() << "Event: " << m_mouseX << ", " << m_mouseY;
         return ss.str();
     }
 
-    std::string_view MouseScrolledEvent::to_string() const
+    std::string MouseScrolledEvent::to_string() const
     {
         std::stringstream ss;
+        ss.str() = "";
         ss << name() << "Event: " << m_offsetX << ", " << m_offsetY;
         return ss.str();
     }

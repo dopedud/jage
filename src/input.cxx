@@ -48,7 +48,7 @@ namespace JAGE
         DISABLE_WARNING_GCC_CLANG("-Wreturn-type")
         DISABLE_WARNING_GCC_CLANG("-Wswitch")
 
-        std::string_view to_string(KeyCode key)
+        std::string to_string(KeyCode key)
         {
             switch(key)
             {
@@ -149,7 +149,7 @@ namespace JAGE
             JAGE_LOG_ERROR("ToString Error: unknown key numbered {}.", static_cast<int>(key)); return "UNKNOWN";
         }
 
-        std::string_view to_string(MouseButton button)
+        std::string to_string(MouseButton button)
         {
             switch(button)
             {
@@ -161,7 +161,7 @@ namespace JAGE
             }
         }
 
-        std::string_view to_string(Action action)
+        std::string to_string(Action action)
         {
             switch(action)
             {
@@ -171,7 +171,7 @@ namespace JAGE
             }
         }
 
-        std::string_view to_string(int mods)
+        std::string to_string(int mods)
         {
             static std::string str {};
 

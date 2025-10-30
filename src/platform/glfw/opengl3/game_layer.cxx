@@ -7,6 +7,8 @@ namespace JAGE
 {
     GameLayer::GameLayer(Window* window) : Layer(window, "Game Layer") {}
 
+    static unsigned int VAO {};
+
     void GameLayer::OnAttach()
     {
         JAGE_MSG_TRACE("Attaching Game layer to layer stack.");
@@ -23,21 +25,23 @@ namespace JAGE
 
             void main()
             {
-                gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+                gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);
             }
         )"};
 
         std::string_view fragment_str {R"(
             #version 460 core
-            out vec4 FragColor;
+            out vec4 color;
 
             void main()
             {
-                FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+                color = vec4(1.0f, 0.5f, 0.2f, 1.0f);
             }
         )"};
 
         shader = Shader::Create(vertex_str, fragment_str);
+
+        vbuffer = VertexBuffer::Create(vertices, sizeof(vertices));
 
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
     }

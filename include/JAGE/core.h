@@ -266,7 +266,7 @@ namespace JAGE
         std::unique_ptr<GraphicsContext> graphics_context;
 
         std::vector<Layer*> layers {};
-        unsigned int layer_insert_index {};
+        int layer_insert_index {};
 
         struct WindowData
         {
@@ -301,7 +301,7 @@ namespace JAGE
 
         virtual void OnEvent(const Event& e) = 0;
 
-        std::string_view name() const { return m_name; }
+        std::string name() const { return m_name; }
     protected:
         Window* window;
         const std::string m_name;
@@ -414,10 +414,10 @@ namespace JAGE
         float JAGE_API GetMousePositionX();
         float JAGE_API GetMousePositionY();
 
-        std::string_view JAGE_API to_string(KeyCode key);
-        std::string_view JAGE_API to_string(Action action);
-        std::string_view JAGE_API to_string(MouseButton button);
-        std::string_view JAGE_API to_string(int mods);
+        std::string JAGE_API to_string(KeyCode key);
+        std::string JAGE_API to_string(Action action);
+        std::string JAGE_API to_string(MouseButton button);
+        std::string JAGE_API to_string(int mods);
 
         std::ostream& JAGE_API operator<<(std::ostream& os, const KeyCode& key);
         std::ostream& JAGE_API operator<<(std::ostream& os, const Action& action);
@@ -580,15 +580,10 @@ namespace JAGE
     class JAGE_API Event
     {
     public:
-        virtual std::string_view name() const = 0;
+        virtual std::string name() const = 0;
         virtual EventType event_type() const = 0;
         virtual int event_category_flags() const = 0;
-        virtual std::string_view to_string() const
-        {
-            static std::string str {};
-            str = std::string { name() } + "Event";
-            return str;
-        }
+        virtual std::string to_string() const { return name() + "Event"; }
 
         bool category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
 
@@ -646,7 +641,7 @@ namespace JAGE
 #define EVENT_CLASS_TYPE(type) \
     inline static EventType static_type() { return EventType::type; } \
     virtual EventType event_type() const override { return static_type(); } \
-    virtual std::string_view name() const override { return #type; }
+    virtual std::string name() const override { return #type; }
 
 #define EVENT_CLASS_CATEGORY(category) \
     virtual int event_category_flags() const override { return static_cast<int>(category); }
@@ -679,7 +674,7 @@ namespace JAGE
         unsigned int width() const { return m_width; }
         unsigned int height() const { return m_height; }
 
-        std::string_view to_string() const override;
+        std::string to_string() const override;
 
         EVENT_CLASS_TYPE(WindowResize)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
@@ -694,7 +689,7 @@ namespace JAGE
 
         bool focused() const { return m_focused; }
 
-        std::string_view to_string() const override;
+        std::string to_string() const override;
 
         EVENT_CLASS_TYPE(WindowFocus)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
@@ -725,7 +720,7 @@ namespace JAGE
         Input::Action action() const { return m_action; }
         int mods() const { return m_mods; }
 
-        std::string_view to_string() const override;
+        std::string to_string() const override;
 
         EVENT_CLASS_TYPE(Key)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
@@ -743,7 +738,7 @@ namespace JAGE
 
         unsigned int codepoint() const { return m_codepoint; }
 
-        std::string_view to_string() const override;
+        std::string to_string() const override;
 
         EVENT_CLASS_TYPE(Char)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
@@ -774,7 +769,7 @@ namespace JAGE
         Input::Action action() const { return m_action; }
         int mods() const { return m_mods; }
 
-        std::string_view to_string() const override;
+        std::string to_string() const override;
 
         EVENT_CLASS_TYPE(MouseButton)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
@@ -791,7 +786,7 @@ namespace JAGE
 
         int entered() const { return m_entered; }
 
-        std::string_view to_string() const override;
+        std::string to_string() const override;
 
         EVENT_CLASS_TYPE(MouseEnter)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
@@ -807,7 +802,7 @@ namespace JAGE
         float mouseX() const { return m_mouseX; }
         float mouseY() const { return m_mouseY; }
 
-        std::string_view to_string() const override;
+        std::string to_string() const override;
 
         EVENT_CLASS_TYPE(MouseMoved)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
@@ -823,7 +818,7 @@ namespace JAGE
         float offsetX() const { return m_offsetX; }
         float offsetY() const { return m_offsetY; }
 
-        std::string_view to_string() const override;
+        std::string to_string() const override;
 
         EVENT_CLASS_TYPE(MouseScrolled)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)

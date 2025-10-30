@@ -102,7 +102,7 @@ namespace JAGE
             data.OnEvent(event);
         });
 
-        // glfwSetCharCallback(m_handle, [](GLFWwindow* window, unsigned int codepoint) -> void
+        // glfwSetCharCallback(m_handle, [](GLFWwindow* window, int codepoint) -> void
         // {
         //     WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 

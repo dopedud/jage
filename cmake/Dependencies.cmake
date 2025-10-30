@@ -79,6 +79,8 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src/external/glad)
 # END BUILD GLAD
 
 # BUILD DEAR IMGUI
+# NOTE: Dear ImGui is build-agnostic. That is, it lets users build its files using their own build system. Hence, only
+# the required files are used to build Dear ImGui.
 set(DEAR_IMGUI_NAME "dear_imgui" CACHE STRING "" FORCE)
 
 add_library(dear_imgui STATIC
@@ -98,9 +100,4 @@ target_include_directories(dear_imgui PUBLIC
 )
 
 target_link_libraries(dear_imgui PUBLIC glfw glad)
-
-set_target_properties(${GLAD_NAME} PROPERTIES 
-    OUTPUT_NAME "${GLAD_NAME}"
-    PREFIX ""
-)
 # END BUILD DEAR IMGUI

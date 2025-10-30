@@ -18,6 +18,7 @@ namespace JAGE
         void OnEvent(const Event& e) override;
     private:
         std::unique_ptr<Shader> shader;
+        std::unique_ptr<VertexBuffer> vbuffer;
     };
 
     class JAGE_API ImguiLayer final : public Layer

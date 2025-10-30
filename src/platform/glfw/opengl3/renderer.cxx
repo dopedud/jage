@@ -40,6 +40,49 @@ namespace JAGE
         glfwSwapBuffers(static_cast<GLFWwindow*>(window->handle()));
     }
 
+    unsigned int shader_datatype_size(ShaderDataType type)
+    {
+        switch (type)
+        {
+            case ShaderDataType::None:      return 0; break;
+            case ShaderDataType::Float:     return 4; break;
+            case ShaderDataType::Float2:    return 4 * 2; break;
+            case ShaderDataType::Float3:    return 4 * 3; break;
+            case ShaderDataType::Float4:    return 4 * 4; break;
+            case ShaderDataType::Int:       return 4; break;
+            case ShaderDataType::Int2:      return 4 * 2; break;
+            case ShaderDataType::Int3:      return 4 * 3; break;
+            case ShaderDataType::Int4:      return 4 * 4; break;
+            case ShaderDataType::Mat3:      return 4 * 3 * 3; break;
+            case ShaderDataType::Mat4:      return 4 * 4 * 4; break;
+            case ShaderDataType::Bool:       return 1; break;
+        }
+
+        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
+
+        return 0;
+    }
+
+    BufferElement::BufferElement(ShaderDataType type, std::string_view name)
+    : shader_datatype { type }
+    , name { name }
+    , size { shader_datatype_size(type) }
+    {}
+
+    BufferLayout::BufferLayout(const std::initializer_list<BufferElement>& elements)
+    : m_elements { elements }
+    {
+        unsigned int offset {};
+        stride = 0;
+
+        for (auto& element : m_elements)
+        {
+            element.offset = offset;
+            offset += element.size;
+            stride += element.size;
+        }
+    }
+
     // SHADER IMPLEMENTATION
 
     std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
@@ -71,7 +114,7 @@ namespace JAGE
 
             glDeleteShader(vertex_shader);
 
-            JAGE_LOG_ERROR("OpenGL error: {}.", static_cast<std::string_view>(infoLog));
+            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
 
             return;
         }
@@ -92,7 +135,7 @@ namespace JAGE
 
             glDeleteShader(fragment_shader);
 
-            JAGE_LOG_ERROR("OpenGL error: {}.", static_cast<std::string_view>(infoLog));
+            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
 
             return;
         }
@@ -117,7 +160,7 @@ namespace JAGE
             glDeleteShader(vertex_shader);
             glDeleteShader(fragment_shader);
 
-            JAGE_LOG_ERROR("OpenGL error: {}.", static_cast<std::string_view>(infoLog));
+            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
 
             return;
         }
@@ -147,12 +190,12 @@ namespace JAGE
 
     // OPENGL VERTEX BUFFER IMPLEMENTATION
 
-    std::unique_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
+    std::unique_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, unsigned int size)
     {
         return std::make_unique<OpenGLVertexBuffer>(vertices, size);
     }
 
-    OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size)
+    OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, unsigned int size)
     {
         glCreateBuffers(1, &rendererID);
         glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
@@ -177,15 +220,15 @@ namespace JAGE
 
     // OPENGL INDEX BUFFER IMPLEMENTATION
 
-    std::unique_ptr<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
+    std::unique_ptr<IndexBuffer> IndexBuffer::Create(unsigned int* indices, unsigned int count)
     {
         return std::make_unique<OpenGLIndexBuffer>(indices, count);
     }
 
-    OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count) : IndexBuffer { count }
+    OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned int* indices, unsigned int count) : IndexBuffer { count }
     {
         glCreateBuffers(1, &rendererID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
     }
 
     OpenGLIndexBuffer::~OpenGLIndexBuffer()

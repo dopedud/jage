@@ -23,8 +23,8 @@ namespace JAGE
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
         virtual ~OpenGLShader();
 
-        void Bind() const;
-        void Unbind() const;
+        void Bind() const override;
+        void Unbind() const override;
     };
 
     class OpenGLVertexBuffer : public VertexBuffer
