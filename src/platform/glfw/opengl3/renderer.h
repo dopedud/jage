@@ -4,6 +4,7 @@
 #include "JAGE/renderer/core.h"
 
 #include "platform/input.h"
+#include <glad/glad.h>
 
 namespace JAGE
 {
@@ -17,14 +18,19 @@ namespace JAGE
         void SwapBuffers() override;
     };
 
+    namespace ShaderData
+    {
+        GLenum to_opengltype(Type type);
+    }
+
     class OpenGLShader : public Shader
     {
     public:
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
         virtual ~OpenGLShader();
 
-        void Bind() const override;
-        void Unbind() const override;
+        void bind() const override;
+        void unbind() const override;
     };
 
     class OpenGLVertexBuffer : public VertexBuffer
@@ -33,8 +39,8 @@ namespace JAGE
         OpenGLVertexBuffer(float* vertices, uint32_t size);
         virtual ~OpenGLVertexBuffer();
 
-        void Bind() const override;
-        void Unbind() const override;
+        void bind() const override;
+        void unbind() const override;
     };
 
     class OpenGLIndexBuffer : public IndexBuffer
@@ -43,7 +49,20 @@ namespace JAGE
         OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
         virtual ~OpenGLIndexBuffer();
 
-        void Bind() const override;
-        void Unbind() const override;
+        void bind() const override;
+        void unbind() const override;
+    };
+
+    class OpenGLVertexArray : public VertexArray
+    {
+    public:
+        OpenGLVertexArray();
+        virtual ~OpenGLVertexArray();
+
+        void bind() const override;
+        void unbind() const override;
+
+        void add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer) override;
+        void set_ibuffer(const std::shared_ptr<IndexBuffer>& ibuffer) override;
     };
 }

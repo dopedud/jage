@@ -6,11 +6,13 @@ namespace JAGE
 {
     class JAGE_API Renderer
     {
+    public:
+        void static Render();
     };
 
     namespace ShaderData
     {
-        enum class ShaderDataType : uint8_t
+        enum class Type : uint8_t
         {
             None = 0,
             Float, Float2, Float3, Float4,
@@ -19,19 +21,31 @@ namespace JAGE
             Bool
         };
 
-        unsigned int JAGE_API size(ShaderDataType type);
+        unsigned int JAGE_API size(Type type);
     }
 
+    class JAGE_API Shader
+    {
+    public:
+        static Shader* Create(std::string_view vertex_str, std::string_view fragment_str);
+        virtual ~Shader() = default;
+
+        virtual void bind() const = 0;
+        virtual void unbind() const = 0;
+    protected:
+        unsigned int rendererID;
+    };
 
     struct JAGE_API BufferElement
     {
-        ShaderData::ShaderDataType shader_datatype;
+        ShaderData::Type shader_datatype;
         std::string name;
         unsigned int size;
         unsigned int offset;
+        bool normalized;
 
         BufferElement();
-        BufferElement(ShaderData::ShaderDataType type, std::string_view name);
+        BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized = false);
 
         unsigned int component_count() const;
     };
@@ -44,35 +58,20 @@ namespace JAGE
 
         const std::vector<BufferElement>& elements() const { return m_elements; };
         unsigned int stride() const { return m_stride; }
-
-        std::vector<BufferElement>::iterator elements_begin() { return m_elements.begin(); }
-        std::vector<BufferElement>::iterator elements_end() { return m_elements.end(); }
     private:
         std::vector<BufferElement> m_elements;
         unsigned int m_stride;
     };
 
-    class JAGE_API Shader
-    {
-    public:
-        static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
-        virtual ~Shader() = default;
-
-        virtual void Bind() const = 0;
-        virtual void Unbind() const = 0;
-    protected:
-        unsigned int rendererID;
-    };
-
     class JAGE_API VertexBuffer
     {
     public:
-        static std::unique_ptr<VertexBuffer> Create(float* vertices, unsigned int size);
+        static VertexBuffer* Create(float* vertices, unsigned int size);
         VertexBuffer();
         virtual ~VertexBuffer() = default;
 
-        virtual void Bind() const = 0;
-        virtual void Unbind() const = 0;
+        virtual void bind() const = 0;
+        virtual void unbind() const = 0;
 
         const BufferLayout& layout() { return m_layout; }
         void set_layout(const BufferLayout& layout) { m_layout = layout; }
@@ -84,16 +83,34 @@ namespace JAGE
     class JAGE_API IndexBuffer
     {
     public:
-        static std::unique_ptr<IndexBuffer> Create(unsigned int* indices, unsigned int count);
+        static IndexBuffer* Create(unsigned int* indices, unsigned int count);
         IndexBuffer(unsigned int count);
         virtual ~IndexBuffer() = default;
 
-        virtual void Bind() const = 0;
-        virtual void Unbind() const = 0;
+        virtual void bind() const = 0;
+        virtual void unbind() const = 0;
 
         unsigned int count() const { return m_count; }
     protected:
         unsigned int rendererID;
         unsigned int m_count;
+    };
+
+    class JAGE_API VertexArray
+    {
+    public:
+        static VertexArray* Create();
+        virtual ~VertexArray() = default;
+
+        virtual void bind() const = 0;
+        virtual void unbind() const = 0;
+
+        virtual void add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer) = 0;
+        virtual void set_ibuffer(const std::shared_ptr<IndexBuffer>& ibuffer) = 0;
+    protected:
+        unsigned int rendererID;
+
+        std::vector<std::shared_ptr<VertexBuffer>> vbuffers {};
+        std::shared_ptr<IndexBuffer> ibuffer;
     };
 }

@@ -260,6 +260,7 @@ namespace JAGE
 
         void OnEvent(const Event& e);
 
+        // for use in for loops and search algorithms like std::find
         std::vector<Layer*>::iterator layers_begin() { return layers.begin(); }
         std::vector<Layer*>::iterator layers_end() { return layers.end(); }
     protected:

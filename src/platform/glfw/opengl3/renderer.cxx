@@ -2,8 +2,6 @@
 
 #include "log.h"
 
-#include <glad/glad.h>
-
 namespace JAGE
 {
     OpenGLContext::OpenGLContext(Window* window) : GraphicsContext(window) {}
@@ -16,9 +14,9 @@ namespace JAGE
 
         JAGE_MSG_INFO("Graphics Info:");
         JAGE_MSG_INFO("     Graphics Backend:   OpenGL");
-        JAGE_LOG_INFO("     Vendor:     {}", (const char*)glGetString(GL_VENDOR));
-        JAGE_LOG_INFO("     Renderer:   {}", (const char*)glGetString(GL_RENDERER));
-        JAGE_LOG_INFO("     Version:    {}", (const char*)glGetString(GL_VERSION));
+        JAGE_LOG_INFO("     Vendor:             {}", (const char*)glGetString(GL_VENDOR));
+        JAGE_LOG_INFO("     Renderer:           {}", (const char*)glGetString(GL_RENDERER));
+        JAGE_LOG_INFO("     Version:            {}", (const char*)glGetString(GL_VERSION));
 
         glViewport(0, 0, window->width(), window->height());
 
@@ -40,103 +38,42 @@ namespace JAGE
         glfwSwapBuffers(static_cast<GLFWwindow*>(window->handle()));
     }
 
+    void Renderer::Render()
+    {
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    }
+
     namespace ShaderData
     {
-        unsigned int size(ShaderDataType type)
+        GLenum to_opengltype(Type type)
         {
             switch (type)
             {
-                case ShaderDataType::None:      return 0;
-                case ShaderDataType::Float:     return 4;
-                case ShaderDataType::Float2:    return 4 * 2;
-                case ShaderDataType::Float3:    return 4 * 3;
-                case ShaderDataType::Float4:    return 4 * 4;
-                case ShaderDataType::Int:       return 4;
-                case ShaderDataType::Int2:      return 4 * 2;
-                case ShaderDataType::Int3:      return 4 * 3;
-                case ShaderDataType::Int4:      return 4 * 4;
-                case ShaderDataType::Mat3:      return 4 * 3 * 3;
-                case ShaderDataType::Mat4:      return 4 * 4 * 4;
-                case ShaderDataType::Bool:      return 1;
+                case ShaderData::Type::None:      return GL_NONE;
+                case ShaderData::Type::Mat3:
+                case ShaderData::Type::Mat4:
+                case ShaderData::Type::Float:
+                case ShaderData::Type::Float2:
+                case ShaderData::Type::Float3:
+                case ShaderData::Type::Float4:    return GL_FLOAT;
+                case ShaderData::Type::Int:
+                case ShaderData::Type::Int2:
+                case ShaderData::Type::Int3:
+                case ShaderData::Type::Int4:      return GL_INT;
+                case ShaderData::Type::Bool:      return GL_BOOL;
             }
 
-            JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
+            JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
 
             return 0;
         }
     }
 
-    static GLenum to_opengltype(ShaderData::ShaderDataType type)
-    {
-        switch (type)
-        {
-            case ShaderData::ShaderDataType::None:      return GL_NONE;
-            case ShaderData::ShaderDataType::Mat3:
-            case ShaderData::ShaderDataType::Mat4:
-            case ShaderData::ShaderDataType::Float:
-            case ShaderData::ShaderDataType::Float2:
-            case ShaderData::ShaderDataType::Float3:
-            case ShaderData::ShaderDataType::Float4:    return GL_FLOAT;
-            case ShaderData::ShaderDataType::Int:
-            case ShaderData::ShaderDataType::Int2:
-            case ShaderData::ShaderDataType::Int3:
-            case ShaderData::ShaderDataType::Int4:      return GL_INT;
-            case ShaderData::ShaderDataType::Bool:      return GL_BOOL;
-        }
-
-        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
-
-        return 0;
-    }
-
-    BufferElement::BufferElement(ShaderData::ShaderDataType type, std::string_view name)
-    : shader_datatype { type }
-    , name { name }
-    , size { ShaderData::size(type) }
-    {}
-
-    unsigned int BufferElement::component_count() const
-    {
-        switch (shader_datatype)
-        {
-            case ShaderData::ShaderDataType::None:      return 0;
-            case ShaderData::ShaderDataType::Float:     return 1;
-            case ShaderData::ShaderDataType::Float2:    return 2;
-            case ShaderData::ShaderDataType::Float3:    return 3;
-            case ShaderData::ShaderDataType::Float4:    return 4;
-            case ShaderData::ShaderDataType::Int:       return 1;
-            case ShaderData::ShaderDataType::Int2:      return 2;
-            case ShaderData::ShaderDataType::Int3:      return 3;
-            case ShaderData::ShaderDataType::Int4:      return 4;
-            case ShaderData::ShaderDataType::Mat3:      return 3 * 3;
-            case ShaderData::ShaderDataType::Mat4:      return 4 * 4;
-            case ShaderData::ShaderDataType::Bool:      return 1;
-        }
-
-        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning count 0.");
-
-        return 0;
-    }
-
-    BufferLayout::BufferLayout(const std::initializer_list<BufferElement>& elements)
-    : m_elements { elements }
-    {
-        unsigned int offset {};
-        m_stride = 0;
-
-        for (auto& element : m_elements)
-        {
-            element.offset = offset;
-            offset += element.size;
-            m_stride += element.size;
-        }
-    }
-
     // SHADER IMPLEMENTATION
 
-    std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
+    Shader* Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
     {
-        return std::make_unique<OpenGLShader>(vertex_str, fragment_str);
+        return new OpenGLShader{ vertex_str, fragment_str };
     }
 
     DISABLE_WARNING_PUSH
@@ -144,6 +81,8 @@ namespace JAGE
 
     OpenGLShader::OpenGLShader(std::string_view vertex_str, std::string_view fragment_str)
     {
+        JAGE_MSG_TRACE("Initialising a OpenGL shader.");
+
         const GLchar* source {};
         GLint compiled {};
 
@@ -168,6 +107,8 @@ namespace JAGE
             return;
         }
 
+        JAGE_MSG_TRACE("Vertex shader initialised.");
+
         GLuint fragment_shader { glCreateShader(GL_FRAGMENT_SHADER) };
         source = fragment_str.data();
         glShaderSource(fragment_shader, 1, &source, 0);
@@ -188,6 +129,8 @@ namespace JAGE
 
             return;
         }
+
+        JAGE_MSG_TRACE("Fragment shader initialised.");
 
         rendererID = glCreateProgram();
         GLint linked {};
@@ -214,8 +157,12 @@ namespace JAGE
             return;
         }
 
+        JAGE_MSG_TRACE("Shader program initialised.");
+
         glDetachShader(rendererID, vertex_shader);
         glDetachShader(rendererID, fragment_shader);
+
+        JAGE_MSG_TRACE("OpenGL shader initialised.");
     }
 
     OpenGLShader::~OpenGLShader()
@@ -225,12 +172,12 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
-    void OpenGLShader::Bind() const
+    void OpenGLShader::bind() const
     {
         glUseProgram(rendererID);
     }
 
-    void OpenGLShader::Unbind() const
+    void OpenGLShader::unbind() const
     {
         glUseProgram(0);
     }
@@ -239,14 +186,15 @@ namespace JAGE
 
     // OPENGL VERTEX BUFFER IMPLEMENTATION
 
-    std::unique_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, unsigned int size)
+    VertexBuffer* VertexBuffer::Create(float* vertices, unsigned int size)
     {
-        return std::make_unique<OpenGLVertexBuffer>(vertices, size);
+        return new OpenGLVertexBuffer{ vertices, size };
     }
 
     OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, unsigned int size)
     {
         glCreateBuffers(1, &rendererID);
+        glBindBuffer(GL_ARRAY_BUFFER, rendererID);
         glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
     }
 
@@ -255,12 +203,12 @@ namespace JAGE
         glDeleteBuffers(1, &rendererID);
     }
 
-    void OpenGLVertexBuffer::Bind() const
+    void OpenGLVertexBuffer::bind() const
     {
         glBindBuffer(GL_ARRAY_BUFFER, rendererID);
     }
 
-    void OpenGLVertexBuffer::Unbind() const
+    void OpenGLVertexBuffer::unbind() const
     {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
@@ -269,15 +217,19 @@ namespace JAGE
 
     // OPENGL INDEX BUFFER IMPLEMENTATION
 
-    std::unique_ptr<IndexBuffer> IndexBuffer::Create(unsigned int* indices, unsigned int count)
+    IndexBuffer* IndexBuffer::Create(unsigned int* indices, unsigned int count)
     {
-        return std::make_unique<OpenGLIndexBuffer>(indices, count);
+        return new OpenGLIndexBuffer{ indices, count };
     }
 
     OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned int* indices, unsigned int count) : IndexBuffer { count }
     {
         glCreateBuffers(1, &rendererID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+
+        // GL_ELEMENT_ARRAY_BUFFER is not valid without an actively bound VAO
+        // binding with GL_ARRAY_BUFFER allows the data to be loaded regardless of VAO state
+        glBindBuffer(GL_ARRAY_BUFFER, rendererID);
+        glBufferData(GL_ARRAY_BUFFER, count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
     }
 
     OpenGLIndexBuffer::~OpenGLIndexBuffer()
@@ -285,14 +237,73 @@ namespace JAGE
         glDeleteBuffers(1, &rendererID);
     }
 
-    void OpenGLIndexBuffer::Bind() const
+    void OpenGLIndexBuffer::bind() const
     {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID);
     }
 
-    void OpenGLIndexBuffer::Unbind() const
+    void OpenGLIndexBuffer::unbind() const
     {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     // END OPENGL INDEX BUFFER IMPLEMENTATION
+
+    // OPENGL VERTEX ARRAY IMPLEMENTATION
+
+    VertexArray* VertexArray::Create()
+    {
+        return new OpenGLVertexArray{};
+    }
+
+    OpenGLVertexArray::OpenGLVertexArray()
+    {
+        glCreateVertexArrays(1, &rendererID);
+    }
+
+    OpenGLVertexArray::~OpenGLVertexArray()
+    {
+        glDeleteVertexArrays(1, &rendererID);
+    }
+
+    void OpenGLVertexArray::bind() const
+    {
+        glBindVertexArray(rendererID);
+    }
+
+    void OpenGLVertexArray::unbind() const
+    {
+        glBindVertexArray(0);
+    }
+
+    void OpenGLVertexArray::add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer)
+    {
+        glBindVertexArray(rendererID);
+        vbuffer->bind();
+
+        const BufferLayout& layout { vbuffer->layout() };
+        const auto& elements { layout.elements() };
+        for (int i {}; i < static_cast<int>(elements.size()); i++)
+        {
+            glEnableVertexAttribArray(i);
+            glVertexAttribPointer(i,
+                elements[i].component_count(),
+                ShaderData::to_opengltype(elements[i].shader_datatype),
+                elements[i].normalized ? GL_TRUE : GL_FALSE,
+                layout.stride(),
+                (const void*)elements[i].offset
+            );
+        }
+
+        vbuffers.push_back(vbuffer);
+    }
+
+    void OpenGLVertexArray::set_ibuffer(const std::shared_ptr<IndexBuffer>& ibuffer)
+    {
+        glBindVertexArray(rendererID);
+        ibuffer->bind();
+
+        this->ibuffer = ibuffer;
+    }
 }
 

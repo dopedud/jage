@@ -25,7 +25,7 @@ int main(int argc, char** argv)
         }
     };
 
-    APP_MSG_INFO("Setting event callback for window.");
+    APP_MSG_TRACE("Setting event callback for window.");
     window->set_eventcallback([OnWindowClose](const Event& e) -> void
     {
         EventDispatcher dispatcher { e };
