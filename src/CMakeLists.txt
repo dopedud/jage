@@ -1,7 +1,9 @@
 set(ENGINE_NAME JAGE CACHE STRING "" FORCE)
 
-set(SRC
+set(CORE_SRC
     jgpch.cxx
+    init.cxx
+    resource_manager.cxx
     "log.cxx"
     event.cxx
     "input.cxx"
@@ -15,12 +17,12 @@ set(SRC
     platform/glfw/opengl3/imgui_layer.cxx
 )
 
-set(ENGINE_SOURCES)
-foreach(src ${SRC})
-    list(APPEND ENGINE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${src})
+set(CORE_SOURCES)
+foreach(src ${CORE_SRC})
+    list(APPEND CORE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${src})
 endforeach()
 
-add_library(${ENGINE_NAME} SHARED ${ENGINE_SOURCES})
+add_library(${ENGINE_NAME} SHARED ${CORE_SOURCES})
 
 target_compile_definitions(${ENGINE_NAME} PRIVATE
     ENGINE_INNAME=${ENGINE_NAME}
@@ -39,7 +41,6 @@ set_target_properties(${ENGINE_NAME} PROPERTIES
 
 set(PUBLIC_LIBRARIES
     spdlog::spdlog
-    argparse
 )
 
 set(PRIVATE_LIBRARIES
@@ -47,6 +48,7 @@ set(PRIVATE_LIBRARIES
     glad
     glm
     dear_imgui
+    tinygltf
 )
 
 target_link_libraries(${ENGINE_NAME} PUBLIC ${PUBLIC_LIBRARIES})

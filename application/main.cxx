@@ -5,9 +5,9 @@ using namespace JAGE;
 
 int main(int argc, char** argv)
 {
-    LogInit();
-
     bool running { true };
+
+    Init(argc, argv);
 
     APP_MSG_INFO("Creating a window.");
     std::unique_ptr<Window> window { Window::Create() };
@@ -17,7 +17,8 @@ int main(int argc, char** argv)
 
     Input::SetActiveWindow(window.get());
 
-    std::function<bool(const WindowCloseEvent&)> OnWindowClose {
+    std::function<bool(const WindowCloseEvent&)> OnWindowClose
+    {
         [&running](const WindowCloseEvent& e) -> bool
         {
             running = false;
@@ -38,6 +39,7 @@ int main(int argc, char** argv)
     }
 
     window.reset();
+    Destroy();
 
     APP_MSG_INFO("Exiting application.");
 

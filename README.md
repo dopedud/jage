@@ -47,7 +47,7 @@ template is provided as shown below:
 
 ```json
 {
-    "name": "user-debug",
+    "name": "user_debug",
     "inherits": "debug",
     "displayName": "Debug Config (User)",
     "generator": "MinGW Makefiles",
@@ -60,7 +60,7 @@ template is provided as shown below:
 },
 
 {
-    "name": "user-release",
+    "name": "user_release",
     "inherits": "release",
     "displayName": "Release Config (User)", 
     "generator": "MinGW Makefiles",

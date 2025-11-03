@@ -4,6 +4,29 @@
 
 namespace JAGE
 {
+    static void opengl_message_callback(
+        GLenum, // source
+        GLenum, // type
+        GLuint, // id
+        GLenum severity,
+        GLsizei, // length
+        const GLchar *message,
+        const void* // userParam
+    )
+    {
+        switch (severity)
+        {
+            case GL_DEBUG_SEVERITY_NOTIFICATION: JAGE_MSG_TRACE(message); return;
+            case GL_DEBUG_SEVERITY_LOW:          JAGE_MSG_WARN(message); return;
+            case GL_DEBUG_SEVERITY_MEDIUM:       JAGE_MSG_ERROR(message); return;
+            case GL_DEBUG_SEVERITY_HIGH:         JAGE_MSG_CRITICAL(message); return;
+        }
+
+        JAGE_MSG_ERROR("JAGE error: unknown severity level from OpenGL.");
+
+        return;
+    }
+
     OpenGLContext::OpenGLContext(Window* window) : GraphicsContext(window) {}
 
     void OpenGLContext::Init()
@@ -13,10 +36,17 @@ namespace JAGE
         JAGE_ASSERT(glad_load_success, "Failed to initialise GLAD.");
 
         JAGE_MSG_INFO("Graphics Info:");
-        JAGE_MSG_INFO("     Graphics Backend:   OpenGL");
-        JAGE_LOG_INFO("     Vendor:             {}", (const char*)glGetString(GL_VENDOR));
-        JAGE_LOG_INFO("     Renderer:           {}", (const char*)glGetString(GL_RENDERER));
-        JAGE_LOG_INFO("     Version:            {}", (const char*)glGetString(GL_VERSION));
+        JAGE_MSG_INFO("    Graphics Backend:   OpenGL");
+        JAGE_LOG_INFO("    Vendor:             {}", (const char*)glGetString(GL_VENDOR));
+        JAGE_LOG_INFO("    Renderer:           {}", (const char*)glGetString(GL_RENDERER));
+        JAGE_LOG_INFO("    Version:            {}", (const char*)glGetString(GL_VERSION));
+
+#ifdef DEBUG
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(opengl_message_callback, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
+#endif
 
         glViewport(0, 0, window->width(), window->height());
 
@@ -49,18 +79,18 @@ namespace JAGE
         {
             switch (type)
             {
-                case ShaderData::Type::None:      return GL_NONE;
-                case ShaderData::Type::Mat3:
-                case ShaderData::Type::Mat4:
-                case ShaderData::Type::Float:
-                case ShaderData::Type::Float2:
-                case ShaderData::Type::Float3:
-                case ShaderData::Type::Float4:    return GL_FLOAT;
-                case ShaderData::Type::Int:
-                case ShaderData::Type::Int2:
-                case ShaderData::Type::Int3:
-                case ShaderData::Type::Int4:      return GL_INT;
-                case ShaderData::Type::Bool:      return GL_BOOL;
+                case Type::None:      return GL_NONE;
+                case Type::Mat3:
+                case Type::Mat4:
+                case Type::Float:
+                case Type::Float2:
+                case Type::Float3:
+                case Type::Float4:    return GL_FLOAT;
+                case Type::Int:
+                case Type::Int2:
+                case Type::Int3:
+                case Type::Int4:      return GL_INT;
+                case Type::Bool:      return GL_BOOL;
             }
 
             JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
@@ -172,15 +202,8 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
-    void OpenGLShader::bind() const
-    {
-        glUseProgram(rendererID);
-    }
-
-    void OpenGLShader::unbind() const
-    {
-        glUseProgram(0);
-    }
+    void OpenGLShader::bind() const { glUseProgram(rendererID); }
+    void OpenGLShader::unbind() const { glUseProgram(0); }
 
     // END SHADER IMPLEMENTATION
 
@@ -203,15 +226,8 @@ namespace JAGE
         glDeleteBuffers(1, &rendererID);
     }
 
-    void OpenGLVertexBuffer::bind() const
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, rendererID);
-    }
-
-    void OpenGLVertexBuffer::unbind() const
-    {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
+    void OpenGLVertexBuffer::bind() const { glBindBuffer(GL_ARRAY_BUFFER, rendererID); }
+    void OpenGLVertexBuffer::unbind() const { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
     // END OPENGL VERTEX BUFFER IMPLEMENTATION
 
@@ -237,15 +253,8 @@ namespace JAGE
         glDeleteBuffers(1, &rendererID);
     }
 
-    void OpenGLIndexBuffer::bind() const
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID);
-    }
-
-    void OpenGLIndexBuffer::unbind() const
-    {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
+    void OpenGLIndexBuffer::bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID); }
+    void OpenGLIndexBuffer::unbind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 
     // END OPENGL INDEX BUFFER IMPLEMENTATION
 
@@ -266,15 +275,8 @@ namespace JAGE
         glDeleteVertexArrays(1, &rendererID);
     }
 
-    void OpenGLVertexArray::bind() const
-    {
-        glBindVertexArray(rendererID);
-    }
-
-    void OpenGLVertexArray::unbind() const
-    {
-        glBindVertexArray(0);
-    }
+    void OpenGLVertexArray::bind() const { glBindVertexArray(rendererID); }
+    void OpenGLVertexArray::unbind() const { glBindVertexArray(0); }
 
     void OpenGLVertexArray::add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer)
     {

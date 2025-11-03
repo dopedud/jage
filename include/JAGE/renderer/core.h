@@ -44,7 +44,7 @@ namespace JAGE
         unsigned int offset;
         bool normalized;
 
-        BufferElement();
+        BufferElement() = default;
         BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized = false);
 
         unsigned int component_count() const;
@@ -53,7 +53,7 @@ namespace JAGE
     class JAGE_API BufferLayout
     {
     public:
-        BufferLayout();
+        BufferLayout() = default;
         BufferLayout(const std::initializer_list<BufferElement>& elements);
 
         const std::vector<BufferElement>& elements() const { return m_elements; };
@@ -67,7 +67,7 @@ namespace JAGE
     {
     public:
         static VertexBuffer* Create(float* vertices, unsigned int size);
-        VertexBuffer();
+        VertexBuffer() = default;
         virtual ~VertexBuffer() = default;
 
         virtual void bind() const = 0;

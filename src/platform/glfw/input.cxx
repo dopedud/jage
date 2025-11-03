@@ -29,7 +29,7 @@ namespace JAGE
         {
             double xpos, ypos;
             glfwGetCursorPos(glfw_handle, &xpos, &ypos);
-            return std::pair<float, float>(xpos, ypos);
+            return std::pair<float, float>{ xpos, ypos };
         }
 
         float GetMousePositionX() { return GetMousePosition().first; }

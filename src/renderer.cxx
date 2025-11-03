@@ -33,7 +33,6 @@ namespace JAGE
         }
     }
 
-    BufferElement::BufferElement() {}
     BufferElement::BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized)
     : shader_datatype { shader_datatype }
     , name { name }
@@ -64,12 +63,10 @@ namespace JAGE
         return 0;
     }
 
-    BufferLayout::BufferLayout() {}
     BufferLayout::BufferLayout(const std::initializer_list<BufferElement>& elements)
-    : m_elements { elements }
+    : m_elements { elements }, m_stride { 0 }
     {
         unsigned int offset {};
-        m_stride = 0;
 
         for (auto& element : m_elements)
         {
@@ -79,6 +76,5 @@ namespace JAGE
         }
     }
 
-    VertexBuffer::VertexBuffer() {}
     IndexBuffer::IndexBuffer(unsigned int count) : m_count { count } {}
 }

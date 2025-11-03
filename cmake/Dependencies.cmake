@@ -1,6 +1,17 @@
 set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/_deps)
-
 include(FetchContent)
+
+# build static 3rd-party libraries
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "build shared libraries by default" FORCE)
+
+# LIST OF DEPENDENCIES:
+#
+# SPDLOG
+# GLFW
+# GLM
+# GLAD
+# DEAR IMGUI
+# TINYGLTF
 
 # FETCH SPDLOG
 set(SPDLOG_VERSION v1.15.0)
@@ -10,23 +21,8 @@ FetchContent_Declare(
     GIT_TAG ${SPDLOG_VERSION}
 )
 
-set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-
 FetchContent_MakeAvailable(spdlog)
 # END FETCH SPDLOG
-
-# FETCH ARGPARSE
-set(ARGPARSE_VERSION v3.2)
-FetchContent_Declare(
-    argparse
-    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
-    GIT_TAG ${ARGPARSE_VERSION}
-)
-
-set(ARGPARSE_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
-set(ARGPARSE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-
-FetchContent_MakeAvailable(argparse)
 
 # FETCH GLFW
 set(GLFW_VERSION 3.3.10)
@@ -35,8 +31,6 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/glfw/glfw.git
     GIT_TAG ${GLFW_VERSION}
 )
-
-set(GLFW_LIBRARY_TYPE "STATIC" CACHE STRING "" FORCE)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -69,6 +63,21 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(dear_imgui)
 # END FETCH DEAR IMGUI
+
+# FETCH TINYGLTF
+set(TINYGLTF_VERSION v2.9.6)
+FetchContent_Declare(
+    tinygltf
+    GIT_REPOSITORY https://github.com/syoyo/tinygltf.git
+    GIT_TAG ${TINYGLTF_VERSION}
+)
+
+set(TINYGLTF_BUILD_LOADER_EXAMPLE OFF CACHE BOOL "" FORCE)
+set(TINYGLTF_INSTALL OFF CACHE BOOL "Install tinygltf files during install step. Usually set to OFF if you include tinygltf through add_subdirectory()" FORCE)
+set(TINYGLTF_INSTALL_VENDOR OFF CACHE BOOL "Install vendored nlohmann/json and nothings/stb headers" FORCE)
+
+FetchContent_MakeAvailable(tinygltf)
+# END FETCH TINYGLTF
 
 # BUILD GLAD
 # NOTE: GLAD is a special case for dependency management because unlike other dependencies where you have to fetch them

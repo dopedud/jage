@@ -15,6 +15,8 @@
  * - MACRO FOR SUPPRESSING WARNINGS IN CODE
  * - MACRO FOR SETTING BREAKPOINTS
  * - MACRO FOR SHIFT-LEFT BIT OPERATION
+ * 
+ * - INITIALIZATION/DESTRUCTION DEFINITIONS
  * - LOGGER DEFINITIONS
  * - WINDOW DEFINITIONS
  * - LAYER DEFINITIONS
@@ -114,6 +116,19 @@
 /**
  * 
  * 
+ * INITIALIZATION/DESTRUCTION DEFINITIONS
+ * 
+ * 
+ */
+namespace JAGE
+{
+    void JAGE_API Init(int argc, char** argv);
+    void JAGE_API Destroy();
+}
+
+/**
+ * 
+ * 
  * LOGGER DEFINITIONS
  * 
  * 
@@ -161,6 +176,7 @@ namespace JAGE
         inline static void Info(std::string_view msg)   { logger->info(msg); }
         inline static void Warn(std::string_view msg)   { logger->warn(msg); }
         inline static void Error(std::string_view msg)  { logger->error(msg); }
+        inline static void Critical(std::string_view msg)  { logger->critical(msg); }
 
         template<typename... Args>
         inline static void Trace(std::string_view log, Args &&... args)
@@ -177,6 +193,9 @@ namespace JAGE
         template<typename... Args>
         inline static void Error(std::string_view log, Args &&... args)
         { logger->error(log, std::forward<Args>(args)...); }
+        template<typename... Args>
+        inline static void Critical(std::string_view log, Args &&... args)
+        { logger->critical(log, std::forward<Args>(args)...); }
     };
 
     #define APP_MSG_TRACE(MSG) JAGE::AppLogger::Trace(MSG)
@@ -184,12 +203,14 @@ namespace JAGE
     #define APP_MSG_INFO(MSG) JAGE::AppLogger::Info(MSG)
     #define APP_MSG_WARN(MSG) JAGE::AppLogger::Warn(MSG)
     #define APP_MSG_ERROR(MSG) JAGE::AppLogger::Error(MSG)
+    #define APP_MSG_CRITICAL(MSG) JAGE::AppLogger::Critical(MSG); std::abort()
 
     #define APP_LOG_TRACE(LOG, ...) JAGE::AppLogger::Trace(LOG, __VA_ARGS__)
     #define APP_LOG_DEBUG(LOG, ...) JAGE::AppLogger::Debug(LOG, __VA_ARGS__)
     #define APP_LOG_INFO(LOG, ...) JAGE::AppLogger::Info(LOG, __VA_ARGS__)
     #define APP_LOG_WARN(LOG, ...) JAGE::AppLogger::Warn(LOG, __VA_ARGS__)
     #define APP_LOG_ERROR(LOG, ...) JAGE::AppLogger::Error(LOG, __VA_ARGS__)
+    #define APP_LOG_CRITICAL(LOG, ...) JAGE::AppLogger::Critical(LOG, __VA_ARGS__); std::abort()
 }
 
 /**

@@ -4,6 +4,7 @@
 #include "JAGE/renderer/core.h"
 
 #include "platform/input.h"
+
 #include <glad/glad.h>
 
 namespace JAGE

@@ -1,3 +1,5 @@
+#include "JAGE/resource_manager/core.h"
+
 #include "platform/glfw/window.h"
 
 #include "platform/glfw/opengl3/renderer.h"
@@ -13,9 +15,9 @@ namespace JAGE
     GLFWWindow::GLFWWindow(const WindowProperties& properties)
     {
         JAGE_MSG_INFO("Window Info:");
-        JAGE_MSG_INFO("     Backend:     GLFW");
-        JAGE_LOG_INFO("     Title:       \"{}\"", properties.title);
-        JAGE_LOG_INFO("     Dimensions:  {} x {}", properties.width, properties.height);
+        JAGE_MSG_INFO("    Backend:     GLFW");
+        JAGE_LOG_INFO("    Title:       \"{}\"", properties.title);
+        JAGE_LOG_INFO("    Dimensions:  {} x {}", properties.width, properties.height);
 
         data.properties = properties;
         data.OnEvent = [this](const Event& e) -> void { OnEvent(e); };
@@ -25,19 +27,12 @@ namespace JAGE
             JAGE_LOG_ERROR("GLFW error {}: {}.", error_code, desc);
         });
 
-        static bool s_GLFW_initialised {};
+        int success { glfwInit() };
+        JAGE_ASSERT(success, "GLFW error: Failed to initialise GLFW.")
 
-        if (!s_GLFW_initialised)
-        {
-            int success { glfwInit() };
-            JAGE_ASSERT(success, "Failed to initialise GLFW.")
-
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-            s_GLFW_initialised = true;
-        }
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         m_handle = glfwCreateWindow(
             properties.width,
@@ -45,7 +40,7 @@ namespace JAGE
             properties.title.c_str(), nullptr, nullptr
         );
 
-        JAGE_ASSERT(m_handle, "Failed to create GLFW window.");
+        JAGE_ASSERT(m_handle, "GLFW error: Failed to create GLFW window.");
 
         glfwMakeContextCurrent(m_handle);
         glfwSetWindowUserPointer(m_handle, &data);
@@ -161,6 +156,8 @@ namespace JAGE
 
         glfwDestroyWindow(m_handle);
         m_handle = nullptr;
+
+        glfwTerminate();
     }
 
     void GLFWWindow::OnRender()

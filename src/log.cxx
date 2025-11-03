@@ -22,7 +22,7 @@ namespace JAGE
 #ifdef DEBUG
         logger->set_level(app_level);
 #else
-        logger->set_level(spdlog::level::off);
+        logger->set_level(spdlog::level::critical);
 #endif
     }
 
@@ -33,7 +33,7 @@ namespace JAGE
 #ifdef DEBUG
         logger->set_level(engine_level);
 #else
-        logger->set_level(spdlog::level::off);
+        logger->set_level(spdlog::level::critical);
 #endif
     }
 }
