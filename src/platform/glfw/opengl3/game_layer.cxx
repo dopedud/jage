@@ -63,7 +63,7 @@ namespace JAGE
 
     void GameLayer::OnRender()
     {
-        shader->unbind();
+        shader->bind();
         varray->bind();
         Renderer::Render();
     }
