@@ -255,7 +255,6 @@ namespace JAGE
     {
     public:
         static std::unique_ptr<Window> Create(const WindowProperties& properties = WindowProperties{});
-        Window() = default;
         virtual ~Window() = default;
 
         unsigned width() const { return data.properties.width; }
@@ -290,7 +289,7 @@ namespace JAGE
         std::unique_ptr<GraphicsContext> graphics_context;
 
         std::vector<Layer*> layers {};
-        int layer_insert_index;
+        int layer_insert_index {};
 
         struct WindowData
         {
