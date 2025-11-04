@@ -16,10 +16,10 @@ namespace JAGE
     {
         switch (severity)
         {
-            case GL_DEBUG_SEVERITY_NOTIFICATION: JAGE_MSG_TRACE(message); return;
-            case GL_DEBUG_SEVERITY_LOW:          JAGE_MSG_WARN(message); return;
-            case GL_DEBUG_SEVERITY_MEDIUM:       JAGE_MSG_ERROR(message); return;
-            case GL_DEBUG_SEVERITY_HIGH:         JAGE_MSG_CRITICAL(message); return;
+            case GL_DEBUG_SEVERITY_NOTIFICATION:    JAGE_MSG_TRACE(message); return;
+            case GL_DEBUG_SEVERITY_LOW:             JAGE_MSG_WARN(message); return;
+            case GL_DEBUG_SEVERITY_MEDIUM:          JAGE_MSG_ERROR(message); return;
+            case GL_DEBUG_SEVERITY_HIGH:            JAGE_MSG_CRITICAL(message); return;
         }
 
         JAGE_MSG_ERROR("JAGE error: unknown severity level from OpenGL.");
@@ -124,11 +124,11 @@ namespace JAGE
         glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &compiled);
         if(compiled == GL_FALSE)
         {
-            GLint maxLength {};
-            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &maxLength);
+            GLint max_length {};
+            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &max_length);
 
-            GLchar infoLog[maxLength];
-            glGetShaderInfoLog(vertex_shader, maxLength, &maxLength, &infoLog[0]);
+            GLchar infoLog[max_length];
+            glGetShaderInfoLog(vertex_shader, max_length, &max_length, &infoLog[0]);
 
             glDeleteShader(vertex_shader);
 
@@ -147,11 +147,11 @@ namespace JAGE
         glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &compiled);
         if (compiled == GL_FALSE)
         {
-            GLint maxLength {};
-            glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &maxLength);
+            GLint max_length {};
+            glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &max_length);
 
-            GLchar infoLog[maxLength];
-            glGetShaderInfoLog(fragment_shader, maxLength, &maxLength, &infoLog[0]);
+            GLchar infoLog[max_length];
+            glGetShaderInfoLog(fragment_shader, max_length, &max_length, &infoLog[0]);
 
             glDeleteShader(fragment_shader);
 
@@ -172,11 +172,11 @@ namespace JAGE
         glGetProgramiv(rendererID, GL_LINK_STATUS, (int *)&linked);
         if (linked == GL_FALSE)
         {
-            GLint maxLength {};
-            glGetProgramiv(rendererID, GL_INFO_LOG_LENGTH, &maxLength);
+            GLint max_length {};
+            glGetProgramiv(rendererID, GL_INFO_LOG_LENGTH, &max_length);
 
-            GLchar infoLog[maxLength];
-            glGetProgramInfoLog(rendererID, maxLength, &maxLength, &infoLog[0]);
+            GLchar infoLog[max_length];
+            glGetProgramInfoLog(rendererID, max_length, &max_length, &infoLog[0]);
 
             glDeleteProgram(rendererID);
             glDeleteShader(vertex_shader);
@@ -209,12 +209,12 @@ namespace JAGE
 
     // OPENGL VERTEX BUFFER IMPLEMENTATION
 
-    VertexBuffer* VertexBuffer::Create(float* vertices, unsigned int size)
+    VertexBuffer* VertexBuffer::Create(float* vertices, unsigned size)
     {
         return new OpenGLVertexBuffer{ vertices, size };
     }
 
-    OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, unsigned int size)
+    OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, unsigned size)
     {
         glCreateBuffers(1, &rendererID);
         glBindBuffer(GL_ARRAY_BUFFER, rendererID);
@@ -233,19 +233,19 @@ namespace JAGE
 
     // OPENGL INDEX BUFFER IMPLEMENTATION
 
-    IndexBuffer* IndexBuffer::Create(unsigned int* indices, unsigned int count)
+    IndexBuffer* IndexBuffer::Create(unsigned* indices, unsigned count)
     {
         return new OpenGLIndexBuffer{ indices, count };
     }
 
-    OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned int* indices, unsigned int count) : IndexBuffer { count }
+    OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned* indices, unsigned count) : IndexBuffer { count }
     {
         glCreateBuffers(1, &rendererID);
 
         // GL_ELEMENT_ARRAY_BUFFER is not valid without an actively bound VAO
         // binding with GL_ARRAY_BUFFER allows the data to be loaded regardless of VAO state
         glBindBuffer(GL_ARRAY_BUFFER, rendererID);
-        glBufferData(GL_ARRAY_BUFFER, count * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, count * sizeof(unsigned), indices, GL_STATIC_DRAW);
     }
 
     OpenGLIndexBuffer::~OpenGLIndexBuffer()

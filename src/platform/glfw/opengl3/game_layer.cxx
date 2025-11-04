@@ -27,7 +27,7 @@ namespace JAGE
             -0.5f,  0.5f, 0.5f,     0.0f, 1.0f, 0.0f, 1.0f
         };
 
-        std::array<unsigned int, 3> indices
+        std::array<unsigned, 3> indices
         {
             0, 1, 2
         };

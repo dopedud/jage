@@ -171,12 +171,12 @@ namespace JAGE
     public:
         static void Init(spdlog::level::level_enum app_level);
 
-        inline static void Trace(std::string_view msg)  { logger->trace(msg); }
-        inline static void Debug(std::string_view msg)  { logger->debug(msg); }
-        inline static void Info(std::string_view msg)   { logger->info(msg); }
-        inline static void Warn(std::string_view msg)   { logger->warn(msg); }
-        inline static void Error(std::string_view msg)  { logger->error(msg); }
-        inline static void Critical(std::string_view msg)  { logger->critical(msg); }
+        inline static void Trace(std::string_view msg)      { logger->trace(msg); }
+        inline static void Debug(std::string_view msg)      { logger->debug(msg); }
+        inline static void Info(std::string_view msg)       { logger->info(msg); }
+        inline static void Warn(std::string_view msg)       { logger->warn(msg); }
+        inline static void Error(std::string_view msg)      { logger->error(msg); }
+        inline static void Critical(std::string_view msg)   { logger->critical(msg); }
 
         template<typename... Args>
         inline static void Trace(std::string_view log, Args &&... args)
@@ -198,19 +198,19 @@ namespace JAGE
         { logger->critical(log, std::forward<Args>(args)...); }
     };
 
-    #define APP_MSG_TRACE(MSG) JAGE::AppLogger::Trace(MSG)
-    #define APP_MSG_DEBUG(MSG) JAGE::AppLogger::Debug(MSG)
-    #define APP_MSG_INFO(MSG) JAGE::AppLogger::Info(MSG)
-    #define APP_MSG_WARN(MSG) JAGE::AppLogger::Warn(MSG)
-    #define APP_MSG_ERROR(MSG) JAGE::AppLogger::Error(MSG)
-    #define APP_MSG_CRITICAL(MSG) JAGE::AppLogger::Critical(MSG); std::abort()
+    #define APP_MSG_TRACE(MSG)      JAGE::AppLogger::Trace(MSG)
+    #define APP_MSG_DEBUG(MSG)      JAGE::AppLogger::Debug(MSG)
+    #define APP_MSG_INFO(MSG)       JAGE::AppLogger::Info(MSG)
+    #define APP_MSG_WARN(MSG)       JAGE::AppLogger::Warn(MSG)
+    #define APP_MSG_ERROR(MSG)      JAGE::AppLogger::Error(MSG)
+    #define APP_MSG_CRITICAL(MSG)   JAGE::AppLogger::Critical(MSG); std::abort()
 
-    #define APP_LOG_TRACE(LOG, ...) JAGE::AppLogger::Trace(LOG, __VA_ARGS__)
-    #define APP_LOG_DEBUG(LOG, ...) JAGE::AppLogger::Debug(LOG, __VA_ARGS__)
-    #define APP_LOG_INFO(LOG, ...) JAGE::AppLogger::Info(LOG, __VA_ARGS__)
-    #define APP_LOG_WARN(LOG, ...) JAGE::AppLogger::Warn(LOG, __VA_ARGS__)
-    #define APP_LOG_ERROR(LOG, ...) JAGE::AppLogger::Error(LOG, __VA_ARGS__)
-    #define APP_LOG_CRITICAL(LOG, ...) JAGE::AppLogger::Critical(LOG, __VA_ARGS__); std::abort()
+    #define APP_LOG_TRACE(LOG, ...)     JAGE::AppLogger::Trace(LOG, __VA_ARGS__)
+    #define APP_LOG_DEBUG(LOG, ...)     JAGE::AppLogger::Debug(LOG, __VA_ARGS__)
+    #define APP_LOG_INFO(LOG, ...)      JAGE::AppLogger::Info(LOG, __VA_ARGS__)
+    #define APP_LOG_WARN(LOG, ...)      JAGE::AppLogger::Warn(LOG, __VA_ARGS__)
+    #define APP_LOG_ERROR(LOG, ...)     JAGE::AppLogger::Error(LOG, __VA_ARGS__)
+    #define APP_LOG_CRITICAL(LOG, ...)  JAGE::AppLogger::Critical(LOG, __VA_ARGS__); std::abort()
 }
 
 /**
@@ -232,13 +232,14 @@ namespace JAGE
     struct WindowProperties
     {
         std::string title;
-        unsigned int width, height;
+        unsigned width;
+        unsigned height;
         bool vsync;
 
         WindowProperties(
             std::string_view title = "JAGE Engine",
-            unsigned int width = 1280,
-            unsigned int height = 720,
+            unsigned width = 1280,
+            unsigned height = 720,
             bool vsync = false
         )
         : title { title }
@@ -254,10 +255,11 @@ namespace JAGE
     {
     public:
         static std::unique_ptr<Window> Create(const WindowProperties& properties = WindowProperties{});
+        Window() = default;
         virtual ~Window() = default;
 
-        unsigned int width() const { return data.properties.width; }
-        unsigned int height() const { return data.properties.height; }
+        unsigned width() const { return data.properties.width; }
+        unsigned height() const { return data.properties.height; }
 
         virtual void OnRender() = 0;
 
@@ -288,7 +290,7 @@ namespace JAGE
         std::unique_ptr<GraphicsContext> graphics_context;
 
         std::vector<Layer*> layers {};
-        int layer_insert_index {};
+        int layer_insert_index;
 
         struct WindowData
         {
@@ -509,25 +511,25 @@ namespace JAGE
         #define JAGE_KEY_UP_ARROW       JAGE::Input::KeyCode::UP_ARROW
         #define JAGE_KEY_DOWN_ARROW     JAGE::Input::KeyCode::DOWN_ARROW
 
-        #define JAGE_KEY_LEFT_SHIFT JAGE::Input::KeyCode::LEFT_SHIFT
-        #define JAGE_KEY_RIGHT_SHIFT JAGE::Input::KeyCode::RIGHT_SHIFT
-        #define JAGE_KEY_LEFT_CONTROL JAGE::Input::KeyCode::LEFT_CONTROL
-        #define JAGE_KEY_RIGHT_CONTROL JAGE::Input::KeyCode::RIGHT_CONTROL
-        #define JAGE_KEY_LEFT_ALT JAGE::Input::KeyCode::LEFT_ALT
-        #define JAGE_KEY_RIGHT_ALT JAGE::Input::KeyCode::RIGHT_ALT
+        #define JAGE_KEY_LEFT_SHIFT     JAGE::Input::KeyCode::LEFT_SHIFT
+        #define JAGE_KEY_RIGHT_SHIFT    JAGE::Input::KeyCode::RIGHT_SHIFT
+        #define JAGE_KEY_LEFT_CONTROL   JAGE::Input::KeyCode::LEFT_CONTROL
+        #define JAGE_KEY_RIGHT_CONTROL  JAGE::Input::KeyCode::RIGHT_CONTROL
+        #define JAGE_KEY_LEFT_ALT       JAGE::Input::KeyCode::LEFT_ALT
+        #define JAGE_KEY_RIGHT_ALT      JAGE::Input::KeyCode::RIGHT_ALT
 
-        #define JAGE_KEY_F1 JAGE::Input::KeyCode::F1
-        #define JAGE_KEY_F2 JAGE::Input::KeyCode::F2
-        #define JAGE_KEY_F3 JAGE::Input::KeyCode::F3
-        #define JAGE_KEY_F4 JAGE::Input::KeyCode::F4
-        #define JAGE_KEY_F5 JAGE::Input::KeyCode::F5
-        #define JAGE_KEY_F6 JAGE::Input::KeyCode::F6
-        #define JAGE_KEY_F7 JAGE::Input::KeyCode::F7
-        #define JAGE_KEY_F8 JAGE::Input::KeyCode::F8
-        #define JAGE_KEY_F9 JAGE::Input::KeyCode::F9
-        #define JAGE_KEY_F10 JAGE::Input::KeyCode::F10
-        #define JAGE_KEY_F11 JAGE::Input::KeyCode::F11
-        #define JAGE_KEY_F12 JAGE::Input::KeyCode::F12
+        #define JAGE_KEY_F1     JAGE::Input::KeyCode::F1
+        #define JAGE_KEY_F2     JAGE::Input::KeyCode::F2
+        #define JAGE_KEY_F3     JAGE::Input::KeyCode::F3
+        #define JAGE_KEY_F4     JAGE::Input::KeyCode::F4
+        #define JAGE_KEY_F5     JAGE::Input::KeyCode::F5
+        #define JAGE_KEY_F6     JAGE::Input::KeyCode::F6
+        #define JAGE_KEY_F7     JAGE::Input::KeyCode::F7
+        #define JAGE_KEY_F8     JAGE::Input::KeyCode::F8
+        #define JAGE_KEY_F9     JAGE::Input::KeyCode::F9
+        #define JAGE_KEY_F10    JAGE::Input::KeyCode::F10
+        #define JAGE_KEY_F11    JAGE::Input::KeyCode::F11
+        #define JAGE_KEY_F12    JAGE::Input::KeyCode::F12
 
         #define JAGE_KEY_KP1 JAGE::Input::KeyCode::KP1
         #define JAGE_KEY_KP2 JAGE::Input::KeyCode::KP2
@@ -689,12 +691,13 @@ namespace JAGE
     class JAGE_API WindowResizeEvent : public Event
     {
     private:
-        const unsigned int m_width, m_height;
+        const unsigned m_width;
+        const unsigned m_height;
     public:
-        WindowResizeEvent(unsigned int width, unsigned int height) : m_width { width }, m_height { height } {}
+        WindowResizeEvent(unsigned width, unsigned height) : m_width { width }, m_height { height } {}
 
-        unsigned int width() const { return m_width; }
-        unsigned int height() const { return m_height; }
+        unsigned width() const { return m_width; }
+        unsigned height() const { return m_height; }
 
         std::string to_string() const override;
 
@@ -756,16 +759,16 @@ namespace JAGE
     class JAGE_API CharEvent : public Event
     {
     public:
-        CharEvent(unsigned int codepoint) : m_codepoint { codepoint } {}
+        CharEvent(unsigned codepoint) : m_codepoint { codepoint } {}
 
-        unsigned int codepoint() const { return m_codepoint; }
+        unsigned codepoint() const { return m_codepoint; }
 
         std::string to_string() const override;
 
         EVENT_CLASS_TYPE(Char)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
     private:
-        const unsigned int m_codepoint;
+        const unsigned m_codepoint;
     };
 }
 
@@ -829,7 +832,8 @@ namespace JAGE
         EVENT_CLASS_TYPE(MouseMoved)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
     private:
-        const float m_mouseX, m_mouseY;
+        const float m_mouseX;
+        const float m_mouseY;
     };
 
     class JAGE_API MouseScrolledEvent : public Event
@@ -845,6 +849,7 @@ namespace JAGE
         EVENT_CLASS_TYPE(MouseScrolled)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
     private:
-        const float m_offsetX, m_offsetY;
+        const float m_offsetX;
+        const float m_offsetY;
     };
 }

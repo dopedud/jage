@@ -9,7 +9,7 @@ namespace JAGE
 
     namespace ShaderData
     {
-        unsigned int size(Type type)
+        unsigned size(Type type)
         {
             switch (type)
             {
@@ -40,7 +40,7 @@ namespace JAGE
     , normalized { normalized }
     {}
 
-    unsigned int BufferElement::component_count() const
+    unsigned BufferElement::component_count() const
     {
         switch (shader_datatype)
         {
@@ -64,9 +64,9 @@ namespace JAGE
     }
 
     BufferLayout::BufferLayout(const std::initializer_list<BufferElement>& elements)
-    : m_elements { elements }, m_stride { 0 }
+    : m_elements { elements }, m_stride {}
     {
-        unsigned int offset {};
+        unsigned offset {};
 
         for (auto& element : m_elements)
         {
@@ -76,5 +76,5 @@ namespace JAGE
         }
     }
 
-    IndexBuffer::IndexBuffer(unsigned int count) : m_count { count } {}
+    IndexBuffer::IndexBuffer(unsigned count) : m_count { count } {}
 }

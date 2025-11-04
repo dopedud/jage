@@ -2,7 +2,7 @@
 
 namespace JAGE
 {
-    static void encode_utf8(char* out, unsigned int codepoint)
+    static void encode_utf8(char* out, unsigned codepoint)
     {
         if (codepoint <= 0x7F)
         {

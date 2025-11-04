@@ -42,7 +42,7 @@ namespace JAGE
 
     ResourceManager& ResourceManager::instance()
     {
-        std::lock_guard<std::mutex> lock{ mutex };
+        std::lock_guard<std::mutex> lock { mutex };
 
         if (!m_instance) m_instance.reset(new ResourceManager());
         return *m_instance;
