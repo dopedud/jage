@@ -12,7 +12,7 @@ namespace JAGE
     class OpenGLContext : public GraphicsContext
     {
     public:
-        OpenGLContext(Window* window);
+        OpenGLContext(Window* window) : GraphicsContext{ window } {}
 
         void Init() override;
         void Clear() override;
@@ -24,44 +24,54 @@ namespace JAGE
         GLenum to_opengltype(Type type);
     }
 
+    class OpenGLTexture : public Texture
+    {
+    public:
+        OpenGLTexture(unsigned char* data);
+        ~OpenGLTexture();
+
+        void bind() override;
+        void unbind() override;
+    };
+
     class OpenGLShader : public Shader
     {
     public:
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
-        virtual ~OpenGLShader();
+        ~OpenGLShader();
 
-        void bind() const override;
-        void unbind() const override;
+        void bind() override;
+        void unbind() override;
     };
 
     class OpenGLVertexBuffer : public VertexBuffer
     {
     public:
         OpenGLVertexBuffer(float* vertices, uint32_t size);
-        virtual ~OpenGLVertexBuffer();
+        ~OpenGLVertexBuffer();
 
-        void bind() const override;
-        void unbind() const override;
+        void bind() override;
+        void unbind() override;
     };
 
     class OpenGLIndexBuffer : public IndexBuffer
     {
     public:
         OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
-        virtual ~OpenGLIndexBuffer();
+        ~OpenGLIndexBuffer();
 
-        void bind() const override;
-        void unbind() const override;
+        void bind() override;
+        void unbind() override;
     };
 
     class OpenGLVertexArray : public VertexArray
     {
     public:
         OpenGLVertexArray();
-        virtual ~OpenGLVertexArray();
+        ~OpenGLVertexArray();
 
-        void bind() const override;
-        void unbind() const override;
+        void bind() override;
+        void unbind() override;
 
         void add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer) override;
         void set_ibuffer(const std::shared_ptr<IndexBuffer>& ibuffer) override;

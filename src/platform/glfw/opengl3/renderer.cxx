@@ -27,8 +27,6 @@ namespace JAGE
         return;
     }
 
-    OpenGLContext::OpenGLContext(Window* window) : GraphicsContext(window) {}
-
     void OpenGLContext::Init()
     {
         // need to initialise GLAD first to use glGetString()
@@ -79,18 +77,18 @@ namespace JAGE
         {
             switch (type)
             {
-                case Type::None:      return GL_NONE;
+                case Type::None:        return GL_NONE;
                 case Type::Mat3:
                 case Type::Mat4:
                 case Type::Float:
                 case Type::Float2:
                 case Type::Float3:
-                case Type::Float4:    return GL_FLOAT;
+                case Type::Float4:      return GL_FLOAT;
                 case Type::Int:
                 case Type::Int2:
                 case Type::Int3:
-                case Type::Int4:      return GL_INT;
-                case Type::Bool:      return GL_BOOL;
+                case Type::Int4:        return GL_INT;
+                case Type::Bool:        return GL_BOOL;
             }
 
             JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
@@ -99,7 +97,29 @@ namespace JAGE
         }
     }
 
-    // SHADER IMPLEMENTATION
+    // OPENGL TEXTURE IMPLEMENTATION
+
+    Texture* Texture::Create(unsigned char* data)
+    {
+        return new OpenGLTexture{ data };
+    }
+
+    OpenGLTexture::OpenGLTexture(unsigned char* data)
+    {
+
+    }
+
+    OpenGLTexture::~OpenGLTexture()
+    {
+
+    }
+
+    void OpenGLTexture::bind() {}
+    void OpenGLTexture::unbind() {}
+
+    // END OPENGL TEXTURE IMPLEMENTATION
+
+    // OPENGL SHADER IMPLEMENTATION
 
     Shader* Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
     {
@@ -162,23 +182,23 @@ namespace JAGE
 
         JAGE_MSG_TRACE("Fragment shader initialised.");
 
-        rendererID = glCreateProgram();
+        shaderID = glCreateProgram();
         GLint linked {};
 
-        glAttachShader(rendererID, vertex_shader);
-        glAttachShader(rendererID, fragment_shader);
-        glLinkProgram(rendererID);
+        glAttachShader(shaderID, vertex_shader);
+        glAttachShader(shaderID, fragment_shader);
+        glLinkProgram(shaderID);
 
-        glGetProgramiv(rendererID, GL_LINK_STATUS, (int *)&linked);
+        glGetProgramiv(shaderID, GL_LINK_STATUS, (int *)&linked);
         if (linked == GL_FALSE)
         {
             GLint max_length {};
-            glGetProgramiv(rendererID, GL_INFO_LOG_LENGTH, &max_length);
+            glGetProgramiv(shaderID, GL_INFO_LOG_LENGTH, &max_length);
 
             GLchar infoLog[max_length];
-            glGetProgramInfoLog(rendererID, max_length, &max_length, &infoLog[0]);
+            glGetProgramInfoLog(shaderID, max_length, &max_length, &infoLog[0]);
 
-            glDeleteProgram(rendererID);
+            glDeleteProgram(shaderID);
             glDeleteShader(vertex_shader);
             glDeleteShader(fragment_shader);
 
@@ -189,23 +209,23 @@ namespace JAGE
 
         JAGE_MSG_TRACE("Shader program initialised.");
 
-        glDetachShader(rendererID, vertex_shader);
-        glDetachShader(rendererID, fragment_shader);
+        glDetachShader(shaderID, vertex_shader);
+        glDetachShader(shaderID, fragment_shader);
 
         JAGE_MSG_TRACE("OpenGL shader initialised.");
     }
 
     OpenGLShader::~OpenGLShader()
     {
-        glDeleteProgram(rendererID);
+        glDeleteProgram(shaderID);
     }
 
     DISABLE_WARNING_POP
 
-    void OpenGLShader::bind() const { glUseProgram(rendererID); }
-    void OpenGLShader::unbind() const { glUseProgram(0); }
+    void OpenGLShader::bind() { glUseProgram(shaderID); }
+    void OpenGLShader::unbind() { glUseProgram(0); }
 
-    // END SHADER IMPLEMENTATION
+    // END OPENGL SHADER IMPLEMENTATION
 
     // OPENGL VERTEX BUFFER IMPLEMENTATION
 
@@ -226,8 +246,8 @@ namespace JAGE
         glDeleteBuffers(1, &rendererID);
     }
 
-    void OpenGLVertexBuffer::bind() const { glBindBuffer(GL_ARRAY_BUFFER, rendererID); }
-    void OpenGLVertexBuffer::unbind() const { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+    void OpenGLVertexBuffer::bind() { glBindBuffer(GL_ARRAY_BUFFER, rendererID); }
+    void OpenGLVertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
     // END OPENGL VERTEX BUFFER IMPLEMENTATION
 
@@ -238,7 +258,7 @@ namespace JAGE
         return new OpenGLIndexBuffer{ indices, count };
     }
 
-    OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned* indices, unsigned count) : IndexBuffer { count }
+    OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned* indices, unsigned count) : IndexBuffer{ count }
     {
         glCreateBuffers(1, &rendererID);
 
@@ -253,8 +273,8 @@ namespace JAGE
         glDeleteBuffers(1, &rendererID);
     }
 
-    void OpenGLIndexBuffer::bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID); }
-    void OpenGLIndexBuffer::unbind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
+    void OpenGLIndexBuffer::bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID); }
+    void OpenGLIndexBuffer::unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 
     // END OPENGL INDEX BUFFER IMPLEMENTATION
 
@@ -275,8 +295,8 @@ namespace JAGE
         glDeleteVertexArrays(1, &rendererID);
     }
 
-    void OpenGLVertexArray::bind() const { glBindVertexArray(rendererID); }
-    void OpenGLVertexArray::unbind() const { glBindVertexArray(0); }
+    void OpenGLVertexArray::bind() { glBindVertexArray(rendererID); }
+    void OpenGLVertexArray::unbind() { glBindVertexArray(0); }
 
     void OpenGLVertexArray::add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer)
     {
@@ -307,5 +327,7 @@ namespace JAGE
 
         this->ibuffer = ibuffer;
     }
+
+    // END OPENGL VERTEX ARRAY IMPLEMENTATION
 }
 

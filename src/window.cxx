@@ -4,9 +4,7 @@
 
 namespace JAGE
 {
-    Layer::Layer(Window* window, std::string_view name)
-    : window { window }
-    , m_name { name }
+    Layer::Layer(Window* window, std::string_view name) : window { window }, m_name { name }
     {
         JAGE_MSG_TRACE("Initialised a layer with name: " + m_name);
     }

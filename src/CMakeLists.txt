@@ -3,7 +3,7 @@ set(ENGINE_NAME JAGE CACHE STRING "" FORCE)
 set(CORE_SRC
     jgpch.cxx
     init.cxx
-    resource_manager.cxx
+    resources.cxx
     "log.cxx"
     event.cxx
     "input.cxx"
@@ -49,6 +49,7 @@ set(PRIVATE_LIBRARIES
     glm
     dear_imgui
     tinygltf
+    stb_image
 )
 
 target_link_libraries(${ENGINE_NAME} PUBLIC ${PUBLIC_LIBRARIES})

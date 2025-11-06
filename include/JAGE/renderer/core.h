@@ -24,16 +24,28 @@ namespace JAGE
         unsigned JAGE_API size(Type type);
     }
 
+    class JAGE_API Texture
+    {
+    public:
+        static Texture* Create(unsigned char* data);
+        virtual ~Texture() = default;
+
+        virtual void bind() = 0;
+        virtual void unbind() = 0;
+    protected:
+        unsigned textureID;
+    };
+
     class JAGE_API Shader
     {
     public:
         static Shader* Create(std::string_view vertex_str, std::string_view fragment_str);
         virtual ~Shader() = default;
 
-        virtual void bind() const = 0;
-        virtual void unbind() const = 0;
+        virtual void bind() = 0;
+        virtual void unbind() = 0;
     protected:
-        unsigned rendererID;
+        unsigned shaderID;
     };
 
     struct JAGE_API BufferElement
@@ -45,7 +57,12 @@ namespace JAGE
         bool normalized;
 
         BufferElement() = default;
-        BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized = false);
+        BufferElement::BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized)
+        : shader_datatype   { shader_datatype }
+        , name              { name }
+        , size              { ShaderData::size(shader_datatype) }
+        , normalized        { normalized }
+        {}
 
         unsigned component_count() const;
     };
@@ -70,10 +87,10 @@ namespace JAGE
         VertexBuffer() = default;
         virtual ~VertexBuffer() = default;
 
-        virtual void bind() const = 0;
-        virtual void unbind() const = 0;
+        virtual void bind() = 0;
+        virtual void unbind() = 0;
 
-        const BufferLayout& layout() { return m_layout; }
+        const BufferLayout& layout() const { return m_layout; }
         void set_layout(const BufferLayout& layout) { m_layout = layout; }
     protected:
         unsigned rendererID;
@@ -84,11 +101,11 @@ namespace JAGE
     {
     public:
         static IndexBuffer* Create(unsigned* indices, unsigned count);
-        IndexBuffer(unsigned count);
+        IndexBuffer(unsigned count) : m_count { count } {}
         virtual ~IndexBuffer() = default;
 
-        virtual void bind() const = 0;
-        virtual void unbind() const = 0;
+        virtual void bind() = 0;
+        virtual void unbind() = 0;
 
         unsigned count() const { return m_count; }
     protected:
@@ -102,8 +119,8 @@ namespace JAGE
         static VertexArray* Create();
         virtual ~VertexArray() = default;
 
-        virtual void bind() const = 0;
-        virtual void unbind() const = 0;
+        virtual void bind() = 0;
+        virtual void unbind() = 0;
 
         virtual void add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer) = 0;
         virtual void set_ibuffer(const std::shared_ptr<IndexBuffer>& ibuffer) = 0;

@@ -12,6 +12,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "build shared libraries by default" FORCE)
 # GLAD
 # DEAR IMGUI
 # TINYGLTF
+# STB_IMAGE
 
 # FETCH SPDLOG
 set(SPDLOG_VERSION v1.15.0)
@@ -56,12 +57,12 @@ FetchContent_MakeAvailable(glm)
 # FETCH DEAR IMGUI
 set(DEAR_IMGUI_VERSION v1.92.3-docking)
 FetchContent_Declare(
-    dear_imgui
+    dear_imgui_repo
     GIT_REPOSITORY https://github.com/ocornut/imgui.git
     GIT_TAG ${DEAR_IMGUI_VERSION}
 )
 
-FetchContent_MakeAvailable(dear_imgui)
+FetchContent_MakeAvailable(dear_imgui_repo)
 # END FETCH DEAR IMGUI
 
 # FETCH TINYGLTF
@@ -79,6 +80,16 @@ set(TINYGLTF_INSTALL_VENDOR OFF CACHE BOOL "Install vendored nlohmann/json and n
 FetchContent_MakeAvailable(tinygltf)
 # END FETCH TINYGLTF
 
+# FETCH STB_IMAGE
+set(STB_IMAGE_VERSION f1c79c02822848a9bed4315b12c8c8f3761e1296)
+FetchContent_Declare(
+    stb_image_repo
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG ${STB_IMAGE_VERSION}
+)
+
+FetchContent_MakeAvailable(stb_image_repo)
+
 # BUILD GLAD
 # NOTE: GLAD is a special case for dependency management because unlike other dependencies where you have to fetch them
 # online from GitHub or other repositories, GLAD does not have that and instead let developers fetch them via a
@@ -90,23 +101,29 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src/external/glad)
 # BUILD DEAR IMGUI
 # NOTE: Dear ImGui is build-agnostic. That is, it lets users build its files using their own build system. Hence, only
 # the required files are used to build Dear ImGui.
-set(DEAR_IMGUI_NAME "dear_imgui" CACHE STRING "" FORCE)
-
 add_library(dear_imgui STATIC
-    ${dear_imgui_SOURCE_DIR}/imgui.cpp
-    ${dear_imgui_SOURCE_DIR}/imgui_draw.cpp
-    ${dear_imgui_SOURCE_DIR}/imgui_tables.cpp
-    ${dear_imgui_SOURCE_DIR}/imgui_widgets.cpp
-    ${dear_imgui_SOURCE_DIR}/imgui_demo.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/imgui.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/imgui_draw.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/imgui_tables.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/imgui_widgets.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/imgui_demo.cpp
 
-    ${dear_imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-    ${dear_imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
 target_include_directories(dear_imgui PUBLIC
-    ${dear_imgui_SOURCE_DIR}
-    ${dear_imgui_SOURCE_DIR}/backends
+    ${dear_imgui_repo_SOURCE_DIR}
+    ${dear_imgui_repo_SOURCE_DIR}/backends
 )
 
 target_link_libraries(dear_imgui PUBLIC glfw glad)
 # END BUILD DEAR IMGUI
+
+# BUILD STB_IMAGE
+add_library(stb_image INTERFACE)
+
+target_include_directories(stb_image INTERFACE
+    ${stb_image_repo_SOURCE_DIR}
+)
+# END BUILD STB_IMAGE

@@ -1,12 +1,9 @@
-#include "JAGE/core.h"
 #include "JAGE/renderer/core.h"
 
 #include "log.h"
 
 namespace JAGE
 {
-    GraphicsContext::GraphicsContext(Window* window) : window { window } {}
-
     namespace ShaderData
     {
         unsigned size(Type type)
@@ -32,13 +29,6 @@ namespace JAGE
             return 0;
         }
     }
-
-    BufferElement::BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized)
-    : shader_datatype { shader_datatype }
-    , name { name }
-    , size { ShaderData::size(shader_datatype) }
-    , normalized { normalized }
-    {}
 
     unsigned BufferElement::component_count() const
     {
@@ -75,6 +65,4 @@ namespace JAGE
             m_stride += element.size;
         }
     }
-
-    IndexBuffer::IndexBuffer(unsigned count) : m_count { count } {}
 }

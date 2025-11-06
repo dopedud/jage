@@ -229,7 +229,7 @@ namespace JAGE
     class JAGE_API GraphicsContext;
     class JAGE_API Layer;
 
-    struct WindowProperties
+    struct JAGE_API WindowProperties
     {
         std::string title;
         unsigned width;
@@ -264,8 +264,8 @@ namespace JAGE
 
         void set_eventcallback(const EventCallbackFn& callback) { data.callback = callback; }
 
-        virtual void set_vsync(bool enabled) = 0;
         bool vsync() const { return data.properties.vsync; }
+        virtual void set_vsync(bool enabled) = 0;
 
         /**
          * @fn handle()
@@ -343,7 +343,7 @@ namespace JAGE
     class JAGE_API GraphicsContext
     {
     public:
-        GraphicsContext(Window* window);
+        GraphicsContext(Window* window) : window { window } {}
 
         virtual void Init() = 0;
         virtual void Clear() = 0;
@@ -611,9 +611,9 @@ namespace JAGE
         bool category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
 
         bool handled() const { return m_handled; }
-        void set_handled(bool handled) const { this->m_handled = handled; }
+        void set_handled(bool handled) { this->m_handled = handled; }
     protected:
-        mutable bool m_handled { false };
+        bool m_handled {};
     };
 
     inline std::ostream& operator<<(std::ostream& os, const Event& e) { return os << e.to_string(); }

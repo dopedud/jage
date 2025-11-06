@@ -1,6 +1,6 @@
-#include "JAGE/resource_manager/core.h"
-
 #include "platform/glfw/window.h"
+
+#include "JAGE/resources/core.h"
 
 #include "platform/glfw/opengl3/renderer.h"
 #include "log.h"

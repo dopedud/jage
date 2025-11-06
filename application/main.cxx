@@ -11,11 +11,10 @@ int main(int argc, char** argv)
 
     APP_MSG_INFO("Creating a window.");
     std::unique_ptr<Window> window { Window::Create() };
+    Input::SetActiveWindow(window.get());
 
     window->PushLayer(new GameLayer{ window.get() });
     window->PushOverlay(new ImguiLayer{ window.get() });
-
-    Input::SetActiveWindow(window.get());
 
     std::function<bool(const WindowCloseEvent&)> OnWindowClose
     {
@@ -39,6 +38,8 @@ int main(int argc, char** argv)
     }
 
     window.reset();
+    Input::SetActiveWindow(nullptr);
+
     Destroy();
 
     APP_MSG_INFO("Exiting application.");
