@@ -611,9 +611,9 @@ namespace JAGE
         bool category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
 
         bool handled() const { return m_handled; }
-        void set_handled(bool handled) { this->m_handled = handled; }
+        void set_handled(bool handled) const { m_handled = handled; }
     protected:
-        bool m_handled {};
+        mutable bool m_handled {};
     };
 
     inline std::ostream& operator<<(std::ostream& os, const Event& e) { return os << e.to_string(); }
@@ -739,20 +739,20 @@ namespace JAGE
         , m_mods { mods }
         {}
 
-        Input::KeyCode key() const { return m_key; }
-        int scancode() const { return m_scancode; }
-        Input::Action action() const { return m_action; }
-        int mods() const { return m_mods; }
+        Input::KeyCode  key()       const { return m_key; }
+        int             scancode()  const { return m_scancode; }
+        Input::Action   action()    const { return m_action; }
+        int             mods()      const { return m_mods; }
 
         std::string to_string() const override;
 
         EVENT_CLASS_TYPE(Key)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
     private:
-        const Input::KeyCode m_key;
-        const int m_scancode;
-        const Input::Action m_action;
-        const int m_mods;
+        const Input::KeyCode    m_key;
+        const int               m_scancode;
+        const Input::Action     m_action;
+        const int               m_mods;
     };
 
     class JAGE_API CharEvent : public Event
@@ -789,18 +789,18 @@ namespace JAGE
         , m_mods { mods }
         {}
 
-        Input::MouseButton button() const { return m_button; }
-        Input::Action action() const { return m_action; }
-        int mods() const { return m_mods; }
+        Input::MouseButton  button()    const { return m_button; }
+        Input::Action       action()    const { return m_action; }
+        int                 mods()      const { return m_mods; }
 
         std::string to_string() const override;
 
         EVENT_CLASS_TYPE(MouseButton)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
     private:
-        const Input::MouseButton m_button;
-        const Input::Action m_action;
-        const int m_mods;
+        const Input::MouseButton    m_button;
+        const Input::Action         m_action;
+        const int                   m_mods;
     };
 
     class JAGE_API MouseEnterEvent : public Event

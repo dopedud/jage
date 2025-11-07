@@ -43,11 +43,12 @@ namespace JAGE
             6, 0, 1
         };
 
-        std::array<float, 3 * 7> vertices2
+        std::array<float, 3 * 9> vertices2
         {
-            -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f, 1.0f,
-            0.0f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f, 1.0f,
-            0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f, 1.0f, 
+            // position             // color                    // texture coords
+            -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
+            0.0f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f, 1.0f,     0.5f, 1.0f,
+            0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 0.0f
         };
 
         std::array<unsigned, 3> indices2
@@ -59,8 +60,10 @@ namespace JAGE
         {
             { ShaderData::Type::Float3, "v_position" },
             { ShaderData::Type::Float4, "v_color" },
+            { ShaderData::Type::Float2, "v_texcoord" },
         };
 
+        ImageResource image { "image.jpg" };
         ShaderResource default_shader { "default.vs", "default.fs" };
 
         shader.reset(Shader::Create(default_shader.vs(), default_shader.fs()));

@@ -8,6 +8,50 @@
 
 namespace JAGE
 {
+    ImageResource::ImageResource(const std::string& filepath_str)
+    {
+        std::string path_str { path + "images/" + filepath_str };
+
+        m_data = stbi_load(path_str.c_str(), &m_width, &m_height, &m_channels, 0);
+
+        if (!m_data)
+        {
+            JAGE_LOG_ERROR("JAGE I/O error: failed to load image at path - {}", path_str);
+            JAGE_MSG_ERROR("Returning empty contents.");
+        }
+    }
+
+    ImageResource::
+
+    ImageResource::ImageResource(ImageResource&& other) noexcept
+    : m_data { other.m_data }
+    , m_width { other.m_width }
+    , m_height { other.m_height }
+    , m_channels { other.m_channels }
+    {
+        other.m_data = nullptr;
+    }
+
+    ImageResource& ImageResource::operator=(ImageResource&& other) noexcept
+    {
+        if (this != &other)
+        {
+            stbi_image_free(m_data);
+            m_data = other.m_data;
+            m_width = other.m_width;
+            m_height = other.m_height;
+            m_channels = other.m_channels;
+            other.m_data = nullptr;
+        }
+
+        return *this;
+    }
+
+    ImageResource::~ImageResource()
+    {
+        stbi_image_free(m_data);
+    }
+
     ShaderResource::ShaderResource(const std::string& vs_filepath_str, const std::string& fs_filepath_str)
     {
         std::string vs_path_str { path + "shaders/" + vs_filepath_str };
@@ -45,11 +89,6 @@ namespace JAGE
             vs_str = "";
             fs_str = "";
         }
-    }
-
-    ImageResource::ImageResource(const std::string& filepath_str)
-    {
-        
     }
 
     ResourceManager& ResourceManager::instance()

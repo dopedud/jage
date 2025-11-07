@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <cstdlib>
 #include <cstdint>
+#include <cstring>
 #include <csignal>
 
 #include <string>

@@ -2,6 +2,7 @@
 
 #include "JAGE/core.h"
 #include "JAGE/renderer/core.h"
+#include "JAGE/resources/core.h"
 
 #include "platform/input.h"
 
@@ -27,7 +28,7 @@ namespace JAGE
     class OpenGLTexture : public Texture
     {
     public:
-        OpenGLTexture(unsigned char* data);
+        OpenGLTexture(unsigned char* data, unsigned width, unsigned height);
         ~OpenGLTexture();
 
         void bind() override;

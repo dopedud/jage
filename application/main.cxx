@@ -38,7 +38,6 @@ int main(int argc, char** argv)
     }
 
     window.reset();
-    Input::SetActiveWindow(nullptr);
 
     Destroy();
 

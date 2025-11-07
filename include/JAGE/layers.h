@@ -17,10 +17,10 @@ namespace JAGE
 
         void OnEvent(const Event& e) override;
     private:
-        std::shared_ptr<VertexArray> varray;
-        std::shared_ptr<Shader> shader;
-        std::shared_ptr<VertexBuffer> vbuffer;
-        std::shared_ptr<IndexBuffer> ibuffer;
+        std::unique_ptr<VertexArray> varray;
+        std::unique_ptr<Shader> shader;
+        std::unique_ptr<VertexBuffer> vbuffer;
+        std::unique_ptr<IndexBuffer> ibuffer;
     };
 
     class JAGE_API ImguiLayer final : public Layer

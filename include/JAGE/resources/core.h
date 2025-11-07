@@ -13,6 +13,31 @@ namespace JAGE
         std::string path;
     };
 
+    class JAGE_API ImageResource : public Resource
+    {
+    public:
+        ImageResource(const std::string& filepath_str);
+        ~ImageResource();
+
+        // for now, delete copy constructor/assignment operator since image loader backend's (stb_image) internal
+        // memory allocator doesn't support copying image data
+        ImageResource(const ImageResource& other) = delete;
+        ImageResource& operator=(const ImageResource& other) = delete;
+
+        ImageResource(ImageResource&& other) noexcept;
+        ImageResource& operator=(ImageResource&& other) noexcept;
+
+        unsigned char* data() const { return m_data; }
+        unsigned width() const { return m_width; }
+        unsigned height() const { return m_height; }
+        unsigned channels() const { return m_channels; }
+    private:
+        unsigned char* m_data;
+        int m_width;
+        int m_height;
+        int m_channels;
+    };
+
     class JAGE_API ShaderResource : public Resource
     {
     public:
@@ -24,21 +49,6 @@ namespace JAGE
     private:
         std::string vs_str;
         std::string fs_str;
-    };
-
-    class JAGE_API ImageResource : public Resource
-    {
-    public:
-        ImageResource(const std::string& filepath_str);
-        ~ImageResource() = default;
-
-        unsigned width() const { return m_width; }
-        unsigned height() const { return m_height; }
-        unsigned channels() const { return m_channels; }
-    private:
-        unsigned m_width;
-        unsigned m_height;
-        unsigned m_channels;
     };
 
     class JAGE_API ResourceManager

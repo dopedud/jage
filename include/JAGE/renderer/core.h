@@ -1,6 +1,7 @@
 #pragma once
 
 #include "JAGE/core.h"
+#include "JAGE/resources/core.h"
 
 namespace JAGE
 {
@@ -27,7 +28,8 @@ namespace JAGE
     class JAGE_API Texture
     {
     public:
-        static Texture* Create(unsigned char* data);
+        static Texture* Create(unsigned char* data, unsigned width, unsigned height);
+        // static Texture* Create(const ImageResource& resource);
         virtual ~Texture() = default;
 
         virtual void bind() = 0;
@@ -40,6 +42,7 @@ namespace JAGE
     {
     public:
         static Shader* Create(std::string_view vertex_str, std::string_view fragment_str);
+        // static Shader* Create(const ShaderResource& resource);
         virtual ~Shader() = default;
 
         virtual void bind() = 0;
@@ -57,7 +60,7 @@ namespace JAGE
         bool normalized;
 
         BufferElement() = default;
-        BufferElement::BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized)
+        BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized = false)
         : shader_datatype   { shader_datatype }
         , name              { name }
         , size              { ShaderData::size(shader_datatype) }

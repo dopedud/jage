@@ -2,6 +2,7 @@
 
 in vec3 f_position;
 in vec4 f_color;
+in vec2 f_texcoord;
 
 out vec4 color;
 
