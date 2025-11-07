@@ -19,8 +19,9 @@ namespace JAGE
     private:
         std::unique_ptr<VertexArray> varray;
         std::unique_ptr<Shader> shader;
-        std::unique_ptr<VertexBuffer> vbuffer;
-        std::unique_ptr<IndexBuffer> ibuffer;
+        std::unique_ptr<Texture> texture;
+        std::shared_ptr<VertexBuffer> vbuffer;
+        std::shared_ptr<IndexBuffer> ibuffer;
     };
 
     class JAGE_API ImguiLayer final : public Layer

@@ -106,7 +106,7 @@ namespace JAGE
 
     OpenGLTexture::OpenGLTexture(unsigned char* data, unsigned width, unsigned height)
     {
-        glCreateBuffers(1, &textureID);
+        glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
@@ -120,7 +120,7 @@ namespace JAGE
 
     OpenGLTexture::~OpenGLTexture()
     {
-
+        glDeleteTextures(1, &textureID);
     }
 
     void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }

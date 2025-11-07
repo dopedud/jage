@@ -66,6 +66,7 @@ namespace JAGE
         ImageResource image { "image.jpg" };
         ShaderResource default_shader { "default.vs", "default.fs" };
 
+        texture.reset(Texture::Create(image.data(), image.width(), image.height()));
         shader.reset(Shader::Create(default_shader.vs(), default_shader.fs()));
 
         vbuffer.reset(VertexBuffer::Create(vertices2.data(), sizeof(vertices2)));
@@ -82,6 +83,7 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Detaching Game layer to layer stack.");
 
+        texture.reset();
         shader.reset();
 
         JAGE_MSG_TRACE("Detached Game layer to layer stack.");
@@ -90,6 +92,7 @@ namespace JAGE
     void GameLayer::OnRender()
     {
         shader->bind();
+        texture->bind();
         varray->bind();
         Renderer::Render();
     }
