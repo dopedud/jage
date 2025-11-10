@@ -1,5 +1,6 @@
 #include "JAGE/core.h"
 #include "JAGE/layers.h"
+#include "JAGE/math.h"
 
 using namespace JAGE;
 
@@ -12,6 +13,8 @@ int main(int argc, char** argv)
     APP_MSG_INFO("Creating a window.");
     std::unique_ptr<Window> window { Window::Create() };
     Input::SetActiveWindow(window.get());
+
+    Math::translate();
 
     window->PushLayer(new GameLayer{ window.get() });
     window->PushOverlay(new ImguiLayer{ window.get() });

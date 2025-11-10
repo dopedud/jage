@@ -64,10 +64,11 @@ namespace JAGE
         };
 
         ImageResource image { "image.jpg" };
-        ShaderResource default_shader { "default.vs", "default.fs" };
+        FileResource vertex_shader { "default.vs" };
+        FileResource fragment_shader { "default.fs" };
 
-        texture.reset(Texture::Create(image.data(), image.width(), image.height()));
-        shader.reset(Shader::Create(default_shader.vs(), default_shader.fs()));
+        texture.reset(Texture::Create(image));
+        shader.reset(Shader::Create(vertex_shader, fragment_shader));
 
         vbuffer.reset(VertexBuffer::Create(vertices2.data(), sizeof(vertices2)));
         vbuffer->set_layout(layout);

@@ -65,9 +65,10 @@ namespace JAGE
     #define JAGE_LOG_CRITICAL(LOG, ...)     JAGE::EngineLogger::Critical(LOG, __VA_ARGS__); std::abort()
 
     #ifdef JAGE_ENABLE_ASSERTS
-    #   define JAGE_ASSERT(X, MSG) \
-        if (!(X)) { JAGE::EngineLogger::Critical(MSG); DEBUG_BREAK; }
+    #   define JAGE_MSG_ASSERT(X, MSG) if (!(X)) { JAGE_MSG_CRITICAL(MSG); }
+    #   define JAGE_LOG_ASSERT(X, LOG, ...) if (!(X)) { JAGE_LOG_CRITICAL(LOG, __VA_ARGS__); }
     #else
-    #   define JAGE_ASSERT(X, MSG)
+    #   define JAGE_MSG_ASSERT(X, MSG)
+    #   define JAGE_LOG_ASSERT(X, LOG, ...)
     #endif
 }

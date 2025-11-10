@@ -28,7 +28,7 @@ namespace JAGE
         });
 
         int success { glfwInit() };
-        JAGE_ASSERT(success, "GLFW error: Failed to initialise GLFW.")
+        JAGE_MSG_ASSERT(success, "GLFW error: Failed to initialise GLFW.")
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -40,7 +40,7 @@ namespace JAGE
             properties.title.c_str(), nullptr, nullptr
         );
 
-        JAGE_ASSERT(m_handle, "GLFW error: Failed to create GLFW window.");
+        JAGE_MSG_ASSERT(m_handle, "GLFW error: Failed to create GLFW window.")
 
         glfwMakeContextCurrent(m_handle);
         glfwSetWindowUserPointer(m_handle, &data);

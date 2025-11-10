@@ -30,8 +30,8 @@ namespace JAGE
         bool imgui_glfw_success { ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window->handle()), false) };
         bool imgui_opengl3_success { ImGui_ImplOpenGL3_Init("#version 460") };
 
-        JAGE_ASSERT(imgui_glfw_success, "IMGUI failed to load with GLFW backend.")
-        JAGE_ASSERT(imgui_opengl3_success, "IMGUI failed to load OpenGL loader.")
+        JAGE_MSG_ASSERT(imgui_glfw_success, "IMGUI failed to load with GLFW backend.")
+        JAGE_MSG_ASSERT(imgui_opengl3_success, "IMGUI failed to load OpenGL loader.")
 
         JAGE_MSG_TRACE("Attached IMGUI layer to layer stack.");
     }

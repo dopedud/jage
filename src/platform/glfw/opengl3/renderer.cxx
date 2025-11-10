@@ -31,7 +31,7 @@ namespace JAGE
     {
         // need to initialise GLAD first to use glGetString()
         int glad_load_success { gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) };
-        JAGE_ASSERT(glad_load_success, "Failed to initialise GLAD.");
+        JAGE_MSG_ASSERT(glad_load_success, "Failed to initialise GLAD.");
 
         JAGE_MSG_INFO("Graphics Info:");
         JAGE_MSG_INFO("    Graphics Backend:   OpenGL");
@@ -104,9 +104,15 @@ namespace JAGE
         return new OpenGLTexture{ data, width, height };
     }
 
+    Texture* Texture::Create(const ImageResource& resource)
+    {
+        return new OpenGLTexture{ resource.data(), resource.width(), resource.height() };
+    }
+
     OpenGLTexture::OpenGLTexture(unsigned char* data, unsigned width, unsigned height)
     {
         glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
@@ -133,6 +139,11 @@ namespace JAGE
     Shader* Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
     {
         return new OpenGLShader{ vertex_str, fragment_str };
+    }
+
+    Shader* Shader::Create(const FileResource& vs_resource, const FileResource& fs_resource)
+    {
+        return new OpenGLShader{ vs_resource.content(), fs_resource.content() };
     }
 
     DISABLE_WARNING_PUSH
@@ -233,6 +244,30 @@ namespace JAGE
 
     void OpenGLShader::bind() { glUseProgram(shaderID); }
     void OpenGLShader::unbind() { glUseProgram(0); }
+
+    void OpenGLShader::set_uniform_bool(std::string_view name, bool value)
+    {
+        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        glUniform1i(loc, static_cast<int>(value));
+    }
+
+    void OpenGLShader::set_uniform_int(std::string_view name, int value)
+    {
+        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        glUniform1i(loc, value);
+    }
+
+    void OpenGLShader::set_uniform_uint(std::string_view name, unsigned value)
+    {
+        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        glUniform1i(loc, value);
+    }
+
+    void OpenGLShader::set_uniform_float(std::string_view name, float value)
+    {
+        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        glUniform1i(loc, value);
+    }
 
     // END OPENGL SHADER IMPLEMENTATION
 

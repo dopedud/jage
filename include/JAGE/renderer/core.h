@@ -29,7 +29,7 @@ namespace JAGE
     {
     public:
         static Texture* Create(unsigned char* data, unsigned width, unsigned height);
-        // static Texture* Create(const ImageResource& resource);
+        static Texture* Create(const ImageResource& resource);
         virtual ~Texture() = default;
 
         virtual void bind() = 0;
@@ -42,11 +42,16 @@ namespace JAGE
     {
     public:
         static Shader* Create(std::string_view vertex_str, std::string_view fragment_str);
-        // static Shader* Create(const ShaderResource& resource);
+        static Shader* Create(const FileResource& vs_resource, const FileResource& fs_resource);
         virtual ~Shader() = default;
 
         virtual void bind() = 0;
         virtual void unbind() = 0;
+
+        virtual void set_uniform_bool(std::string_view name, bool value) = 0;
+        virtual void set_uniform_int(std::string_view name, int value) = 0;
+        virtual void set_uniform_uint(std::string_view name, unsigned value) = 0;
+        virtual void set_uniform_float(std::string_view name, float value) = 0;
     protected:
         unsigned shaderID;
     };

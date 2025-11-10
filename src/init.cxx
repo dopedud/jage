@@ -1,5 +1,6 @@
 #include "JAGE/core.h"
 #include "JAGE/resources/core.h"
+#include "JAGE/math.h"
 
 #include "log.h"
 

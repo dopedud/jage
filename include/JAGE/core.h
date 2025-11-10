@@ -13,7 +13,6 @@
  * 
  * - MACRO FOR API EXPORT DEFINITIONS
  * - MACRO FOR SUPPRESSING WARNINGS IN CODE
- * - MACRO FOR SETTING BREAKPOINTS
  * - MACRO FOR SHIFT-LEFT BIT OPERATION
  * 
  * - INITIALIZATION/DESTRUCTION DEFINITIONS
@@ -71,37 +70,6 @@
 #   define DISABLE_WARNING_POP
 #   define DISABLE_WARNING_MSVC(w)
 #   define DISABLE_WARNING_GCC_CLANG(w)
-#endif
-
-/**
- * 
- * 
- * MACRO FOR SETTING BREAKPOINTS
- * 
- * 
- */
-
-/**
- * @def DEBUG_BREAK
- * @brief A macro to set breakpoint inside the code itself.
- *
- * Setting breakpoints in code depends on the platform. Each platform has their own way of doing it, and this macro
- * helps to cover the cases for all platforms.
- */
-#ifdef _MSC_VER
-#   define DEBUG_BREAK __debugbreak()
-#elif defined(__clang__) || defined(__GNUC__)
-#   ifdef __has_builtin
-#       if __has_builtin(__builtin_debugtrap)
-#           define DEBUG_BREAK __builtin_debugtrap()
-#       else
-#           define DEBUG_BREAK __builtin_trap()
-#       endif
-#   else
-#       define DEBUG_BREAK raise(SIGTRAP)
-#   endif
-#else
-#   define DEBUG_BREAK std::raise(SIGTRAP)
 #endif
 
 /**

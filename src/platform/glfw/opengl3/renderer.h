@@ -43,6 +43,11 @@ namespace JAGE
 
         void bind() override;
         void unbind() override;
+
+        void set_uniform_bool(std::string_view name, bool value) override;
+        void set_uniform_int(std::string_view name, int value) override;
+        void set_uniform_uint(std::string_view name, unsigned value) override;
+        void set_uniform_float(std::string_view name, float value) override;
     };
 
     class OpenGLVertexBuffer : public VertexBuffer
