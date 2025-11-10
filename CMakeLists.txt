@@ -31,8 +31,6 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/application)
 install(TARGETS
     ${GAME_NAME}
     ${ENGINE_NAME}
-    ${ENGINE_NAME}_RESOURCES
-    ${ENGINE_NAME}_MATH
 
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION bin

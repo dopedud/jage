@@ -2,28 +2,9 @@
 
 #include "JAGE/core.h"
 
-/**
- * 
- * 
- * MACRO FOR API EXPORT DEFINITIONS
- * 
- * 
- */
-#ifdef _WIN32
-#   ifdef JAGE_RESOURCES_EXPORT
-#       define JAGE_RESOURCES_API __declspec(dllexport)
-#   else
-#       define JAGE_RESOURCES_API __declspec(dllimport)
-#   endif
-#elif defined(__GNUC__) && __GNUC__ >= 4
-#   define JAGE_RESOURCES_API __attribute__((visibility("default")))
-#else
-#   define JAGE_RESOURCES_API
-#endif
-
 namespace JAGE
 {
-    class JAGE_RESOURCES_API Resource
+    class JAGE_API Resource
     {
     public:
         Resource() : path { "./resources/" } {}
@@ -32,7 +13,7 @@ namespace JAGE
         std::string path;
     };
 
-    class JAGE_RESOURCES_API ImageResource : public Resource
+    class JAGE_API ImageResource : public Resource
     {
     public:
         ImageResource(const std::string& filepath_str);
@@ -57,7 +38,7 @@ namespace JAGE
         int m_channels;
     };
 
-    class JAGE_RESOURCES_API FileResource : public Resource
+    class JAGE_API FileResource : public Resource
     {
     public:
         FileResource(std::string_view filepath_str);
@@ -68,7 +49,7 @@ namespace JAGE
         std::string m_content;
     };
 
-    class JAGE_RESOURCES_API ResourceManager
+    class JAGE_API ResourceManager
     {
     public:
         static ResourceManager& instance();
