@@ -1,7 +1,7 @@
 #pragma once
 
 #include "JAGE/core.h"
-#include "JAGE/renderer/core.h"
+#include "JAGE/renderer.h"
 
 namespace JAGE
 {

@@ -12,9 +12,8 @@ int main(int argc, char** argv)
 
     APP_MSG_INFO("Creating a window.");
     std::unique_ptr<Window> window { Window::Create() };
-    Input::SetActiveWindow(window.get());
 
-    Math::translate();
+    Input::SetActiveWindow(window.get());
 
     window->PushLayer(new GameLayer{ window.get() });
     window->PushOverlay(new ImguiLayer{ window.get() });

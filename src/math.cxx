@@ -8,10 +8,6 @@ namespace JAGE
 {
     namespace Math
     {
-        void translate()
-        {
-            JAGE_MSG_DEBUG("CREATED A THING.");
-            glm::mat4 model { 1.0f };
-        }
+        void translate() {}
     }
 }

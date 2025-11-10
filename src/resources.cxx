@@ -1,4 +1,4 @@
-#include "JAGE/resources/core.h"
+#include "JAGE/resources.h"
 
 #include "log.h"
 

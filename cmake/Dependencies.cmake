@@ -13,6 +13,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "build shared libraries by default" FORCE)
 # DEAR IMGUI
 # TINYGLTF
 # STB_IMAGE
+# FLECS
 
 # FETCH SPDLOG
 set(SPDLOG_VERSION v1.15.0)
@@ -89,6 +90,18 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(stb_image_repo)
+# END FETCH STB_IMAGE
+
+# FETCH FLECS
+set(FLECS_VERSION v4.1.2)
+FetchContent_Declare(
+    flecs
+    GIT_REPOSITORY https://github.com/SanderMertens/flecs.git
+    GIT_TAG ${FLECS_VERSION}
+)
+
+FetchContent_MakeAvailable(flecs)
+# END FETCH FLECS
 
 # BUILD GLAD
 # NOTE: GLAD is a special case for dependency management because unlike other dependencies where you have to fetch them
@@ -123,7 +136,5 @@ target_link_libraries(dear_imgui PUBLIC glfw glad)
 # BUILD STB_IMAGE
 add_library(stb_image INTERFACE)
 
-target_include_directories(stb_image INTERFACE
-    ${stb_image_repo_SOURCE_DIR}
-)
+target_include_directories(stb_image INTERFACE ${stb_image_repo_SOURCE_DIR})
 # END BUILD STB_IMAGE

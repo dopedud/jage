@@ -1,4 +1,4 @@
-#include "JAGE/renderer/core.h"
+#include "JAGE/renderer.h"
 
 #include "log.h"
 
