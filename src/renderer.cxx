@@ -1,5 +1,6 @@
 #include "JAGE/renderer.h"
 
+#include "platform/glfw/opengl3/renderer.h"
 #include "log.h"
 
 namespace JAGE
@@ -64,5 +65,40 @@ namespace JAGE
             offset += element.size;
             m_stride += element.size;
         }
+    }
+
+    Texture* Texture::Create(unsigned char* data, unsigned width, unsigned height)
+    {
+        return new OpenGLTexture{ data, width, height };
+    }
+
+    Texture* Texture::Create(const ImageResource& resource)
+    {
+        return new OpenGLTexture{ resource.data(), resource.width(), resource.height() };
+    }
+
+    Shader* Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
+    {
+        return new OpenGLShader{ vertex_str, fragment_str };
+    }
+
+    Shader* Shader::Create(const FileResource& vs_resource, const FileResource& fs_resource)
+    {
+        return new OpenGLShader{ vs_resource.content(), fs_resource.content() };
+    }
+
+    VertexBuffer* VertexBuffer::Create(float* vertices, unsigned size)
+    {
+        return new OpenGLVertexBuffer{ vertices, size };
+    }
+
+    IndexBuffer* IndexBuffer::Create(unsigned* indices, unsigned count)
+    {
+        return new OpenGLIndexBuffer{ indices, count };
+    }
+
+    VertexArray* VertexArray::Create()
+    {
+        return new OpenGLVertexArray{};
     }
 }

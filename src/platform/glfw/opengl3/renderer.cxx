@@ -27,7 +27,7 @@ namespace JAGE
         return;
     }
 
-    void OpenGLContext::Init()
+    OpenGLContext::OpenGLContext(Window* window) : GraphicsContext{ window }
     {
         // need to initialise GLAD first to use glGetString()
         int glad_load_success { gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) };
@@ -99,16 +99,6 @@ namespace JAGE
 
     // OPENGL TEXTURE IMPLEMENTATION
 
-    Texture* Texture::Create(unsigned char* data, unsigned width, unsigned height)
-    {
-        return new OpenGLTexture{ data, width, height };
-    }
-
-    Texture* Texture::Create(const ImageResource& resource)
-    {
-        return new OpenGLTexture{ resource.data(), resource.width(), resource.height() };
-    }
-
     OpenGLTexture::OpenGLTexture(unsigned char* data, unsigned width, unsigned height)
     {
         glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
@@ -135,16 +125,6 @@ namespace JAGE
     // END OPENGL TEXTURE IMPLEMENTATION
 
     // OPENGL SHADER IMPLEMENTATION
-
-    Shader* Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
-    {
-        return new OpenGLShader{ vertex_str, fragment_str };
-    }
-
-    Shader* Shader::Create(const FileResource& vs_resource, const FileResource& fs_resource)
-    {
-        return new OpenGLShader{ vs_resource.content(), fs_resource.content() };
-    }
 
     DISABLE_WARNING_PUSH
     DISABLE_WARNING_GCC_CLANG("-Wvla")
@@ -273,11 +253,6 @@ namespace JAGE
 
     // OPENGL VERTEX BUFFER IMPLEMENTATION
 
-    VertexBuffer* VertexBuffer::Create(float* vertices, unsigned size)
-    {
-        return new OpenGLVertexBuffer{ vertices, size };
-    }
-
     OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, unsigned size)
     {
         glCreateBuffers(1, &rendererID);
@@ -296,11 +271,6 @@ namespace JAGE
     // END OPENGL VERTEX BUFFER IMPLEMENTATION
 
     // OPENGL INDEX BUFFER IMPLEMENTATION
-
-    IndexBuffer* IndexBuffer::Create(unsigned* indices, unsigned count)
-    {
-        return new OpenGLIndexBuffer{ indices, count };
-    }
 
     OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned* indices, unsigned count) : IndexBuffer{ count }
     {
@@ -323,11 +293,6 @@ namespace JAGE
     // END OPENGL INDEX BUFFER IMPLEMENTATION
 
     // OPENGL VERTEX ARRAY IMPLEMENTATION
-
-    VertexArray* VertexArray::Create()
-    {
-        return new OpenGLVertexArray{};
-    }
 
     OpenGLVertexArray::OpenGLVertexArray()
     {

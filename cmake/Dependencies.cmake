@@ -18,18 +18,18 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "build shared libraries by default" FORCE)
 # FETCH SPDLOG
 set(SPDLOG_VERSION v1.15.0)
 FetchContent_Declare(
-    spdlog
+    spdlog_repo
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
     GIT_TAG ${SPDLOG_VERSION}
 )
 
-FetchContent_MakeAvailable(spdlog)
+FetchContent_MakeAvailable(spdlog_repo)
 # END FETCH SPDLOG
 
 # FETCH GLFW
 set(GLFW_VERSION 3.3.10)
 FetchContent_Declare(
-    glfw
+    glfw_repo
     GIT_REPOSITORY https://github.com/glfw/glfw.git
     GIT_TAG ${GLFW_VERSION}
 )
@@ -39,20 +39,20 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(glfw)
+FetchContent_MakeAvailable(glfw_repo)
 # END FETCH GLFW
 
 # FETCH GLM
 set(GLM_VERSION 1.0.2)
 FetchContent_Declare(
-    glm
+    glm_repo
     GIT_REPOSITORY https://github.com/g-truc/glm.git
     GIT_TAG ${GLM_VERSION}
 )
 
 set(GLM_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(glm)
+FetchContent_MakeAvailable(glm_repo)
 # END FETCH GLM
 
 # FETCH DEAR IMGUI
@@ -69,7 +69,7 @@ FetchContent_MakeAvailable(dear_imgui_repo)
 # FETCH TINYGLTF
 set(TINYGLTF_VERSION v2.9.6)
 FetchContent_Declare(
-    tinygltf
+    tinygltf_repo
     GIT_REPOSITORY https://github.com/syoyo/tinygltf.git
     GIT_TAG ${TINYGLTF_VERSION}
 )
@@ -78,7 +78,7 @@ set(TINYGLTF_BUILD_LOADER_EXAMPLE OFF CACHE BOOL "" FORCE)
 set(TINYGLTF_INSTALL OFF CACHE BOOL "Install tinygltf files during install step. Usually set to OFF if you include tinygltf through add_subdirectory()" FORCE)
 set(TINYGLTF_INSTALL_VENDOR OFF CACHE BOOL "Install vendored nlohmann/json and nothings/stb headers" FORCE)
 
-FetchContent_MakeAvailable(tinygltf)
+FetchContent_MakeAvailable(tinygltf_repo)
 # END FETCH TINYGLTF
 
 # FETCH STB_IMAGE
@@ -95,12 +95,22 @@ FetchContent_MakeAvailable(stb_image_repo)
 # FETCH FLECS
 set(FLECS_VERSION v4.1.2)
 FetchContent_Declare(
-    flecs
+    flecs_repo
     GIT_REPOSITORY https://github.com/SanderMertens/flecs.git
     GIT_TAG ${FLECS_VERSION}
 )
 
-FetchContent_MakeAvailable(flecs)
+# NOTE: Flecs has their own CMakeLists.txt that is intrusive to this project (like installing its own header files),
+# thus a custom build procedure is written to work around theirs.
+
+FetchContent_GetProperties(flecs_repo)
+if(NOT flecs_repo_POPULATED)
+    FetchContent_Populate(flecs_repo)
+endif()
+
+file(GLOB_RECURSE FLECS_SOURCES "${flecs_repo_SOURCE_DIR}/src/*.c")
+add_library(flecs STATIC ${FLECS_SOURCES})
+target_include_directories(flecs PUBLIC ${flecs_repo_SOURCE_DIR}/include PRIVATE ${flecs_repo_SOURCE_DIR}/src)
 # END FETCH FLECS
 
 # BUILD GLAD

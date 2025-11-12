@@ -12,9 +12,8 @@ namespace JAGE
     class OpenGLContext : public GraphicsContext
     {
     public:
-        OpenGLContext(Window* window) : GraphicsContext{ window } {}
+        OpenGLContext(Window* window);
 
-        void Init() override;
         void Clear() override;
         void SwapBuffers() override;
     };

@@ -1,5 +1,6 @@
 #include "JAGE/core.h"
 
+#include "platform/glfw/window.h"
 #include "log.h"
 
 namespace JAGE
@@ -7,6 +8,11 @@ namespace JAGE
     Layer::Layer(Window* window, std::string_view name) : window { window }, m_name { name }
     {
         JAGE_MSG_TRACE("Initialised a layer with name: " + m_name);
+    }
+
+    std::unique_ptr<Window> Window::Create(const WindowProperties& properties)
+    {
+        return std::make_unique<GLFWWindow>(properties);
     }
 
     void Window::OnEvent(const Event& e)

@@ -313,7 +313,6 @@ namespace JAGE
     public:
         GraphicsContext(Window* window) : window { window } {}
 
-        virtual void Init() = 0;
         virtual void Clear() = 0;
         virtual void SwapBuffers() = 0;
     protected:

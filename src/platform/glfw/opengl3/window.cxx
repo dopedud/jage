@@ -7,11 +7,6 @@
 
 namespace JAGE
 {
-    std::unique_ptr<Window> Window::Create(const WindowProperties& properties)
-    {
-        return std::make_unique<GLFWWindow>(properties);
-    }
-
     GLFWWindow::GLFWWindow(const WindowProperties& properties)
     {
         JAGE_MSG_INFO("Window Info:");
@@ -48,7 +43,6 @@ namespace JAGE
         glfwSwapInterval(data.properties.vsync);
 
         graphics_context = std::make_unique<OpenGLContext>(this);
-        graphics_context->Init();
 
         // BUNCH OF CALLBACK DEFINITIONS
 

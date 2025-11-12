@@ -11,11 +11,11 @@ set(CORE_SRC
     renderer.cxx
     resources.cxx
     "math.cxx"
+    game_layer.cxx
 
     platform/glfw/input.cxx
     platform/glfw/opengl3/window.cxx
     platform/glfw/opengl3/renderer.cxx
-    platform/glfw/opengl3/game_layer.cxx
     platform/glfw/opengl3/imgui_layer.cxx
 )
 
@@ -56,6 +56,7 @@ set(PRIVATE_LIBRARIES
     tinygltf
     stb_image
     glm
+    flecs
 )
 
 target_precompile_headers(${ENGINE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/jgpch.h)
