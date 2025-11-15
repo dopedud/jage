@@ -8,6 +8,5 @@ namespace JAGE
 {
     namespace Math
     {
-        void translate() {}
     }
 }

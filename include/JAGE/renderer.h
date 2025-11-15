@@ -28,8 +28,8 @@ namespace JAGE
     class JAGE_API Texture
     {
     public:
-        static Texture* Create(unsigned char* data, unsigned width, unsigned height);
-        static Texture* Create(const ImageResource& resource);
+        static std::unique_ptr<Texture> Create(unsigned char* data, unsigned width, unsigned height);
+        static std::unique_ptr<Texture> Create(const ImageResource& resource);
         virtual ~Texture() = default;
 
         virtual void bind() = 0;
@@ -41,8 +41,8 @@ namespace JAGE
     class JAGE_API Shader
     {
     public:
-        static Shader* Create(std::string_view vertex_str, std::string_view fragment_str);
-        static Shader* Create(const FileResource& vs_resource, const FileResource& fs_resource);
+        static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
+        static std::unique_ptr<Shader> Create(const FileResource& vs_resource, const FileResource& fs_resource);
         virtual ~Shader() = default;
 
         virtual void bind() = 0;
@@ -91,7 +91,7 @@ namespace JAGE
     class JAGE_API VertexBuffer
     {
     public:
-        static VertexBuffer* Create(float* vertices, unsigned size);
+        static std::unique_ptr<VertexBuffer> Create(float* vertices, unsigned size);
         VertexBuffer() = default;
         virtual ~VertexBuffer() = default;
 
@@ -108,7 +108,7 @@ namespace JAGE
     class JAGE_API IndexBuffer
     {
     public:
-        static IndexBuffer* Create(unsigned* indices, unsigned count);
+        static std::unique_ptr<IndexBuffer> Create(unsigned* indices, unsigned count);
         IndexBuffer(unsigned count) : m_count { count } {}
         virtual ~IndexBuffer() = default;
 
@@ -124,18 +124,18 @@ namespace JAGE
     class JAGE_API VertexArray
     {
     public:
-        static VertexArray* Create();
+        static std::unique_ptr<VertexArray> Create();
         virtual ~VertexArray() = default;
 
         virtual void bind() = 0;
         virtual void unbind() = 0;
 
-        virtual void add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer) = 0;
-        virtual void set_ibuffer(const std::shared_ptr<IndexBuffer>& ibuffer) = 0;
+        virtual void add_vbuffer(std::unique_ptr<VertexBuffer>& vbuffer) = 0;
+        virtual void set_ibuffer(std::unique_ptr<IndexBuffer>& ibuffer) = 0;
     protected:
         unsigned rendererID;
 
-        std::vector<std::shared_ptr<VertexBuffer>> vbuffers {};
-        std::shared_ptr<IndexBuffer> ibuffer;
+        std::vector<std::unique_ptr<VertexBuffer>> vbuffers {};
+        std::unique_ptr<IndexBuffer> ibuffer;
     };
 }

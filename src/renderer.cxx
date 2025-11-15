@@ -67,38 +67,38 @@ namespace JAGE
         }
     }
 
-    Texture* Texture::Create(unsigned char* data, unsigned width, unsigned height)
+    std::unique_ptr<Texture> Texture::Create(unsigned char* data, unsigned width, unsigned height)
     {
-        return new OpenGLTexture{ data, width, height };
+        return std::make_unique<OpenGLTexture>(data, width, height);
     }
 
-    Texture* Texture::Create(const ImageResource& resource)
+    std::unique_ptr<Texture> Texture::Create(const ImageResource& resource)
     {
-        return new OpenGLTexture{ resource.data(), resource.width(), resource.height() };
+        return std::make_unique<OpenGLTexture>(resource.data(), resource.width(), resource.height());
     }
 
-    Shader* Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
+    std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
     {
-        return new OpenGLShader{ vertex_str, fragment_str };
+        return std::make_unique<OpenGLShader>(vertex_str, fragment_str);
     }
 
-    Shader* Shader::Create(const FileResource& vs_resource, const FileResource& fs_resource)
+    std::unique_ptr<Shader> Shader::Create(const FileResource& vs_resource, const FileResource& fs_resource)
     {
-        return new OpenGLShader{ vs_resource.content(), fs_resource.content() };
+        return std::make_unique<OpenGLShader>(vs_resource.content(), fs_resource.content());
     }
 
-    VertexBuffer* VertexBuffer::Create(float* vertices, unsigned size)
+    std::unique_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, unsigned size)
     {
-        return new OpenGLVertexBuffer{ vertices, size };
+        return std::make_unique<OpenGLVertexBuffer>(vertices, size);
     }
 
-    IndexBuffer* IndexBuffer::Create(unsigned* indices, unsigned count)
+    std::unique_ptr<IndexBuffer> IndexBuffer::Create(unsigned* indices, unsigned count)
     {
-        return new OpenGLIndexBuffer{ indices, count };
+        return std::make_unique<OpenGLIndexBuffer>(indices, count);
     }
 
-    VertexArray* VertexArray::Create()
+    std::unique_ptr<VertexArray> VertexArray::Create()
     {
-        return new OpenGLVertexArray{};
+        return std::make_unique<OpenGLVertexArray>();
     }
 }

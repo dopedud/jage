@@ -11,6 +11,7 @@ set(CORE_SRC
     renderer.cxx
     resources.cxx
     "math.cxx"
+    ecs.cxx
     game_layer.cxx
 
     platform/glfw/input.cxx

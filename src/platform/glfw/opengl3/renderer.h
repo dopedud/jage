@@ -77,7 +77,7 @@ namespace JAGE
         void bind() override;
         void unbind() override;
 
-        void add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer) override;
-        void set_ibuffer(const std::shared_ptr<IndexBuffer>& ibuffer) override;
+        void add_vbuffer(std::unique_ptr<VertexBuffer>& vbuffer) override;
+        void set_ibuffer(std::unique_ptr<IndexBuffer>& ibuffer) override;
     };
 }

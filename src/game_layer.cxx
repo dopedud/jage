@@ -12,7 +12,7 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Attaching Game layer to layer stack.");
 
-        varray.reset(VertexArray::Create());
+        varray = VertexArray::Create();
 
         std::array<float, 8 * 7> vertices
         {
@@ -67,14 +67,14 @@ namespace JAGE
         FileResource vertex_shader { "default.vs" };
         FileResource fragment_shader { "default.fs" };
 
-        texture.reset(Texture::Create(image));
-        shader.reset(Shader::Create(vertex_shader, fragment_shader));
+        texture = Texture::Create(image);
+        shader = Shader::Create(vertex_shader, fragment_shader);
 
-        vbuffer.reset(VertexBuffer::Create(vertices2.data(), sizeof(vertices2)));
+        vbuffer = VertexBuffer::Create(vertices2.data(), sizeof(vertices2));
         vbuffer->set_layout(layout);
         varray->add_vbuffer(vbuffer);
 
-        ibuffer.reset(IndexBuffer::Create(indices2.data(), sizeof(indices2)));
+        ibuffer = IndexBuffer::Create(indices2.data(), sizeof(indices2));
         varray->set_ibuffer(ibuffer);
 
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
@@ -92,6 +92,7 @@ namespace JAGE
 
     void GameLayer::OnRender()
     {
+        shader->bind();
         shader->bind();
         texture->bind();
         varray->bind();

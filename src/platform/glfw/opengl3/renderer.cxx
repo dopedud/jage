@@ -307,7 +307,7 @@ namespace JAGE
     void OpenGLVertexArray::bind() { glBindVertexArray(rendererID); }
     void OpenGLVertexArray::unbind() { glBindVertexArray(0); }
 
-    void OpenGLVertexArray::add_vbuffer(const std::shared_ptr<VertexBuffer>& vbuffer)
+    void OpenGLVertexArray::add_vbuffer(std::unique_ptr<VertexBuffer>& vbuffer)
     {
         glBindVertexArray(rendererID);
         vbuffer->bind();
@@ -326,15 +326,15 @@ namespace JAGE
             );
         }
 
-        vbuffers.push_back(vbuffer);
+        vbuffers.push_back(std::move(vbuffer));
     }
 
-    void OpenGLVertexArray::set_ibuffer(const std::shared_ptr<IndexBuffer>& ibuffer)
+    void OpenGLVertexArray::set_ibuffer(std::unique_ptr<IndexBuffer>& ibuffer)
     {
         glBindVertexArray(rendererID);
         ibuffer->bind();
 
-        this->ibuffer = ibuffer;
+        this->ibuffer = std::move(ibuffer);
     }
 
     // END OPENGL VERTEX ARRAY IMPLEMENTATION

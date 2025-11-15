@@ -111,6 +111,14 @@ endif()
 file(GLOB_RECURSE FLECS_SOURCES "${flecs_repo_SOURCE_DIR}/src/*.c")
 add_library(flecs STATIC ${FLECS_SOURCES})
 target_include_directories(flecs PUBLIC ${flecs_repo_SOURCE_DIR}/include PRIVATE ${flecs_repo_SOURCE_DIR}/src)
+
+if(WIN32)
+    target_link_libraries(flecs wsock32 ws2_32 dbghelp)
+endif()
+
+if (UNIX)
+    target_link_libraries(flecs pthread)
+endif()
 # END FETCH FLECS
 
 # BUILD GLAD
