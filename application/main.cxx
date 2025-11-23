@@ -34,9 +34,18 @@ int main(int argc, char** argv)
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);
     });
 
+    float current {};
+    float deltatime {};
+    float previous {};
+
     while (running)
     {
+        current = Time::ElapsedTime();
+        deltatime = current - previous;
+        previous = current;
+
         window->OnRender();
+        APP_LOG_DEBUG("{} ms", deltatime);
     }
 
     window.reset();

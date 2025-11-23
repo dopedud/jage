@@ -101,7 +101,7 @@ FetchContent_Declare(
 )
 
 # NOTE: Flecs has their own CMakeLists.txt that is intrusive to this project (like installing its own header files),
-# thus a custom build procedure is written to work around theirs.
+# thus a custom build procedure is written to work around this issue.
 
 FetchContent_GetProperties(flecs_repo)
 if(NOT flecs_repo_POPULATED)
@@ -119,6 +119,17 @@ endif()
 if (UNIX)
     target_link_libraries(flecs pthread)
 endif()
+
+target_compile_definitions(flecs PRIVATE
+    FLECS_CUSTOM_BUILD
+    FLECS_LOG
+    FLECS_DOC
+    FLECS_CPP
+    FLECS_SYSTEM
+    FLECS_META
+
+    FLECS_CPP_NO_AUTO_REGISTRATION
+)
 # END FETCH FLECS
 
 # BUILD GLAD

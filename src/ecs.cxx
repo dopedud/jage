@@ -1,35 +1,31 @@
-#include "ecs.h"
+#include "JAGE/ecs.h"
 
 namespace JAGE
 {
-    namespace ECS
+    World::World() : m_world {}
     {
-        std::unique_ptr<World> World::Create()
-        {
-            return std::make_unique<FlecsWorld>();
-        }
+        // m_world.component<Position>();
+        // m_world.component<Rotation>();
+        // m_world.component<Scale>();
+    }
 
-        FlecsWorld::FlecsWorld() : m_world {} {}
+    Entity World::CreateEntity(std::string_view name)
+    {
+        return Entity{ this, name };
+    }
 
-        FlecsWorld::~FlecsWorld()
-        {
+    Entity::Entity(World* world, std::string_view name)
+    : m_name { name }
+    , m_world { world->world() }
+    , m_entity { m_world->entity(name.data()) }
+    {
+        m_entity.add<Position>();
+        m_entity.add<Rotation>();
+        m_entity.add<Scale>();
+    }
 
-        }
-
-        std::unique_ptr<Entity> FlecsWorld::CreateEntity(World* world, std::string_view name)
-        {
-            std::unique_ptr<Entity> entity { Entity::Create(this, name) };
-            m_world.entity();
-        }
-
-        std::unique_ptr<Entity> Entity::Create(World* world, std::string_view name)
-        {
-            return std::make_unique<FlecsEntity>(world, name);
-        }
-
-        FlecsEntity::FlecsEntity(std::string_view name) : m_name { name }
-        {
-
-        }
+    Entity::~Entity()
+    {
+        m_entity.destruct();
     }
 }

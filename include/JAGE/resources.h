@@ -56,6 +56,8 @@ namespace JAGE
         static void reset();
 
         ~ResourceManager() = default;
+
+        // ResourceManager is a singleton, cannot be copied
         ResourceManager(const ResourceManager&) = delete;
         ResourceManager &operator=(const ResourceManager&) = delete;
     private:

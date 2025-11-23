@@ -1,6 +1,7 @@
 #include "JAGE/layers.h"
 #include "JAGE/renderer.h"
 #include "JAGE/resources.h"
+#include "JAGE/ecs.h"
 
 #include "log.h"
 

@@ -15,6 +15,7 @@ set(CORE_SRC
     game_layer.cxx
 
     platform/glfw/input.cxx
+    platform/glfw/time.cxx
     platform/glfw/opengl3/window.cxx
     platform/glfw/opengl3/renderer.cxx
     platform/glfw/opengl3/imgui_layer.cxx
@@ -27,7 +28,7 @@ endforeach()
 
 add_library(${ENGINE_NAME} SHARED ${CORE_SOURCES})
 
-# for now it should be safe to remove ${ENGINE_NAME}_ENABLE_ASSERTS but just leave it for now
+# it should be safe to remove ${ENGINE_NAME}_ENABLE_ASSERTS but just leave it for now
 target_compile_definitions(${ENGINE_NAME} PRIVATE
     ${ENGINE_NAME}_EXPORT
     ${ENGINE_NAME}_ENABLE_ASSERTS
@@ -48,6 +49,7 @@ set_target_properties(${ENGINE_NAME} PROPERTIES
 
 set(PUBLIC_LIBRARIES
     spdlog::spdlog
+    flecs
 )
 
 set(PRIVATE_LIBRARIES
@@ -57,7 +59,6 @@ set(PRIVATE_LIBRARIES
     tinygltf
     stb_image
     glm
-    flecs
 )
 
 target_precompile_headers(${ENGINE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/jgpch.h)

@@ -1,4 +1,4 @@
-#include "platform/input.h"
+#include "platform/platform.h"
 
 #include "log.h"
 

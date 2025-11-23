@@ -16,6 +16,7 @@
  * - MACRO FOR SHIFT-LEFT BIT OPERATION
  * 
  * - INITIALIZATION/DESTRUCTION DEFINITIONS
+ * - TIMING DEFINITIONS
  * - LOGGER DEFINITIONS
  * - WINDOW DEFINITIONS
  * - LAYER DEFINITIONS
@@ -97,6 +98,25 @@ namespace JAGE
 /**
  * 
  * 
+ * TIMING DEFINITIONS
+ * 
+ * 
+ */
+namespace JAGE
+{
+    namespace Time
+    {
+        void JAGE_API StartLoop();
+        void JAGE_API EndLoop();
+        double JAGE_API ElapsedTime();
+        double JAGE_API DeltaTime();
+        void JAGE_API WaitForFPS();
+    }
+}
+
+/**
+ * 
+ * 
  * LOGGER DEFINITIONS
  * 
  * 
@@ -105,8 +125,6 @@ namespace JAGE
 
 namespace JAGE
 {
-    void JAGE_API LogInit();
-
     /**
      * @class AppLogger
      * @brief The AppLogger class used to log game operations.
@@ -139,30 +157,30 @@ namespace JAGE
     public:
         static void Init(spdlog::level::level_enum app_level);
 
-        inline static void Trace(std::string_view msg)      { logger->trace(msg); }
-        inline static void Debug(std::string_view msg)      { logger->debug(msg); }
-        inline static void Info(std::string_view msg)       { logger->info(msg); }
-        inline static void Warn(std::string_view msg)       { logger->warn(msg); }
-        inline static void Error(std::string_view msg)      { logger->error(msg); }
-        inline static void Critical(std::string_view msg)   { logger->critical(msg); }
+        static void Trace(std::string_view msg)      { logger->trace(msg); }
+        static void Debug(std::string_view msg)      { logger->debug(msg); }
+        static void Info(std::string_view msg)       { logger->info(msg); }
+        static void Warn(std::string_view msg)       { logger->warn(msg); }
+        static void Error(std::string_view msg)      { logger->error(msg); }
+        static void Critical(std::string_view msg)   { logger->critical(msg); }
 
         template<typename... Args>
-        inline static void Trace(std::string_view log, Args &&... args)
+        static void Trace(std::string_view log, Args &&... args)
         { logger->trace(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void Debug(std::string_view log, Args &&... args)
+        static void Debug(std::string_view log, Args &&... args)
         { logger->debug(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void Info(std::string_view log, Args &&... args)
+        static void Info(std::string_view log, Args &&... args)
         { logger->info(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void Warn(std::string_view log, Args &&... args)
+        static void Warn(std::string_view log, Args &&... args)
         { logger->warn(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void Error(std::string_view log, Args &&... args)
+        static void Error(std::string_view log, Args &&... args)
         { logger->error(log, std::forward<Args>(args)...); }
         template<typename... Args>
-        inline static void Critical(std::string_view log, Args &&... args)
+        static void Critical(std::string_view log, Args &&... args)
         { logger->critical(log, std::forward<Args>(args)...); }
     };
 
@@ -591,17 +609,17 @@ namespace JAGE
      */
     class JAGE_API EventDispatcher
     {
-        template<typename T>
-        using EventFn = std::function<bool(const T&)>;
+        template<typename TEvent>
+        using EventFn = std::function<bool(const TEvent&)>;
     public:
         EventDispatcher(const Event& event) : event { event } {}
 
-        template<typename T>
-        bool dispatch(EventFn<T> function)
+        template<typename TEvent>
+        bool dispatch(EventFn<TEvent> function)
         {
-            if (event.event_type() == T::static_type())
+            if (event.event_type() == TEvent::static_type())
             {
-                event.set_handled(function(static_cast<const T&>(event)));
+                event.set_handled(function(static_cast<const TEvent&>(event)));
                 return true;
             }
 
@@ -629,7 +647,7 @@ namespace JAGE
  * is in.
  */
 #define EVENT_CLASS_TYPE(type) \
-    inline static EventType static_type() { return EventType::type; } \
+    static EventType static_type() { return EventType::type; } \
     virtual EventType event_type() const override { return static_type(); } \
     virtual std::string name() const override { return #type; }
 

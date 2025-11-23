@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform/input.h"
+#include "platform/platform.h"
 
 namespace JAGE
 {

@@ -3,7 +3,7 @@
 #include "JAGE/renderer.h"
 #include "JAGE/resources.h"
 
-#include "platform/input.h"
+#include "platform/platform.h"
 
 #include <glad/glad.h>
 
