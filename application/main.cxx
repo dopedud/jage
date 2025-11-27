@@ -34,18 +34,15 @@ int main(int argc, char** argv)
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);
     });
 
-    float current {};
-    float deltatime {};
-    float previous {};
+    // Time::SetTargetFPS(240);
 
     while (running)
     {
-        current = Time::ElapsedTime();
-        deltatime = current - previous;
-        previous = current;
+        Time::StartLoop();
 
         window->OnRender();
-        APP_LOG_DEBUG("{} ms", deltatime);
+
+        Time::EndLoop();
     }
 
     window.reset();

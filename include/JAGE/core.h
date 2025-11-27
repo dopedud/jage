@@ -106,11 +106,16 @@ namespace JAGE
 {
     namespace Time
     {
+        constexpr uint64_t SECONDS_TO_NANO { 1000000000 };
+        constexpr uint64_t SECONDS_TO_MILLI { 1000 };
+        constexpr uint64_t MILLI_TO_NANO { 1000000 };
+
         void JAGE_API StartLoop();
         void JAGE_API EndLoop();
+        void JAGE_API SetTargetFPS(unsigned fps);
+
         double JAGE_API ElapsedTime();
         double JAGE_API DeltaTime();
-        void JAGE_API WaitForFPS();
     }
 }
 

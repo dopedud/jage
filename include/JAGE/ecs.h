@@ -24,33 +24,22 @@ namespace JAGE
 
     struct Camera { COMPONENT_TYPE(Camera); };
 
-    // forward declare Entity class to be used by World class
-    class JAGE_API Entity;
+    // forward declare Entity and System class to be used by World class
+    class JAGE_API World;
 
-    class JAGE_API World
-    {
-    private:
-        flecs::world m_world;
-    public:
-        World();
-
-        flecs::world* world() { return &m_world; }
-
-        Entity CreateEntity(std::string_view name = "");
-    };
+    using SystemFunction = std::function<void(flecs::iter&)>;
 
     class JAGE_API Entity
     {
     private:
-        std::string m_name;
-
         flecs::world* m_world;
         flecs::entity m_entity;
     public:
         Entity(World* world, std::string_view name = "");
+        Entity() = default;
         ~Entity();
 
-        flecs::entity* entity() { return &m_entity; }
+        flecs::entity* entity();
 
         template<typename T> void AddComponent() { m_entity.add<T>(); }
 
@@ -84,8 +73,45 @@ namespace JAGE
         }
     };
 
-    //class JAGE_API System
-    //{
+    template<typename... Components>
+    class JAGE_API System
+    {
+    private:
+        flecs::world* m_world;
+        flecs::system m_system;
+    public:
+        System(World* world, SystemFunction func, std::string_view name = "")
+        : m_world { world->world() }
+        , m_system { m_world->system<Components...>(name.data()).run(func) }
+        {}
 
-    //};
+        System() = default;
+
+        ~System()
+        {
+            m_system.destruct();
+        }
+
+        flecs::system* system() { return &m_system; }
+    };
+
+    class JAGE_API World
+    {
+    private:
+        flecs::world m_world;
+    public:
+        World();
+
+        flecs::world* world();
+
+        void progress(double deltatime);
+
+        Entity CreateEntity(std::string_view name = "");
+
+        template<typename... Components>
+        System<Components...> CreateSystem(SystemFunction func, std::string_view name = "")
+        {
+            return System<Components...>{ this, name, func };
+        }
+    };
 }

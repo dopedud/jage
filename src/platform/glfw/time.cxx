@@ -2,33 +2,58 @@
 
 #include "platform/platform.h"
 
+#include "log.h"
+
 namespace JAGE
 {
     namespace Time
     {
         using namespace std::chrono;
 
-        static time_point start { high_resolution_clock::now() };
+        static time_point<high_resolution_clock> start { high_resolution_clock::now() };
+
+        static time_point<high_resolution_clock> frame_start {};
+        static time_point<high_resolution_clock> frame_end {};
+        static duration<uint64_t, std::nano> deltatime {};
+        static duration<uint64_t, std::nano> target_deltatime {};
+
+        static bool target_fps_set {};
 
         void StartLoop()
         {
-
+            frame_start = high_resolution_clock::now();
         }
 
         void EndLoop()
         {
+            frame_end = high_resolution_clock::now();            
+            deltatime = duration_cast<nanoseconds>(frame_end - frame_start);
 
+            if (target_fps_set && deltatime < target_deltatime)
+            {
+                deltatime = target_deltatime - deltatime;
+                std::this_thread::sleep_for(deltatime);
+            }
+        }
+
+        void SetTargetFPS(unsigned fps)
+        {
+            JAGE_LOG_INFO("Frame rate capped to {} FPS", fps);
+            target_deltatime = duration<uint64_t, std::nano>{ SECONDS_TO_NANO / fps };
+            target_fps_set = true;
         }
 
         double ElapsedTime()
         {
-            time_point current { high_resolution_clock::now() };
-            duration<double, std::milli> diff { duration_cast<nanoseconds>(current - start) };
+            time_point<high_resolution_clock> current { high_resolution_clock::now() };
+            duration<uint64_t, std::nano> diff { current - start };
 
-            return diff.count();
+            return static_cast<double>(diff.count()) / static_cast<double>(MILLI_TO_NANO); 
 
             // could just return current time reported from GLFW
             // return glfwGetTime();
         }
+
+        double DeltaTime() { return static_cast<double>(deltatime.count()) / static_cast<double>(MILLI_TO_NANO); }
     }
 }

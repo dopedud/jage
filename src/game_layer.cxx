@@ -71,11 +71,11 @@ namespace JAGE
         texture = Texture::Create(image);
         shader = Shader::Create(vertex_shader, fragment_shader);
 
-        vbuffer = VertexBuffer::Create(vertices2.data(), sizeof(vertices2));
+        std::unique_ptr<VertexBuffer> vbuffer { VertexBuffer::Create(vertices2.data(), sizeof(vertices2)) };
         vbuffer->set_layout(layout);
         varray->add_vbuffer(vbuffer);
 
-        ibuffer = IndexBuffer::Create(indices2.data(), sizeof(indices2));
+        std::unique_ptr<IndexBuffer> ibuffer { IndexBuffer::Create(indices2.data(), sizeof(indices2)) };
         varray->set_ibuffer(ibuffer);
 
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
@@ -85,15 +85,15 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Detaching Game layer to layer stack.");
 
-        texture.reset();
+        varray.reset();
         shader.reset();
+        texture.reset();
 
         JAGE_MSG_TRACE("Detached Game layer to layer stack.");
     }
 
     void GameLayer::OnRender()
     {
-        shader->bind();
         shader->bind();
         texture->bind();
         varray->bind();

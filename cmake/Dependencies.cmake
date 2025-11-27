@@ -125,8 +125,9 @@ target_compile_definitions(flecs PRIVATE
     FLECS_LOG
     FLECS_DOC
     FLECS_CPP
-    FLECS_SYSTEM
     FLECS_META
+    FLECS_SYSTEM
+    FLECS_PIPELINE
 
     FLECS_CPP_NO_AUTO_REGISTRATION
 )
