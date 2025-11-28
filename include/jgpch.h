@@ -16,6 +16,7 @@
 #include <stdexcept>
 
 #include <cstdlib>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <csignal>

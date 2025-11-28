@@ -114,8 +114,8 @@ namespace JAGE
         void JAGE_API EndLoop();
         void JAGE_API SetTargetFPS(unsigned fps);
 
-        double JAGE_API ElapsedTime();
-        double JAGE_API DeltaTime();
+        float JAGE_API ElapsedTime();
+        float JAGE_API DeltaTime();
     }
 }
 
@@ -421,7 +421,9 @@ namespace JAGE
         void JAGE_API SetActiveWindow(Window* window);
 
         bool JAGE_API IsKeyPressed(KeyCode key);
+        bool JAGE_API IsKeyReleased(KeyCode key);
         bool JAGE_API IsMouseButtonPressed(MouseButton button);
+        bool JAGE_API IsMouseButtonReleased(MouseButton button);
 
         std::pair<float, float> JAGE_API GetMousePosition();
         float JAGE_API GetMousePositionX();
@@ -436,6 +438,11 @@ namespace JAGE
         std::ostream& JAGE_API operator<<(std::ostream& os, const Action& action);
         std::ostream& JAGE_API operator<<(std::ostream& os, const MouseButton& button);
         std::ostream& JAGE_API operator<<(std::ostream& os, const int& mods);
+
+        #define JAGE_IS_KEY_PRESSED(X) JAGE::Input::IsKeyPressed(X)
+        #define JAGE_IS_KEY_RELEASED(X) JAGE::Input::IsKeyReleased(X)
+        #define JAGE_IS_MOUSE_BUTTON_PRESSED(X) JAGE::Input::IsMouseButtonPressed(X)
+        #define JAGE_IS_MOUSE_BUTTON_RELEASED(X) JAGE::Input::IsMouseButtonReleased(X)
 
         #define JAGE_KEY_UNKNOWN JAGE::Input::KeyCode::UNKNOWN
         #define JAGE_KEY_A JAGE::Input::KeyCode::A

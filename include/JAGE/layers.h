@@ -1,7 +1,5 @@
 #pragma once
 
-#include "JAGE/core.h"
-#include "JAGE/renderer.h"
 #include "JAGE/ecs.h"
 
 namespace JAGE
@@ -21,11 +19,6 @@ namespace JAGE
         std::unique_ptr<VertexArray> varray;
         std::unique_ptr<Shader> shader;
         std::unique_ptr<Texture> texture;
-
-        World world {};
-        Entity camera;
-        System<Camera, Position> camera_move;
-
     };
 
     class JAGE_API ImguiLayer final : public Layer

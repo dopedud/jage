@@ -1,7 +1,7 @@
 #include "JAGE/layers.h"
-#include "JAGE/renderer.h"
+
 #include "JAGE/resources.h"
-#include "JAGE/ecs.h"
+#include "JAGE/math.h"
 
 #include "log.h"
 
@@ -78,6 +78,10 @@ namespace JAGE
         std::unique_ptr<IndexBuffer> ibuffer { IndexBuffer::Create(indices2.data(), sizeof(indices2)) };
         varray->set_ibuffer(ibuffer);
 
+        camera = world.entity();
+        camera.add<Transform>();
+        camera.add<Camera>();
+
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
     }
 
@@ -94,6 +98,8 @@ namespace JAGE
 
     void GameLayer::OnRender()
     {
+        world.progress(Time::DeltaTime());
+
         shader->bind();
         texture->bind();
         varray->bind();

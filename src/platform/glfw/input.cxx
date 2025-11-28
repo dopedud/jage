@@ -19,10 +19,22 @@ namespace JAGE
             return state == GLFW_PRESS;
         }
 
+        bool IsKeyReleased(KeyCode key)
+        {
+            int state { glfwGetKey(glfw_handle, ToGLFWKey(key)) };
+            return state == GLFW_REPEAT;
+        }
+
         bool IsMouseButtonPressed(MouseButton button)
         {
             int state { glfwGetMouseButton(glfw_handle, ToGLFWMouseButton(button)) };
             return state == GLFW_PRESS;
+        }
+
+        bool IsMouseButtonReleased(MouseButton button)
+        {
+            int state { glfwGetMouseButton(glfw_handle, ToGLFWMouseButton(button)) };
+            return state == GLFW_REPEAT;
         }
 
         std::pair<float, float> GetMousePosition()

@@ -47,9 +47,17 @@ set_target_properties(${ENGINE_NAME} PROPERTIES
     ${VISIBILITY_PRESETS}
 )
 
+# NOTE: separation of public and private libraries are for ABI stability between JAGE's shared libraries and the game's
+# executable; in other words, the game doesn't know that JAGE depends on private libraries for some of its operations,
+# but public libraries are exposed from JAGE to the game;
+#
+# apparently, this also means that the game can just directly use dependencies that JAGE uses for its public libraries,
+# bypassing JAGE's API altogether
+
 set(PUBLIC_LIBRARIES
     spdlog::spdlog
     flecs
+    glm
 )
 
 set(PRIVATE_LIBRARIES
@@ -58,7 +66,6 @@ set(PRIVATE_LIBRARIES
     dear_imgui
     tinygltf
     stb_image
-    glm
 )
 
 target_precompile_headers(${ENGINE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/jgpch.h)

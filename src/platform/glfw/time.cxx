@@ -43,17 +43,14 @@ namespace JAGE
             target_fps_set = true;
         }
 
-        double ElapsedTime()
+        float ElapsedTime()
         {
             time_point<high_resolution_clock> current { high_resolution_clock::now() };
             duration<uint64_t, std::nano> diff { current - start };
 
-            return static_cast<double>(diff.count()) / static_cast<double>(MILLI_TO_NANO); 
-
-            // could just return current time reported from GLFW
-            // return glfwGetTime();
+            return static_cast<float>(diff.count()) / static_cast<float>(MILLI_TO_NANO); 
         }
 
-        double DeltaTime() { return static_cast<double>(deltatime.count()) / static_cast<double>(MILLI_TO_NANO); }
+        float DeltaTime() { return static_cast<float>(deltatime.count()) / static_cast<float>(MILLI_TO_NANO); }
     }
 }

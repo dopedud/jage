@@ -1,8 +1,8 @@
 #pragma once
 
 #include "JAGE/core.h"
-
-#include "log.h"
+#include "JAGE/renderer.h"
+#include "JAGE/math.h"
 
 #include <flecs.h>
 
@@ -10,7 +10,7 @@ namespace JAGE
 {
     enum class ComponentType : uint8_t
     {
-        Position, Rotation, Scale,
+        Transform,
         Camera,
     };
 
@@ -18,100 +18,104 @@ namespace JAGE
         static ComponentType static_type() { return ComponentType::type; } \
         ComponentType component_type() const { return static_type(); }
 
-    struct Position { COMPONENT_TYPE(Position); float x {}, y {}, z {}; };
-    struct Rotation { COMPONENT_TYPE(Rotation); float x {}, y {}, z {}; };
-    struct Scale    { COMPONENT_TYPE(Scale); float x { 1.0f }, y { 1.0f }, z { 1.0f }; };
+    struct Transform
+    {
+        COMPONENT_TYPE(Transform);
+        glm::vec3 position {};
+        glm::vec3 rotation {};
+        glm::vec3 scale { 1.0f, 1.0f, 1.0f };
+    };
 
     struct Camera { COMPONENT_TYPE(Camera); };
 
-    // forward declare Entity and System class to be used by World class
-    class JAGE_API World;
+    void JAGE_API CameraMove(flecs::iter& it, size_t index, Camera& camera, Transform& transform);
 
-    using SystemFunction = std::function<void(flecs::iter&)>;
+    // NOTE: THIS LIBRARY IS NOT IN USE FOR NOW
+    // ONLY IN USE FOR INCLUSION OF FLECS
 
-    class JAGE_API Entity
-    {
-    private:
-        flecs::world* m_world;
-        flecs::entity m_entity;
-    public:
-        Entity(World* world, std::string_view name = "");
-        Entity() = default;
-        ~Entity();
+    // // forward declare Entity and System class to be used by World class
+    // class JAGE_API World;
 
-        flecs::entity* entity();
+    // using SystemFunction = std::function<void(flecs::iter&)>;
 
-        template<typename T> void AddComponent() { m_entity.add<T>(); }
+    // class JAGE_API Entity
+    // {
+    // private:
+    //     flecs::world* m_world;
+    //     flecs::entity m_entity;
+    // public:
+    //     Entity(World* world, std::string_view name = "");
+    //     Entity() = default;
+    //     ~Entity();
 
-        // not sure if setting an existing component would overwrite it, might come back here if there's a bug
-        template<typename T> void AddComponent(const T& component) { m_entity.set<T>(component); }
+    //     flecs::entity* entity();
 
-        template<typename T> void RemoveComponent()
-        { 
-            if
-            (
-                T::static_type() == ComponentType::Position ||
-                T::static_type() == ComponentType::Rotation ||
-                T::static_type() == ComponentType::Scale
-            )
-            {
-                JAGE_MSG_ERROR("JAGE error: cannot remove transform components.");
-                return;
-            }
+    //     template<typename T> void AddComponent() { m_entity.add<T>(); }
 
-            m_entity.remove<T>();
-        }
+    //     // not sure if setting an existing component would overwrite it, might come back here if there's a bug
+    //     template<typename T> void AddComponent(const T& component) { m_entity.set<T>(component); }
 
-        template<typename T> const T* GetComponent()
-        {
-            if (const T* result { m_entity.try_get<T>() })
-            {
-                JAGE_LOG_ERROR("JAGE error: unknown component type - {}, returning nullptr.", typeid(T).name());
-                return nullptr;
-            }
-            else return result;
-        }
-    };
+    //     template<typename T> void RemoveComponent()
+    //     { 
+    //         if
+    //         (
+    //             T::static_type() == ComponentType::Position ||
+    //             T::static_type() == ComponentType::Rotation ||
+    //             T::static_type() == ComponentType::Scale
+    //         )
+    //         {
+    //             return;
+    //         }
 
-    template<typename... Components>
-    class JAGE_API System
-    {
-    private:
-        flecs::world* m_world;
-        flecs::system m_system;
-    public:
-        System(World* world, SystemFunction func, std::string_view name = "")
-        : m_world { world->world() }
-        , m_system { m_world->system<Components...>(name.data()).run(func) }
-        {}
+    //         m_entity.remove<T>();
+    //     }
 
-        System() = default;
+    //     template<typename T> const T* GetComponent()
+    //     {
+    //         if (const T* result { m_entity.try_get<T>() }) { return nullptr; }
+    //         else return result;
+    //     }
+    // };
 
-        ~System()
-        {
-            m_system.destruct();
-        }
+    // template<typename... Components>
+    // class JAGE_API System
+    // {
+    // private:
+    //     flecs::world* m_world;
+    //     flecs::system m_system;
+    // public:
+    //     System(World* world, SystemFunction func, std::string_view name = "")
+    //     : m_world { world->world() }
+    //     , m_system { m_world->system<Components...>(name.data()).run(func) }
+    //     {}
 
-        flecs::system* system() { return &m_system; }
-    };
+    //     System() = default;
 
-    class JAGE_API World
-    {
-    private:
-        flecs::world m_world;
-    public:
-        World();
+    //     ~System()
+    //     {
+    //         m_system.destruct();
+    //     }
 
-        flecs::world* world();
+    //     flecs::system* system() { return &m_system; }
+    // };
 
-        void progress(double deltatime);
+    // class JAGE_API World
+    // {
+    // private:
+    //     flecs::world m_world;
+    // public:
+    //     World();
 
-        Entity CreateEntity(std::string_view name = "");
+    //     flecs::world* world();
 
-        template<typename... Components>
-        System<Components...> CreateSystem(SystemFunction func, std::string_view name = "")
-        {
-            return System<Components...>{ this, name, func };
-        }
-    };
+    //     void progress(double deltatime);
+
+    //     Entity CreateEntity(std::string_view name = "");
+
+    //     template<typename... Components>
+    //     System<Components...> CreateSystem(SystemFunction func, std::string_view name = "")
+    //     {
+    //         return System<Components...>{ this, name, func };
+    //     }
+    // };
 }
