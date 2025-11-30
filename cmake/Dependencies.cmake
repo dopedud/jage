@@ -128,8 +128,6 @@ target_compile_definitions(flecs PRIVATE
     FLECS_META
     FLECS_SYSTEM
     FLECS_PIPELINE
-
-    FLECS_CPP_NO_AUTO_REGISTRATION
 )
 # END FETCH FLECS
 

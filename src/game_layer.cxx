@@ -82,6 +82,12 @@ namespace JAGE
         camera.add<Transform>();
         camera.add<Camera>();
 
+        // camera_move = world.system<Camera, Transform>("CameraMove")
+        // .each([](Camera& camera, Transform& transform) -> void
+        // {
+        //     JAGE_MSG_DEBUG("THIS WORKS");
+        // });
+
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
     }
 

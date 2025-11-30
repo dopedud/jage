@@ -1,8 +1,24 @@
 #include "JAGE/ecs.h"
 
+#include "log.h"
+
 namespace JAGE
 {
+    void CameraMove(flecs::iter& it, size_t index, Camera& camera, Transform& transform)
+    {
+        JAGE_LOG_DEBUG("{}", it.delta_time());
 
+        glm::vec3 move_vector {};
+
+        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_D)) move_vector.x += 1.0f;
+        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_A)) move_vector.x -= 1.0f;
+        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_SPACE)) move_vector.y += 1.0f;
+        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_LEFT_CONTROL)) move_vector.y -= 1.0f;
+        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_W)) move_vector.z += 1.0f;
+        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_S)) move_vector.z -= 1.0f;
+
+        JAGE_LOG_DEBUG("{}, {}, {}", move_vector.x, move_vector.y, move_vector.z);
+    }
 
     // World::World() : m_world {}
     // {

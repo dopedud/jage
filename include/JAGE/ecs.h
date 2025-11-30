@@ -8,6 +8,12 @@
 
 namespace JAGE
 {
+    JAGE_API inline flecs::world& World()
+    {
+        static flecs::world world;
+        return world;
+    }
+
     enum class ComponentType : uint8_t
     {
         Transform,
@@ -28,7 +34,7 @@ namespace JAGE
 
     struct Camera { COMPONENT_TYPE(Camera); };
 
-    void JAGE_API CameraMove(flecs::iter& it, size_t index, Camera& camera, Transform& transform);
+    JAGE_API void CameraMove(flecs::iter& it, size_t index, Camera& camera, Transform& transform);
 
     // NOTE: THIS LIBRARY IS NOT IN USE FOR NOW
     // ONLY IN USE FOR INCLUSION OF FLECS

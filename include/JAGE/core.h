@@ -91,8 +91,8 @@
  */
 namespace JAGE
 {
-    void JAGE_API Init(int argc, char** argv);
-    void JAGE_API Destroy();
+    JAGE_API void Init(int argc, char** argv);
+    JAGE_API void Destroy();
 }
 
 /**
@@ -110,12 +110,12 @@ namespace JAGE
         constexpr uint64_t SECONDS_TO_MILLI { 1000 };
         constexpr uint64_t MILLI_TO_NANO { 1000000 };
 
-        void JAGE_API StartLoop();
-        void JAGE_API EndLoop();
-        void JAGE_API SetTargetFPS(unsigned fps);
+        JAGE_API void StartLoop();
+        JAGE_API void EndLoop();
+        JAGE_API void SetTargetFPS(unsigned fps);
 
-        float JAGE_API ElapsedTime();
-        float JAGE_API DeltaTime();
+        JAGE_API float ElapsedTime();
+        JAGE_API float DeltaTime();
     }
 }
 
@@ -403,12 +403,12 @@ namespace JAGE
             ALT         = BIT(2),
         };
 
-        int JAGE_API operator&(Modifier lhs, Modifier rhs);
-        int JAGE_API operator|(Modifier lhs, Modifier rhs);
-        int JAGE_API operator&(int lhs, Modifier rhs);
-        int JAGE_API operator|(int lhs, Modifier rhs);
-        int JAGE_API operator&(Modifier lhs, int rhs);
-        int JAGE_API operator|(Modifier lhs, int rhs);
+        JAGE_API int operator&(Modifier lhs, Modifier rhs);
+        JAGE_API int operator|(Modifier lhs, Modifier rhs);
+        JAGE_API int operator&(int lhs, Modifier rhs);
+        JAGE_API int operator|(int lhs, Modifier rhs);
+        JAGE_API int operator&(Modifier lhs, int rhs);
+        JAGE_API int operator|(Modifier lhs, int rhs);
 
         /**
          * @fn SetActiveWindow
@@ -418,26 +418,26 @@ namespace JAGE
          * 
          * @param window The window to query input from. 
          */
-        void JAGE_API SetActiveWindow(Window* window);
+        JAGE_API void SetActiveWindow(Window* window);
 
-        bool JAGE_API IsKeyPressed(KeyCode key);
-        bool JAGE_API IsKeyReleased(KeyCode key);
-        bool JAGE_API IsMouseButtonPressed(MouseButton button);
-        bool JAGE_API IsMouseButtonReleased(MouseButton button);
+        JAGE_API bool IsKeyPressed(KeyCode key);
+        JAGE_API bool IsKeyReleased(KeyCode key);
+        JAGE_API bool IsMouseButtonPressed(MouseButton button);
+        JAGE_API bool IsMouseButtonReleased(MouseButton button);
 
-        std::pair<float, float> JAGE_API GetMousePosition();
-        float JAGE_API GetMousePositionX();
-        float JAGE_API GetMousePositionY();
+        JAGE_API std::pair<float, float> GetMousePosition();
+        JAGE_API float GetMousePositionX();
+        JAGE_API float GetMousePositionY();
 
-        std::string JAGE_API to_string(KeyCode key);
-        std::string JAGE_API to_string(Action action);
-        std::string JAGE_API to_string(MouseButton button);
-        std::string JAGE_API to_string(int mods);
+        JAGE_API std::string to_string(KeyCode key);
+        JAGE_API std::string to_string(Action action);
+        JAGE_API std::string to_string(MouseButton button);
+        JAGE_API std::string to_string(int mods);
 
-        std::ostream& JAGE_API operator<<(std::ostream& os, const KeyCode& key);
-        std::ostream& JAGE_API operator<<(std::ostream& os, const Action& action);
-        std::ostream& JAGE_API operator<<(std::ostream& os, const MouseButton& button);
-        std::ostream& JAGE_API operator<<(std::ostream& os, const int& mods);
+        JAGE_API std::ostream& operator<<(std::ostream& os, const KeyCode& key);
+        JAGE_API std::ostream& operator<<(std::ostream& os, const Action& action);
+        JAGE_API std::ostream& operator<<(std::ostream& os, const MouseButton& button);
+        JAGE_API std::ostream& operator<<(std::ostream& os, const int& mods);
 
         #define JAGE_IS_KEY_PRESSED(X) JAGE::Input::IsKeyPressed(X)
         #define JAGE_IS_KEY_RELEASED(X) JAGE::Input::IsKeyReleased(X)
@@ -590,8 +590,8 @@ namespace JAGE
         MouseButton     = BIT(4)
     };
 
-    int JAGE_API operator&(EventCategory lhs, EventCategory rhs);
-    int JAGE_API operator|(EventCategory lhs, EventCategory rhs);
+    JAGE_API int operator&(EventCategory lhs, EventCategory rhs);
+    JAGE_API int operator|(EventCategory lhs, EventCategory rhs);
 
     /**
      * @class Event
