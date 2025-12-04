@@ -44,6 +44,8 @@ namespace JAGE
 
         graphics_context = std::make_unique<OpenGLContext>(this);
 
+        // glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
         // BUNCH OF CALLBACK DEFINITIONS
 
         // NOTE: data.callback() COULD only be called for windows related event (such as the 2 window events written

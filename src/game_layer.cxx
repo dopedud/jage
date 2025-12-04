@@ -1,7 +1,6 @@
 #include "JAGE/layers.h"
 
 #include "JAGE/resources.h"
-#include "JAGE/math.h"
 
 #include "log.h"
 
@@ -46,7 +45,7 @@ namespace JAGE
 
         std::array<float, 3 * 9> vertices2
         {
-            // position             // color                    // texture coords
+            // position             // color                    // texcoords
             -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
             0.0f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f, 1.0f,     0.5f, 1.0f,
             0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 0.0f
@@ -78,28 +77,21 @@ namespace JAGE
         std::unique_ptr<IndexBuffer> ibuffer { IndexBuffer::Create(indices2.data(), sizeof(indices2)) };
         varray->set_ibuffer(ibuffer);
 
-        camera = world.entity();
-        camera.add<Transform>();
-        camera.add<Camera>();
-
-        // camera_move = world.system<Camera, Transform>("CameraMove")
-        // .each([](Camera& camera, Transform& transform) -> void
-        // {
-        //     JAGE_MSG_DEBUG("THIS WORKS");
-        // });
+        camera.AddComponent<Transform>();
+        camera.AddComponent<Camera>();
 
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
     }
 
     void GameLayer::OnDetach()
     {
-        JAGE_MSG_TRACE("Detaching Game layer to layer stack.");
+        JAGE_MSG_TRACE("Detaching Game layer from layer stack.");
 
         varray.reset();
         shader.reset();
         texture.reset();
 
-        JAGE_MSG_TRACE("Detached Game layer to layer stack.");
+        JAGE_MSG_TRACE("Detached Game layer from layer stack.");
     }
 
     void GameLayer::OnRender()
@@ -107,6 +99,16 @@ namespace JAGE
         world.progress(Time::DeltaTime());
 
         shader->bind();
+
+        glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, -5.0f }) };
+        shader->set_uniform_mat4("model", model);
+
+        const Camera* c { camera.GetComponent<Camera>() };
+        shader->set_uniform_mat4("view", c->view_matrix);
+
+        glm::mat4 projection { glm::perspective(glm::radians(80.0f), static_cast<float>(window->width()) / static_cast<float>(window->height()), 0.1f, 1000.0f) };
+        shader->set_uniform_mat4("projection", projection);
+
         texture->bind();
         varray->bind();
         Renderer::Render();

@@ -20,9 +20,8 @@ namespace JAGE
         std::unique_ptr<Shader> shader;
         std::unique_ptr<Texture> texture;
 
-        flecs::world world;
-        flecs::entity camera;
-        flecs::system camera_move;
+        World world {};
+        Entity camera { &world, "MainCamera" };
     };
 
     class JAGE_API ImguiLayer final : public Layer

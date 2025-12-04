@@ -128,6 +128,7 @@ target_compile_definitions(flecs PRIVATE
     FLECS_META
     FLECS_SYSTEM
     FLECS_PIPELINE
+    FLECS_QUERY_DSL
 )
 # END FETCH FLECS
 

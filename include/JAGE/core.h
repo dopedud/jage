@@ -110,12 +110,12 @@ namespace JAGE
         constexpr uint64_t SECONDS_TO_MILLI { 1000 };
         constexpr uint64_t MILLI_TO_NANO { 1000000 };
 
-        JAGE_API void StartLoop();
-        JAGE_API void EndLoop();
-        JAGE_API void SetTargetFPS(unsigned fps);
+        void JAGE_API StartLoop();
+        void JAGE_API EndLoop();
+        void JAGE_API SetTargetFPS(unsigned fps);
 
-        JAGE_API float ElapsedTime();
-        JAGE_API float DeltaTime();
+        float JAGE_API ElapsedTime();
+        float JAGE_API DeltaTime();
     }
 }
 

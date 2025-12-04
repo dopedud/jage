@@ -2,6 +2,7 @@
 
 #include "JAGE/core.h"
 #include "JAGE/resources.h"
+#include "JAGE/math.h"
 
 namespace JAGE
 {
@@ -52,6 +53,7 @@ namespace JAGE
         virtual void set_uniform_int(std::string_view name, int value) = 0;
         virtual void set_uniform_uint(std::string_view name, unsigned value) = 0;
         virtual void set_uniform_float(std::string_view name, float value) = 0;
+        virtual void set_uniform_mat4(std::string_view name, const glm::mat4& value) = 0;
     protected:
         unsigned shaderID;
     };

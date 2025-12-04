@@ -46,6 +46,8 @@ namespace JAGE
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
 #endif
 
+        glEnable(GL_DEPTH_TEST);
+
         glViewport(0, 0, window->width(), window->height());
 
         glfwSetFramebufferSizeCallback(static_cast<GLFWwindow*>(window->handle()), [](GLFWwindow* window, int width, int height) -> void 
@@ -57,7 +59,7 @@ namespace JAGE
     void OpenGLContext::Clear()
     {
         glClearColor(1, 0, 1, 1);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     void OpenGLContext::SwapBuffers()
@@ -247,6 +249,12 @@ namespace JAGE
     {
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
         glUniform1i(loc, value);
+    }
+
+    void OpenGLShader::set_uniform_mat4(std::string_view name, const glm::mat4& value)
+    {
+        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
     }
 
     // END OPENGL SHADER IMPLEMENTATION

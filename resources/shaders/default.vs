@@ -8,11 +8,16 @@ out vec3 f_position;
 out vec4 f_color;
 out vec2 f_texcoord;
 
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
 void main()
 {
     f_position = v_position;
     f_color = v_color;
     f_texcoord = v_texcoord;
 
-    gl_Position = vec4(v_position, 1.0);
+    gl_Position = projection * view * model * vec4(v_position, 1.0);
+    // gl_Position = vec4(v_position, 1.0);
 }

@@ -3,6 +3,8 @@
 #include "JAGE/core.h"
 
 #include <glm/glm.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 // NOTE: THIS LIBRARY IS NOT IN USE FOR NOW
 // ONLY IN USE FOR INCLUSION OF GLM
