@@ -66,7 +66,7 @@ namespace JAGE
 
         c.right = glm::vec3{ 1.0f, 0.0f, 0.0f };
         c.up = glm::vec3{ 0.0f, 1.0f, 0.0f };
-        c.front = glm::vec3{ 0.0f, 0.0f, -1.0f };
+        c.front = glm::vec3{ 0.0f, 0.0f, 1.0f };
 
         c.speed = 1.0f;
         c.sensitivity = 1.0f;
@@ -80,8 +80,8 @@ namespace JAGE
         if (JAGE_IS_KEY_PRESSED(JAGE_KEY_A)) move_vector.x -= 1.0f;
         if (JAGE_IS_KEY_PRESSED(JAGE_KEY_SPACE)) move_vector.y += 1.0f;
         if (JAGE_IS_KEY_PRESSED(JAGE_KEY_LEFT_CONTROL)) move_vector.y -= 1.0f;
-        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_W)) move_vector.z -= 1.0f;
-        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_S)) move_vector.z += 1.0f;
+        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_W)) move_vector.z += 1.0f;
+        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_S)) move_vector.z -= 1.0f;
 
         // glm::normalize will produce UB for vectors with length ~ 0.0f, so it must be tested first for such cases.
         move_vector = !glm::length(move_vector) ? glm::vec3{} : (glm::normalize(move_vector) * 0.01f * it->delta_time);

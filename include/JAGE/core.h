@@ -443,6 +443,8 @@ namespace JAGE
         #define JAGE_IS_KEY_RELEASED(X) JAGE::Input::IsKeyReleased(X)
         #define JAGE_IS_MOUSE_BUTTON_PRESSED(X) JAGE::Input::IsMouseButtonPressed(X)
         #define JAGE_IS_MOUSE_BUTTON_RELEASED(X) JAGE::Input::IsMouseButtonReleased(X)
+        #define JAGE_GET_MOUSE_POSITION_HORIZONTAL JAGE::Input::GetMousePositionX();
+        #define JAGE_GET_MOUSE_POSITION_VERTICAL JAGE::Input::GetMousePositionY();
 
         #define JAGE_KEY_UNKNOWN JAGE::Input::KeyCode::UNKNOWN
         #define JAGE_KEY_A JAGE::Input::KeyCode::A

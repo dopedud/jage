@@ -100,13 +100,13 @@ namespace JAGE
 
         shader->bind();
 
-        glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, -5.0f }) };
+        glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.0f }) };
         shader->set_uniform_mat4("model", model);
 
         const Camera* c { camera.GetComponent<Camera>() };
         shader->set_uniform_mat4("view", c->view_matrix);
 
-        glm::mat4 projection { glm::perspective(glm::radians(80.0f), static_cast<float>(window->width()) / static_cast<float>(window->height()), 0.1f, 1000.0f) };
+        glm::mat4 projection { glm::perspectiveFovLH(glm::radians(80.0f), static_cast<float>(window->width()), static_cast<float>(window->height()), 0.1f, 1000.0f) };
         shader->set_uniform_mat4("projection", projection);
 
         texture->bind();

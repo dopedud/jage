@@ -13,7 +13,7 @@ namespace JAGE
 
         LogInit();
 
-        JAGE_LOG_TRACE("Current working directory: {}", std::filesystem::current_path().string());
+        JAGE_LOG_INFO("Current working directory: {}", std::filesystem::current_path().string());
 
         ResourceManager::instance();
     }
