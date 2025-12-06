@@ -11,14 +11,15 @@ namespace JAGE
     struct Transform
     {
         glm::vec3 position;
-        glm::vec3 rotation;
+        glm::vec3 rotation; // angles in degrees
         glm::vec3 scale;
+
+        glm::mat4 rotation_matrix();
     };
 
     struct Camera
     { 
         glm::mat4 view_matrix;
-        glm::vec3 worldup;
 
         glm::vec3 right;
         glm::vec3 up;

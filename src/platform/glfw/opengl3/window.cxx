@@ -44,11 +44,13 @@ namespace JAGE
 
         graphics_context = std::make_unique<OpenGLContext>(this);
 
-        // glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        if (glfwRawMouseMotionSupported()) glfwSetInputMode(m_handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
+        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         // BUNCH OF CALLBACK DEFINITIONS
 
-        // NOTE: data.callback() COULD only be called for windows related event (such as the 2 window events written
+        // NOTE: data.callback() COULD only be called for windows related event (such as the window events written
         // below) and have input related events be routed somewhere else; for now, all events are routed to the
         // application
 
@@ -160,6 +162,7 @@ namespace JAGE
     {
         graphics_context->Clear();
 
+        Input::UpdateMousePosition();
         for (Layer* layer : layers) layer->OnRender();
 
         graphics_context->SwapBuffers();

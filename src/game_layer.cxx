@@ -106,7 +106,7 @@ namespace JAGE
         const Camera* c { camera.GetComponent<Camera>() };
         shader->set_uniform_mat4("view", c->view_matrix);
 
-        glm::mat4 projection { glm::perspectiveFovLH(glm::radians(80.0f), static_cast<float>(window->width()), static_cast<float>(window->height()), 0.1f, 1000.0f) };
+        glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(60.0f), window->aspect_ratio(), 0.1f) };
         shader->set_uniform_mat4("projection", projection);
 
         texture->bind();
@@ -116,6 +116,17 @@ namespace JAGE
 
     void GameLayer::OnEvent(const Event& e)
     {
-        // JAGE_MSG_DEBUG("Game Layer | " + std::string{ e.to_string() });
+        // JAGE_MSG_DEBUG("Game Layer | " + e.to_string());
+        EventDispatcher dispatcher { e };
+        dispatcher.dispatch<KeyEvent>([](const KeyEvent& e) -> bool
+        {
+            if (e.action() == JAGE_ACTION_PRESSED && e.key() == JAGE_KEY_ESCAPE)
+            {
+                if (Input::GetCursorMode() == JAGE_CURSOR_MODE_NORMAL) Input::SetCursorMode(JAGE_CURSOR_MODE_DISABLED);
+                else Input::SetCursorMode(JAGE_CURSOR_MODE_NORMAL);
+            }
+
+            return true;
+        });
     }
 }

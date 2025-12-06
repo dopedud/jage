@@ -73,45 +73,47 @@ namespace JAGE
         dispatcher.dispatch<MouseScrolledEvent>([this](const MouseScrolledEvent& e) -> bool { return OnMouseScrolledEvent(e); });
     }
 
+    static bool passthrough {};
+
     bool ImguiLayer::OnWindowFocusEvent(const WindowFocusEvent& e)
     {
         ImGui_ImplGlfw_WindowFocusCallback(static_cast<GLFWwindow*>(window->handle()), e.focused());
-        return true;
+        return passthrough;
     }
 
     bool ImguiLayer::OnKeyEvent(const KeyEvent& e)
     {
         ImGui_ImplGlfw_KeyCallback(static_cast<GLFWwindow*>(window->handle()), Input::ToGLFWKey(e.key()), e.scancode(), Input::ToGLFWAction(e.action()), Input::ToGLFWMods(e.mods()));
-        return true;
+        return passthrough;
     }
 
     bool ImguiLayer::OnCharEvent(const CharEvent& e)
     {
         ImGui_ImplGlfw_CharCallback(static_cast<GLFWwindow*>(window->handle()), e.codepoint());
-        return true;
+        return passthrough;
     }
 
     bool ImguiLayer::OnMouseButtonEvent(const MouseButtonEvent& e)
     {
         ImGui_ImplGlfw_MouseButtonCallback(static_cast<GLFWwindow*>(window->handle()), Input::ToGLFWMouseButton(e.button()), Input::ToGLFWAction(e.action()), Input::ToGLFWMods(e.mods()));
-        return true;
+        return passthrough;
     }
 
     bool ImguiLayer::OnMouseEnterEvent(const MouseEnterEvent& e)
     {
         ImGui_ImplGlfw_CursorEnterCallback(static_cast<GLFWwindow*>(window->handle()), e.entered());
-        return true;
+        return passthrough;
     }
 
     bool ImguiLayer::OnMouseMovedEvent(const MouseMovedEvent& e)
     {
         ImGui_ImplGlfw_CursorPosCallback(static_cast<GLFWwindow*>(window->handle()), e.mouseX(), e.mouseY());
-        return true;
+        return passthrough;
     }
 
     bool ImguiLayer::OnMouseScrolledEvent(const MouseScrolledEvent& e)
     {
         ImGui_ImplGlfw_ScrollCallback(static_cast<GLFWwindow*>(window->handle()), e.offsetX(), e.offsetY());
-        return true;
+        return passthrough;
     }
 }

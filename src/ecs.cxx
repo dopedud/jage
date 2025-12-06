@@ -4,6 +4,12 @@
 
 namespace JAGE
 {
+    glm::mat4 Transform::rotation_matrix()
+    {
+        glm::vec3 rotrad { glm::radians(rotation) };
+        return glm::yawPitchRoll(rotrad.y, rotrad.x, rotrad.z);
+    } 
+
     ECS_COMPONENT_DECLARE(Transform);
     ECS_COMPONENT_DECLARE(Camera);
 
@@ -62,29 +68,33 @@ namespace JAGE
         t.scale = glm::vec3{ 1.0f };
 
         c.view_matrix = glm::mat4{ 1.0f };
-        c.worldup = glm::vec3{ 0.0f, 1.0f, 0.0f };
 
         c.right = glm::vec3{ 1.0f, 0.0f, 0.0f };
         c.up = glm::vec3{ 0.0f, 1.0f, 0.0f };
         c.front = glm::vec3{ 0.0f, 0.0f, 1.0f };
 
-        c.speed = 1.0f;
+        c.speed = 0.001f;
         c.sensitivity = 1.0f;
     }
 
     void CameraSystem(ecs_iter_t* it)
     {
+        if (Input::GetCursorMode() == JAGE_CURSOR_MODE_NORMAL) return;
+
         glm::vec3 move_vector {};
 
-        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_D)) move_vector.x += 1.0f;
-        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_A)) move_vector.x -= 1.0f;
-        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_SPACE)) move_vector.y += 1.0f;
-        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_LEFT_CONTROL)) move_vector.y -= 1.0f;
-        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_W)) move_vector.z += 1.0f;
-        if (JAGE_IS_KEY_PRESSED(JAGE_KEY_S)) move_vector.z -= 1.0f;
+        if (Input::IsKeyPressed(JAGE_KEY_D)) move_vector.x += 1.0f;
+        if (Input::IsKeyPressed(JAGE_KEY_A)) move_vector.x -= 1.0f;
+        if (Input::IsKeyPressed(JAGE_KEY_SPACE)) move_vector.y += 1.0f;
+        if (Input::IsKeyPressed(JAGE_KEY_LEFT_CONTROL)) move_vector.y -= 1.0f;
+        if (Input::IsKeyPressed(JAGE_KEY_W)) move_vector.z += 1.0f;
+        if (Input::IsKeyPressed(JAGE_KEY_S)) move_vector.z -= 1.0f;
 
-        // glm::normalize will produce UB for vectors with length ~ 0.0f, so it must be tested first for such cases.
-        move_vector = !glm::length(move_vector) ? glm::vec3{} : (glm::normalize(move_vector) * 0.01f * it->delta_time);
+        glm::vec2 look_vector { Input::GetMousePositionDeltaX(), Input::GetMousePositionDeltaY() };
+
+        // glm::normalize will produce UB for vectors with length ~ 0.0f, so it must be tested first for such cases
+        move_vector = !glm::length(move_vector) ? glm::vec3{} : (glm::normalize(move_vector) * it->delta_time);
+        look_vector = !glm::length(look_vector) ? glm::vec3{} : (glm::normalize(look_vector) * it->delta_time);
 
         Transform* transform { ecs_field(it, Transform, 0) };
         Camera* camera { ecs_field(it, Camera, 1) };
@@ -92,15 +102,39 @@ namespace JAGE
         Transform& t { transform[0] };
         Camera& c { camera[0] };
 
-        t.position += move_vector * c.speed;
+        t.rotation.x += look_vector.y * c.sensitivity;
+        t.rotation.y += look_vector.x * c.sensitivity;
 
-        c.front.x = glm::cos(glm::radians(t.rotation.x)) * glm::cos(glm::radians(t.rotation.y - 90.0f));
-        c.front.y = glm::sin(glm::radians(t.rotation.x));
-        c.front.z = glm::cos(glm::radians(t.rotation.x)) * glm::sin(glm::radians(t.rotation.y - 90.0f));
+        if (t.rotation.x > 89.0f) t.rotation.x = 89.0f;
+        if (t.rotation.x < -89.0f) t.rotation.x = -89.0f;
 
-        c.front = glm::normalize(c.front);
-        c.right = glm::normalize(glm::cross(c.front, c.worldup));
-        c.up = glm::normalize(glm::cross(c.right, c.front));
+        // c.front.x = glm::cos(glm::radians(t.rotation.x)) * glm::cos(glm::radians(t.rotation.y - 90.0f));
+        // c.front.y = glm::sin(glm::radians(t.rotation.x));
+        // c.front.z = glm::cos(glm::radians(t.rotation.x)) * glm::sin(glm::radians(t.rotation.y - 90.0f));
+
+        // c.front = glm::normalize(c.front);
+        // c.right = glm::normalize(glm::cross(c.front, glm::vec3{ 0.0f, 1.0f, 0.0f }));
+        // c.up = glm::normalize(glm::cross(c.right, c.front));
+
+        // t.position +=
+        // (
+        //     c.right * move_vector.x +
+        //     c.up * move_vector.y +
+        //     c.front * move_vector.z
+        // ) * c.speed;
+
+        glm::mat4 rotation_matrix { t.rotation_matrix() };
+
+        c.right =   glm::normalize(rotation_matrix[0]);
+        c.up =      glm::normalize(rotation_matrix[1]);
+        c.front =   glm::normalize(rotation_matrix[2]);
+
+        t.position +=
+        (
+            -c.right * move_vector.x +
+            c.up * move_vector.y +
+            -c.front * move_vector.z
+        ) * c.speed;
 
         c.view_matrix = glm::lookAt(t.position, t.position + c.front, c.up);
     }

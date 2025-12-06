@@ -248,14 +248,16 @@ namespace JAGE
         static std::unique_ptr<Window> Create(const WindowProperties& properties = WindowProperties{});
         virtual ~Window() = default;
 
-        unsigned width() const { return data.properties.width; }
-        unsigned height() const { return data.properties.height; }
+        unsigned width() const;
+        unsigned height() const;
+
+        float aspect_ratio() const;
 
         virtual void OnRender() = 0;
 
         void set_eventcallback(const EventCallbackFn& callback) { data.callback = callback; }
 
-        bool vsync() const { return data.properties.vsync; }
+        bool vsync() const;
         virtual void set_vsync(bool enabled) = 0;
 
         /**
@@ -403,6 +405,8 @@ namespace JAGE
             ALT         = BIT(2),
         };
 
+        enum class CursorMode : uint8_t { NORMAL = 0, DISABLED, HIDDEN };
+
         JAGE_API int operator&(Modifier lhs, Modifier rhs);
         JAGE_API int operator|(Modifier lhs, Modifier rhs);
         JAGE_API int operator&(int lhs, Modifier rhs);
@@ -425,9 +429,13 @@ namespace JAGE
         JAGE_API bool IsMouseButtonPressed(MouseButton button);
         JAGE_API bool IsMouseButtonReleased(MouseButton button);
 
-        JAGE_API std::pair<float, float> GetMousePosition();
+        JAGE_API void SetCursorMode(CursorMode mode);
+        JAGE_API CursorMode GetCursorMode();
+
         JAGE_API float GetMousePositionX();
         JAGE_API float GetMousePositionY();
+        JAGE_API float GetMousePositionDeltaX();
+        JAGE_API float GetMousePositionDeltaY();
 
         JAGE_API std::string to_string(KeyCode key);
         JAGE_API std::string to_string(Action action);
@@ -438,13 +446,6 @@ namespace JAGE
         JAGE_API std::ostream& operator<<(std::ostream& os, const Action& action);
         JAGE_API std::ostream& operator<<(std::ostream& os, const MouseButton& button);
         JAGE_API std::ostream& operator<<(std::ostream& os, const int& mods);
-
-        #define JAGE_IS_KEY_PRESSED(X) JAGE::Input::IsKeyPressed(X)
-        #define JAGE_IS_KEY_RELEASED(X) JAGE::Input::IsKeyReleased(X)
-        #define JAGE_IS_MOUSE_BUTTON_PRESSED(X) JAGE::Input::IsMouseButtonPressed(X)
-        #define JAGE_IS_MOUSE_BUTTON_RELEASED(X) JAGE::Input::IsMouseButtonReleased(X)
-        #define JAGE_GET_MOUSE_POSITION_HORIZONTAL JAGE::Input::GetMousePositionX();
-        #define JAGE_GET_MOUSE_POSITION_VERTICAL JAGE::Input::GetMousePositionY();
 
         #define JAGE_KEY_UNKNOWN JAGE::Input::KeyCode::UNKNOWN
         #define JAGE_KEY_A JAGE::Input::KeyCode::A
@@ -557,6 +558,10 @@ namespace JAGE
         #define JAGE_MOD_SHIFT      JAGE::Input::Modifier::SHIFT
         #define JAGE_MOD_CONTROL    JAGE::Input::Modifier::CONTROL
         #define JAGE_MOD_ALT        JAGE::Input::Modifier::ALT
+
+        #define JAGE_CURSOR_MODE_NORMAL     JAGE::Input::CursorMode::NORMAL
+        #define JAGE_CURSOR_MODE_DISABLED   JAGE::Input::CursorMode::DISABLED
+        #define JAGE_CURSOR_MODE_HIDDEN     JAGE::Input::CursorMode::HIDDEN
     };
 }
 
@@ -629,15 +634,11 @@ namespace JAGE
         EventDispatcher(const Event& event) : event { event } {}
 
         template<typename TEvent>
-        bool dispatch(EventFn<TEvent> function)
+        void dispatch(EventFn<TEvent> function)
         {
             if (event.event_type() == TEvent::static_type())
-            {
-                event.set_handled(function(static_cast<const TEvent&>(event)));
-                return true;
-            }
+            event.set_handled(function(static_cast<const TEvent&>(event)));
 
-            return false;
         }
     private:
         const Event& event;

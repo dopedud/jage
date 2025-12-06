@@ -8,6 +8,9 @@ namespace JAGE
     {
         static GLFWwindow* glfw_handle;
 
+        static double previous_mouse_positionX {}, previous_mouse_positionY {};
+        static double current_mouse_positionX {}, current_mouse_positionY {};
+
         void SetActiveWindow(Window* window)
         {
             glfw_handle = static_cast<GLFWwindow*>(window->handle());
@@ -36,16 +39,21 @@ namespace JAGE
             int state { glfwGetMouseButton(glfw_handle, ToGLFWMouseButton(button)) };
             return state == GLFW_REPEAT;
         }
+        
+        void SetCursorMode(CursorMode mode) { glfwSetInputMode(glfw_handle, GLFW_CURSOR, ToGLFWCursorMode(mode)); }
+        CursorMode GetCursorMode() { return FromGLFWCursorMode(glfwGetInputMode(glfw_handle, GLFW_CURSOR)); }
 
-        std::pair<float, float> GetMousePosition()
+        float GetMousePositionX() { return current_mouse_positionX; }
+        float GetMousePositionY() { return current_mouse_positionY; }
+        float GetMousePositionDeltaX() { return current_mouse_positionX - previous_mouse_positionX; }
+        float GetMousePositionDeltaY() { return previous_mouse_positionY - current_mouse_positionY; }
+
+        void UpdateMousePosition()
         {
-            double xpos, ypos;
-            glfwGetCursorPos(glfw_handle, &xpos, &ypos);
-            return std::pair<float, float>{ xpos, ypos };
+            previous_mouse_positionX = current_mouse_positionX;
+            previous_mouse_positionY = current_mouse_positionY;
+            glfwGetCursorPos(glfw_handle, &current_mouse_positionX, &current_mouse_positionY);
         }
-
-        float GetMousePositionX() { return GetMousePosition().first; }
-        float GetMousePositionY() { return GetMousePosition().second; }
 
         // REALLY LONG CONVERSIONS LIST
 
@@ -188,6 +196,16 @@ namespace JAGE
             return glfw_mods;
         }
 
+        int ToGLFWCursorMode(CursorMode mode)
+        {
+            switch (mode)
+            {
+                case JAGE_CURSOR_MODE_NORMAL:       return GLFW_CURSOR_NORMAL;
+                case JAGE_CURSOR_MODE_DISABLED:     return GLFW_CURSOR_DISABLED;
+                case JAGE_CURSOR_MODE_HIDDEN:       return GLFW_CURSOR_HIDDEN;
+            }
+        }
+
         KeyCode FromGLFWKey(int key)
         {
             switch (key)
@@ -320,6 +338,16 @@ namespace JAGE
             if (mods & GLFW_MOD_ALT)        jage_mods = jage_mods | JAGE_MOD_ALT;
 
             return jage_mods;
+        }
+
+        CursorMode FromGLFWCursorMode(int mode)
+        {
+            switch (mode)
+            {
+                case GLFW_CURSOR_NORMAL:    return JAGE_CURSOR_MODE_NORMAL;
+                case GLFW_CURSOR_DISABLED:  return JAGE_CURSOR_MODE_DISABLED;
+                case GLFW_CURSOR_HIDDEN:    return JAGE_CURSOR_MODE_HIDDEN;
+            }
         }
 
         DISABLE_WARNING_POP

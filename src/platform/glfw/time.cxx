@@ -43,6 +43,8 @@ namespace JAGE
             target_fps_set = true;
         }
 
+        void UncapFPS() { target_fps_set = false; }
+
         float ElapsedTime()
         {
             time_point<high_resolution_clock> current { high_resolution_clock::now() };

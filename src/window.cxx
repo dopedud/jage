@@ -5,6 +5,16 @@
 
 namespace JAGE
 {
+    unsigned Window::width() const { return data.properties.width; }
+    unsigned Window::height() const { return data.properties.height; }
+
+    bool Window::vsync() const { return data.properties.vsync; }
+
+    float Window::aspect_ratio() const
+    {
+        return static_cast<float>(data.properties.width) / static_cast<float>(data.properties.height);
+    }
+
     Layer::Layer(Window* window, std::string_view name) : window { window }, m_name { name }
     {
         JAGE_MSG_TRACE("Initialised a layer with name: " + m_name);
