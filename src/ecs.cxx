@@ -74,7 +74,7 @@ namespace JAGE
         c.front = glm::vec3{ 0.0f, 0.0f, 1.0f };
 
         c.speed = 0.001f;
-        c.sensitivity = 1.0f;
+        c.sensitivity = 0.5f;
     }
 
     void CameraSystem(ecs_iter_t* it)
@@ -94,7 +94,9 @@ namespace JAGE
 
         // glm::normalize will produce UB for vectors with length ~ 0.0f, so it must be tested first for such cases
         move_vector = !glm::length(move_vector) ? glm::vec3{} : (glm::normalize(move_vector) * it->delta_time);
-        look_vector = !glm::length(look_vector) ? glm::vec3{} : (glm::normalize(look_vector) * it->delta_time);
+
+        JAGE_LOG_DEBUG("look_vector.x - {}", look_vector.x);
+        JAGE_LOG_DEBUG("look_vector.y - {}", look_vector.y);
 
         Transform* transform { ecs_field(it, Transform, 0) };
         Camera* camera { ecs_field(it, Camera, 1) };
@@ -125,17 +127,24 @@ namespace JAGE
 
         glm::mat4 rotation_matrix { t.rotation_matrix() };
 
-        c.right =   glm::normalize(rotation_matrix[0]);
-        c.up =      glm::normalize(rotation_matrix[1]);
-        c.front =   glm::normalize(rotation_matrix[2]);
+        c.right = glm::normalize(rotation_matrix[0]);
+        c.up    = glm::normalize(rotation_matrix[1]);
+        c.front = glm::normalize(rotation_matrix[2]);
+
+        JAGE_LOG_DEBUG("rotation.x - {}", t.rotation.x);
+        JAGE_LOG_DEBUG("rotation.y - {}", t.rotation.y);
+
+        JAGE_LOG_DEBUG("right - {}", c.right);
+        JAGE_LOG_DEBUG("up - {}", c.up);
+        JAGE_LOG_DEBUG("front - {}", c.front);
 
         t.position +=
         (
-            -c.right * move_vector.x +
+            c.right * move_vector.x +
             c.up * move_vector.y +
-            -c.front * move_vector.z
+            c.front * move_vector.z
         ) * c.speed;
 
-        c.view_matrix = glm::lookAt(t.position, t.position + c.front, c.up);
+        c.view_matrix = glm::lookAtLH(t.position, t.position + c.front, c.up);
     }
 }

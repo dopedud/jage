@@ -46,7 +46,7 @@ namespace JAGE
         float GetMousePositionX() { return current_mouse_positionX; }
         float GetMousePositionY() { return current_mouse_positionY; }
         float GetMousePositionDeltaX() { return current_mouse_positionX - previous_mouse_positionX; }
-        float GetMousePositionDeltaY() { return previous_mouse_positionY - current_mouse_positionY; }
+        float GetMousePositionDeltaY() { return current_mouse_positionY - previous_mouse_positionY; }
 
         void UpdateMousePosition()
         {

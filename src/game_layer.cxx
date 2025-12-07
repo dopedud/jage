@@ -106,7 +106,7 @@ namespace JAGE
         const Camera* c { camera.GetComponent<Camera>() };
         shader->set_uniform_mat4("view", c->view_matrix);
 
-        glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(60.0f), window->aspect_ratio(), 0.1f) };
+        glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(60.0f), window->aspect_ratio(), 0.05f) };
         shader->set_uniform_mat4("projection", projection);
 
         texture->bind();
