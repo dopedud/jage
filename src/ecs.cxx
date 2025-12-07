@@ -95,9 +95,6 @@ namespace JAGE
         // glm::normalize will produce UB for vectors with length ~ 0.0f, so it must be tested first for such cases
         move_vector = !glm::length(move_vector) ? glm::vec3{} : (glm::normalize(move_vector) * it->delta_time);
 
-        JAGE_LOG_DEBUG("look_vector.x - {}", look_vector.x);
-        JAGE_LOG_DEBUG("look_vector.y - {}", look_vector.y);
-
         Transform* transform { ecs_field(it, Transform, 0) };
         Camera* camera { ecs_field(it, Camera, 1) };
 
@@ -110,33 +107,11 @@ namespace JAGE
         if (t.rotation.x > 89.0f) t.rotation.x = 89.0f;
         if (t.rotation.x < -89.0f) t.rotation.x = -89.0f;
 
-        // c.front.x = glm::cos(glm::radians(t.rotation.x)) * glm::cos(glm::radians(t.rotation.y - 90.0f));
-        // c.front.y = glm::sin(glm::radians(t.rotation.x));
-        // c.front.z = glm::cos(glm::radians(t.rotation.x)) * glm::sin(glm::radians(t.rotation.y - 90.0f));
-
-        // c.front = glm::normalize(c.front);
-        // c.right = glm::normalize(glm::cross(c.front, glm::vec3{ 0.0f, 1.0f, 0.0f }));
-        // c.up = glm::normalize(glm::cross(c.right, c.front));
-
-        // t.position +=
-        // (
-        //     c.right * move_vector.x +
-        //     c.up * move_vector.y +
-        //     c.front * move_vector.z
-        // ) * c.speed;
-
         glm::mat4 rotation_matrix { t.rotation_matrix() };
 
         c.right = glm::normalize(rotation_matrix[0]);
         c.up    = glm::normalize(rotation_matrix[1]);
         c.front = glm::normalize(rotation_matrix[2]);
-
-        JAGE_LOG_DEBUG("rotation.x - {}", t.rotation.x);
-        JAGE_LOG_DEBUG("rotation.y - {}", t.rotation.y);
-
-        JAGE_LOG_DEBUG("right - {}", c.right);
-        JAGE_LOG_DEBUG("up - {}", c.up);
-        JAGE_LOG_DEBUG("front - {}", c.front);
 
         t.position +=
         (
