@@ -4,7 +4,7 @@
 
 namespace JAGE
 {
-    glm::mat4 Transform::rotation_matrix()
+    glm::mat4 Transform::rotation_matrix() const
     {
         glm::vec3 rotrad { glm::radians(rotation) };
         return glm::yawPitchRoll(rotrad.y, rotrad.x, rotrad.z);
@@ -74,7 +74,7 @@ namespace JAGE
         c.front = glm::vec3{ 0.0f, 0.0f, 1.0f };
 
         c.speed = 0.001f;
-        c.sensitivity = 0.5f;
+        c.sensitivity = 0.085f;
     }
 
     void CameraSystem(ecs_iter_t* it)
@@ -104,8 +104,8 @@ namespace JAGE
         t.rotation.x += look_vector.y * c.sensitivity;
         t.rotation.y += look_vector.x * c.sensitivity;
 
-        if (t.rotation.x > 89.0f) t.rotation.x = 89.0f;
-        if (t.rotation.x < -89.0f) t.rotation.x = -89.0f;
+        // if (t.rotation.x > 89.0f) t.rotation.x = 89.0f;
+        // if (t.rotation.x < -89.0f) t.rotation.x = -89.0f;
 
         glm::mat4 rotation_matrix { t.rotation_matrix() };
 

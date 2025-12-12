@@ -1,7 +1,7 @@
 set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/_deps)
 include(FetchContent)
 
-# build static 3rd-party libraries
+# build static 3rd-party libraries, links to engine directly
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "build shared libraries by default" FORCE)
 
 # LIST OF DEPENDENCIES:
@@ -11,8 +11,8 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "build shared libraries by default" FORCE)
 # GLM
 # GLAD
 # DEAR IMGUI
-# TINYGLTF
 # STB_IMAGE
+# TINYGLTF
 # FLECS
 
 # FETCH SPDLOG
@@ -66,21 +66,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(dear_imgui_repo)
 # END FETCH DEAR IMGUI
 
-# FETCH TINYGLTF
-set(TINYGLTF_VERSION v2.9.6)
-FetchContent_Declare(
-    tinygltf_repo
-    GIT_REPOSITORY https://github.com/syoyo/tinygltf.git
-    GIT_TAG ${TINYGLTF_VERSION}
-)
-
-set(TINYGLTF_BUILD_LOADER_EXAMPLE OFF CACHE BOOL "" FORCE)
-set(TINYGLTF_INSTALL OFF CACHE BOOL "Install tinygltf files during install step. Usually set to OFF if you include tinygltf through add_subdirectory()" FORCE)
-set(TINYGLTF_INSTALL_VENDOR OFF CACHE BOOL "Install vendored nlohmann/json and nothings/stb headers" FORCE)
-
-FetchContent_MakeAvailable(tinygltf_repo)
-# END FETCH TINYGLTF
-
 # FETCH STB_IMAGE
 set(STB_IMAGE_VERSION f1c79c02822848a9bed4315b12c8c8f3761e1296)
 FetchContent_Declare(
@@ -91,6 +76,39 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(stb_image_repo)
 # END FETCH STB_IMAGE
+
+# FETCH TINYGLTF
+set(TINYGLTF_VERSION v2.9.6)
+FetchContent_Declare(
+    tinygltf_repo
+    GIT_REPOSITORY https://github.com/syoyo/tinygltf.git
+    GIT_TAG ${TINYGLTF_VERSION}
+)
+
+set(TINYGLTF_HEADER_ONLY ON CACHE BOOL "On: header-only mode. Off: create tinygltf library(No TINYGLTF_IMPLEMENTATION required in your project)" FORCE)
+set(TINYGLTF_BUILD_LOADER_EXAMPLE OFF CACHE BOOL "Build loader_example(load glTF and dump infos)" FORCE)
+set(TINYGLTF_INSTALL OFF CACHE BOOL "Install tinygltf files during install step. Usually set to OFF if you include tinygltf through add_subdirectory()" FORCE)
+set(TINYGLTF_INSTALL_VENDOR OFF CACHE BOOL "Install vendored nlohmann/json and nothings/stb headers" FORCE)
+
+FetchContent_MakeAvailable(tinygltf_repo)
+# END FETCH TINYGLTF
+
+# FETCH ASSIMP
+set(ASSIMP_VERSION v6.0.2)
+FetchContent_Declare(
+    assimp_repo
+    GIT_REPOSITORY https://github.com/assimp/assimp.git
+    GIT_TAG ${ASSIMP_VERSION}
+)
+
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "If the test suite for Assimp is built in addition to the library." FORCE)
+set(ASSIMP_INSTALL OFF CACHE BOOL "Install Assimp library. Disable this if you want to use Assimp as a submodule." FORCE)
+set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "Install MSVC debug files." FORCE)
+set(ASSIMP_INJECT_DEBUG_POSTFIX OFF CACHE BOOL "Inject debug postfix in .a/.so/.lib/.dll lib names" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "Treat all warnings as errors." FORCE)
+
+FetchContent_MakeAvailable(assimp_repo)
+# END FETCH ASSIMP
 
 # FETCH FLECS
 set(FLECS_VERSION v4.1.2)

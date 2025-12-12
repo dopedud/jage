@@ -1,6 +1,6 @@
 #include "log.h"
 
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace JAGE
 {
@@ -15,25 +15,27 @@ namespace JAGE
         APP_MSG_TRACE("Initialised logger for application.");
     }
 
+    void LogDestroy() { spdlog::shutdown(); }
+
     void AppLogger::Init(spdlog::level::level_enum app_level)
     {
-        logger = spdlog::stdout_color_mt("APP");
+        logger = spdlog::stdout_color_st("APP");
 
-#ifdef DEBUG
+        #ifdef DEBUG
         logger->set_level(app_level);
-#else
+        #else
         logger->set_level(spdlog::level::critical);
-#endif
+        #endif
     }
 
     void EngineLogger::Init(spdlog::level::level_enum engine_level)
     {
-        logger = spdlog::stdout_color_mt("ENGINE");
+        logger = spdlog::stdout_color_st("ENGINE");
 
-#ifdef DEBUG
+        #ifdef DEBUG
         logger->set_level(engine_level);
-#else
+        #else
         logger->set_level(spdlog::level::critical);
-#endif
+        #endif
     }
 }

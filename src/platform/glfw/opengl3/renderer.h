@@ -8,7 +8,7 @@
 
 namespace JAGE
 {
-    class OpenGLContext : public GraphicsContext
+    class OpenGLContext final : public GraphicsContext
     {
     public:
         OpenGLContext(Window* window);
@@ -19,27 +19,27 @@ namespace JAGE
 
     namespace ShaderData
     {
-        GLenum to_opengltype(Type type);
+        GLenum to_opengl_type(Type type);
     }
 
-    class OpenGLTexture : public Texture
+    class OpenGLTexture final : public Texture
     {
     public:
-        OpenGLTexture(unsigned char* data, unsigned width, unsigned height);
+        OpenGLTexture(void* data, unsigned width, unsigned height);
         ~OpenGLTexture();
 
         void bind() override;
         void unbind() override;
     };
 
-    class OpenGLShader : public Shader
+    class OpenGLShader final : public Shader
     {
     public:
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
         ~OpenGLShader();
 
-        void bind() override;
-        void unbind() override;
+        void bind() const override;
+        void unbind() const override;
 
         void set_uniform_bool(std::string_view name, bool value) override;
         void set_uniform_int(std::string_view name, int value) override;
@@ -48,27 +48,41 @@ namespace JAGE
         void set_uniform_mat4(std::string_view name, const glm::mat4& value) override;
     };
 
-    class OpenGLVertexBuffer : public VertexBuffer
+    class OpenGLMesh final : public Mesh
     {
     public:
-        OpenGLVertexBuffer(float* vertices, uint32_t size);
+        OpenGLMesh(
+            const std::vector<Vertex>& vertices,
+            const std::vector<unsigned>& indices,
+            std::vector<std::unique_ptr<Texture>>&& textures
+        );
+
+        void draw(const std::unique_ptr<Shader>& shader) override;
+    private:
+        unsigned vao, vbo, ebo;
+    };
+
+    class OpenGLVertexBuffer final : public VertexBuffer
+    {
+    public:
+        OpenGLVertexBuffer(float* vertices, unsigned size);
         ~OpenGLVertexBuffer();
 
         void bind() override;
         void unbind() override;
     };
 
-    class OpenGLIndexBuffer : public IndexBuffer
+    class OpenGLIndexBuffer final : public IndexBuffer
     {
     public:
-        OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
+        OpenGLIndexBuffer(unsigned* indices, unsigned count);
         ~OpenGLIndexBuffer();
 
         void bind() override;
         void unbind() override;
     };
 
-    class OpenGLVertexArray : public VertexArray
+    class OpenGLVertexArray final : public VertexArray
     {
     public:
         OpenGLVertexArray();
@@ -77,7 +91,7 @@ namespace JAGE
         void bind() override;
         void unbind() override;
 
-        void add_vbuffer(std::unique_ptr<VertexBuffer>& vbuffer) override;
-        void set_ibuffer(std::unique_ptr<IndexBuffer>& ibuffer) override;
+        void add_vbuffer(std::unique_ptr<VertexBuffer>&& vbuffer) override;
+        void set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer) override;
     };
 }

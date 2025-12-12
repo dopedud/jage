@@ -7,13 +7,24 @@ namespace JAGE
     class JAGE_API Resource
     {
     public:
-        Resource() : path { "./resources/" } {}
+        Resource();
         virtual ~Resource() = default;
     protected:
         std::string path;
     };
 
-    class JAGE_API ImageResource : public Resource
+    class JAGE_API TextResource final : public Resource
+    {
+    public:
+        TextResource(std::string_view filepath_str);
+        ~TextResource() = default;
+
+        std::string_view content() const { return m_content; }
+    private:
+        std::string m_content;
+    };
+
+    class JAGE_API ImageResource final : public Resource
     {
     public:
         ImageResource(const std::string& filepath_str);
@@ -27,26 +38,22 @@ namespace JAGE
         ImageResource(ImageResource&& other) noexcept;
         ImageResource& operator=(ImageResource&& other) noexcept;
 
-        unsigned char* data() const     { return m_data; }
-        unsigned width() const          { return m_width; }
-        unsigned height() const         { return m_height; }
-        unsigned channels() const       { return m_channels; }
+        void* data() const          { return m_data; }
+        unsigned width() const      { return m_width; }
+        unsigned height() const     { return m_height; }
+        unsigned channels() const   { return m_channels; }
     private:
-        unsigned char* m_data;
+        void* m_data;
         int m_width;
         int m_height;
         int m_channels;
     };
 
-    class JAGE_API FileResource : public Resource
+    class JAGE_API ModelResource final : public Resource
     {
     public:
-        FileResource(std::string_view filepath_str);
-        ~FileResource() = default;
-
-        std::string_view content() const { return m_content; }
-    private:
-        std::string m_content;
+        ModelResource(std::string_view filepath_str);
+        ~ModelResource() = default;
     };
 
     class JAGE_API ResourceManager

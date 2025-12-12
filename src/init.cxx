@@ -20,6 +20,8 @@ namespace JAGE
 
     void Destroy()
     {
+        LogDestroy();
+
         ResourceManager::reset();
     }
 }

@@ -26,37 +26,7 @@ namespace JAGE
         unsigned JAGE_API size(Type type);
     }
 
-    class JAGE_API Texture
-    {
-    public:
-        static std::unique_ptr<Texture> Create(unsigned char* data, unsigned width, unsigned height);
-        static std::unique_ptr<Texture> Create(const ImageResource& resource);
-        virtual ~Texture() = default;
-
-        virtual void bind() = 0;
-        virtual void unbind() = 0;
-    protected:
-        unsigned textureID;
-    };
-
-    class JAGE_API Shader
-    {
-    public:
-        static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
-        static std::unique_ptr<Shader> Create(const FileResource& vs_resource, const FileResource& fs_resource);
-        virtual ~Shader() = default;
-
-        virtual void bind() = 0;
-        virtual void unbind() = 0;
-
-        virtual void set_uniform_bool(std::string_view name, bool value) = 0;
-        virtual void set_uniform_int(std::string_view name, int value) = 0;
-        virtual void set_uniform_uint(std::string_view name, unsigned value) = 0;
-        virtual void set_uniform_float(std::string_view name, float value) = 0;
-        virtual void set_uniform_mat4(std::string_view name, const glm::mat4& value) = 0;
-    protected:
-        unsigned shaderID;
-    };
+    enum class TextureType : uint8_t { DIFFUSE, SPECULAR };
 
     struct JAGE_API BufferElement
     {
@@ -67,12 +37,7 @@ namespace JAGE
         bool normalized;
 
         BufferElement() = default;
-        BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized = false)
-        : shader_datatype   { shader_datatype }
-        , name              { name }
-        , size              { ShaderData::size(shader_datatype) }
-        , normalized        { normalized }
-        {}
+        BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized = false);
 
         unsigned component_count() const;
     };
@@ -83,11 +48,77 @@ namespace JAGE
         BufferLayout() = default;
         BufferLayout(const std::initializer_list<BufferElement>& elements);
 
-        const std::vector<BufferElement>& elements() const { return m_elements; };
-        unsigned stride() const { return m_stride; }
+        const std::vector<BufferElement>& elements() const;
+        unsigned stride() const;
     private:
         std::vector<BufferElement> m_elements;
         unsigned m_stride;
+    };
+
+    class JAGE_API Texture
+    {
+    public:
+        static std::unique_ptr<Texture> Create(void* data, unsigned width, unsigned height);
+        static std::unique_ptr<Texture> Create(const ImageResource& resource);
+        virtual ~Texture() = default;
+
+        virtual void bind() = 0;
+        virtual void unbind() = 0;
+
+        TextureType texture_type() const;
+        void set_texture_type(TextureType type);
+    protected:
+        unsigned textureID;
+        TextureType m_texture_type;
+    };
+
+    class JAGE_API Shader
+    {
+    public:
+        static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
+        static std::unique_ptr<Shader> Create(const TextResource& vs_resource, const TextResource& fs_resource);
+        virtual ~Shader() = default;
+
+        virtual void bind() const = 0;
+        virtual void unbind() const = 0;
+
+        virtual void set_uniform_bool(std::string_view name, bool value) = 0;
+        virtual void set_uniform_int(std::string_view name, int value) = 0;
+        virtual void set_uniform_uint(std::string_view name, unsigned value) = 0;
+        virtual void set_uniform_float(std::string_view name, float value) = 0;
+        virtual void set_uniform_mat4(std::string_view name, const glm::mat4& value) = 0;
+    protected:
+        unsigned shaderID;
+    };
+
+    class JAGE_API Mesh
+    {
+    public:
+        struct JAGE_API Vertex
+        {
+            glm::vec3 position;
+            glm::vec3 normal;
+            glm::vec4 color;
+            glm::vec2 texcoords;
+        };
+
+        static std::unique_ptr<Mesh> Create(
+            const std::vector<Vertex>& vertices,
+            const std::vector<unsigned>& indices,
+            std::vector<std::unique_ptr<Texture>>&& textures
+        );
+        Mesh(
+            const std::vector<Vertex>& vertices,
+            const std::vector<unsigned>& indices,
+            std::vector<std::unique_ptr<Texture>>&& textures
+        );
+        virtual ~Mesh() = default;
+
+        virtual void draw(const std::unique_ptr<Shader>& shader) = 0;
+    protected:
+        std::vector<Vertex> m_vertices;
+        std::vector<unsigned> m_indices;
+        std::vector<std::unique_ptr<Texture>> m_textures;
     };
 
     class JAGE_API VertexBuffer
@@ -111,7 +142,7 @@ namespace JAGE
     {
     public:
         static std::unique_ptr<IndexBuffer> Create(unsigned* indices, unsigned count);
-        IndexBuffer(unsigned count) : m_count { count } {}
+        IndexBuffer(unsigned count);
         virtual ~IndexBuffer() = default;
 
         virtual void bind() = 0;
@@ -132,8 +163,8 @@ namespace JAGE
         virtual void bind() = 0;
         virtual void unbind() = 0;
 
-        virtual void add_vbuffer(std::unique_ptr<VertexBuffer>& vbuffer) = 0;
-        virtual void set_ibuffer(std::unique_ptr<IndexBuffer>& ibuffer) = 0;
+        virtual void add_vbuffer(std::unique_ptr<VertexBuffer>&& vbuffer) = 0;
+        virtual void set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer) = 0;
     protected:
         unsigned rendererID;
 

@@ -14,7 +14,7 @@ namespace JAGE
         glm::vec3 rotation; // angles in degrees
         glm::vec3 scale;
 
-        glm::mat4 rotation_matrix();
+        glm::mat4 rotation_matrix() const;
     };
 
     struct Camera
@@ -31,6 +31,9 @@ namespace JAGE
 
     JAGE_API void CameraSystem_Initialise(ecs_iter_t* it);
     JAGE_API void CameraSystem(ecs_iter_t* it);
+
+    // JAGE_API void RendererSystem_Initialise(ecs_iter_it* it);
+    // JAGE_API void RendererSystem(ecs_iter_it* it);
 
     class JAGE_API World
     {

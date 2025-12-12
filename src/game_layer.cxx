@@ -64,18 +64,19 @@ namespace JAGE
         };
 
         ImageResource image { "image.jpg" };
-        FileResource vertex_shader { "default.vs" };
-        FileResource fragment_shader { "default.fs" };
+        TextResource vertex_shader { "default.vs" };
+        TextResource fragment_shader { "default.fs" };
+        ModelResource model { "Untitled.glb" };
 
         texture = Texture::Create(image);
         shader = Shader::Create(vertex_shader, fragment_shader);
 
         std::unique_ptr<VertexBuffer> vbuffer { VertexBuffer::Create(vertices2.data(), sizeof(vertices2)) };
         vbuffer->set_layout(layout);
-        varray->add_vbuffer(vbuffer);
+        varray->add_vbuffer(std::move(vbuffer));
 
         std::unique_ptr<IndexBuffer> ibuffer { IndexBuffer::Create(indices2.data(), sizeof(indices2)) };
-        varray->set_ibuffer(ibuffer);
+        varray->set_ibuffer(std::move(ibuffer));
 
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();

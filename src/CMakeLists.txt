@@ -64,8 +64,9 @@ set(PRIVATE_LIBRARIES
     glfw
     glad
     dear_imgui
-    tinygltf
     stb_image
+    tinygltf
+    assimp
 )
 
 target_precompile_headers(${ENGINE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/jgpch.h)

@@ -34,6 +34,8 @@ int main(int argc, char** argv)
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);
     });
 
+    unsigned integer { 128778 };
+
     // Time::SetTargetFPS(240);
 
     while (running)
@@ -45,11 +47,11 @@ int main(int argc, char** argv)
         Time::EndLoop();
     }
 
+    APP_MSG_INFO("Exiting application.");
+
     window.reset();
 
     Destroy();
-
-    APP_MSG_INFO("Exiting application.");
 
     return 0;
 }

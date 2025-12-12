@@ -6,6 +6,7 @@
 namespace JAGE
 {
     void LogInit();
+    void LogDestroy();
 
     /**
      * @class EngineLogger

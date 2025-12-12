@@ -2,18 +2,58 @@
 
 #include "log.h"
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_GCC_CLANG("-Wmissing-field-initializers")
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <tiny_gltf.h>
+#undef STB_IMAGE_IMPLEMENTATION
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+DISABLE_WARNING_POP
 
 namespace JAGE
 {
+    Resource::Resource() : path { "./resources/" } {}
+
+    TextResource::TextResource(std::string_view filepath_str)
+    {
+        std::string path_str { path + "shaders/" + std::string{ filepath_str } };
+
+        std::ifstream file {};
+
+        file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+        try
+        {
+            file.open(path_str);
+
+            std::stringstream sstream {};
+            sstream << file.rdbuf();
+
+            file.close();
+
+            m_content = sstream.str();
+        }
+
+        catch (const std::ifstream::failure& e)
+        {
+            JAGE_LOG_ERROR("JAGE I/O error ({} - {}): {}.", e.code().value(), e.code().message(), e.what());
+            JAGE_MSG_ERROR("Returning empty contents.");
+
+            m_content = "";
+        }
+    }
+
     ImageResource::ImageResource(const std::string& filepath_str)
     {
         std::string path_str { path + "images/" + filepath_str };
 
         stbi_set_flip_vertically_on_load(true);
-        m_data = stbi_load(path_str.c_str(), &m_width, &m_height, &m_channels, 0);
+        m_data = static_cast<void*>(stbi_load(path_str.c_str(), &m_width, &m_height, &m_channels, 0));
 
         if (!m_data)
         {
@@ -51,33 +91,24 @@ namespace JAGE
         stbi_image_free(m_data);
     }
 
-    FileResource::FileResource(std::string_view filepath_str)
+    ModelResource::ModelResource(std::string_view filepath_str)
     {
-        std::string path_str { path + "shaders/" + std::string{ filepath_str } };
+        std::string path_str { path + "models/" + std::string{ filepath_str } };
 
-        std::ifstream file {};
+        Assimp::Importer importer;
 
-        file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        const aiScene* scene { importer.ReadFile(path_str, aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded) };
 
-        try
+        if (!scene)
         {
-            file.open(path_str);
-
-            std::stringstream sstream {};
-            sstream << file.rdbuf();
-
-            file.close();
-
-            m_content = sstream.str();
-        }
-
-        catch (const std::ifstream::failure& e)
-        {
-            JAGE_LOG_ERROR("JAGE I/O error ({} - {}): {}.", e.code().value(), e.code().message(), e.what());
+            JAGE_LOG_ERROR("{}", importer.GetErrorString());
             JAGE_MSG_ERROR("Returning empty contents.");
-
-            m_content = "";
+            return;
         }
+
+
+
+        // JAGE_LOG_DEBUG("{}", model.defaultScene);
     }
 
     ResourceManager& ResourceManager::instance()
