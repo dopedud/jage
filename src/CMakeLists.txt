@@ -65,7 +65,6 @@ set(PRIVATE_LIBRARIES
     glad
     dear_imgui
     stb_image
-    tinygltf
     assimp
 )
 

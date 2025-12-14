@@ -1,7 +1,6 @@
 #pragma once
 
 #include "JAGE/core.h"
-#include "JAGE/resources.h"
 #include "JAGE/math.h"
 
 namespace JAGE
@@ -26,7 +25,7 @@ namespace JAGE
         unsigned JAGE_API size(Type type);
     }
 
-    enum class TextureType : uint8_t { DIFFUSE, SPECULAR };
+    enum class TextureType : uint8_t { DIFFUSE = 0, SPECULAR };
 
     struct JAGE_API BufferElement
     {
@@ -51,15 +50,14 @@ namespace JAGE
         const std::vector<BufferElement>& elements() const;
         unsigned stride() const;
     private:
-        std::vector<BufferElement> m_elements;
+        std::vector<BufferElement> m_elements {};
         unsigned m_stride;
     };
 
     class JAGE_API Texture
     {
     public:
-        static std::unique_ptr<Texture> Create(void* data, unsigned width, unsigned height);
-        static std::unique_ptr<Texture> Create(const ImageResource& resource);
+        static std::unique_ptr<Texture> Create(unsigned char* data, unsigned width, unsigned height);
         virtual ~Texture() = default;
 
         virtual void bind() = 0;
@@ -68,7 +66,6 @@ namespace JAGE
         TextureType texture_type() const;
         void set_texture_type(TextureType type);
     protected:
-        unsigned textureID;
         TextureType m_texture_type;
     };
 
@@ -76,7 +73,7 @@ namespace JAGE
     {
     public:
         static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
-        static std::unique_ptr<Shader> Create(const TextResource& vs_resource, const TextResource& fs_resource);
+        Shader(std::string_view vertex_str, std::string_view fragment_str);
         virtual ~Shader() = default;
 
         virtual void bind() const = 0;
@@ -88,7 +85,8 @@ namespace JAGE
         virtual void set_uniform_float(std::string_view name, float value) = 0;
         virtual void set_uniform_mat4(std::string_view name, const glm::mat4& value) = 0;
     protected:
-        unsigned shaderID;
+        std::string m_vertex_str;
+        std::string m_fragment_str;
     };
 
     class JAGE_API Mesh
@@ -107,11 +105,15 @@ namespace JAGE
             const std::vector<unsigned>& indices,
             std::vector<std::unique_ptr<Texture>>&& textures
         );
+
+        Mesh();
+
         Mesh(
             const std::vector<Vertex>& vertices,
             const std::vector<unsigned>& indices,
             std::vector<std::unique_ptr<Texture>>&& textures
         );
+
         virtual ~Mesh() = default;
 
         virtual void draw(const std::unique_ptr<Shader>& shader) = 0;

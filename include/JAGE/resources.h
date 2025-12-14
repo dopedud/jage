@@ -1,6 +1,7 @@
 #pragma once
 
 #include "JAGE/core.h"
+#include "JAGE/renderer.h"
 
 namespace JAGE
 {
@@ -19,7 +20,7 @@ namespace JAGE
         TextResource(std::string_view filepath_str);
         ~TextResource() = default;
 
-        std::string_view content() const { return m_content; }
+        std::string_view content() const;
     private:
         std::string m_content;
     };
@@ -38,15 +39,15 @@ namespace JAGE
         ImageResource(ImageResource&& other) noexcept;
         ImageResource& operator=(ImageResource&& other) noexcept;
 
-        void* data() const          { return m_data; }
-        unsigned width() const      { return m_width; }
-        unsigned height() const     { return m_height; }
-        unsigned channels() const   { return m_channels; }
+        unsigned char* data() const;
+        unsigned size() const;
+        unsigned width() const;
+        unsigned height() const;
     private:
-        void* m_data;
-        int m_width;
-        int m_height;
-        int m_channels;
+        unsigned char* m_data;
+        unsigned m_size;
+        unsigned m_width;
+        unsigned m_height;
     };
 
     class JAGE_API ModelResource final : public Resource
@@ -54,6 +55,8 @@ namespace JAGE
     public:
         ModelResource(std::string_view filepath_str);
         ~ModelResource() = default;
+    private:
+        
     };
 
     class JAGE_API ResourceManager
@@ -68,7 +71,7 @@ namespace JAGE
         ResourceManager(const ResourceManager&) = delete;
         ResourceManager &operator=(const ResourceManager&) = delete;
     private:
-        ResourceManager() {}
+        ResourceManager() = default;
         inline static std::unique_ptr<ResourceManager> m_instance;
         inline static std::mutex mutex;
     };

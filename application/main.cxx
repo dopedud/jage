@@ -34,8 +34,6 @@ int main(int argc, char** argv)
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);
     });
 
-    unsigned integer { 128778 };
-
     // Time::SetTargetFPS(240);
 
     while (running)

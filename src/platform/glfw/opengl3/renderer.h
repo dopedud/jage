@@ -25,11 +25,13 @@ namespace JAGE
     class OpenGLTexture final : public Texture
     {
     public:
-        OpenGLTexture(void* data, unsigned width, unsigned height);
+        OpenGLTexture(unsigned char* data, unsigned width, unsigned height);
         ~OpenGLTexture();
 
         void bind() override;
         void unbind() override;
+    private:
+        unsigned textureID;
     };
 
     class OpenGLShader final : public Shader
@@ -46,6 +48,8 @@ namespace JAGE
         void set_uniform_uint(std::string_view name, unsigned value) override;
         void set_uniform_float(std::string_view name, float value) override;
         void set_uniform_mat4(std::string_view name, const glm::mat4& value) override;
+    private:
+        unsigned shaderID;
     };
 
     class OpenGLMesh final : public Mesh
@@ -54,7 +58,7 @@ namespace JAGE
         OpenGLMesh(
             const std::vector<Vertex>& vertices,
             const std::vector<unsigned>& indices,
-            std::vector<std::unique_ptr<Texture>>&& textures
+            const std::vector<std::unique_ptr<Texture>>& textures
         );
 
         void draw(const std::unique_ptr<Shader>& shader) override;

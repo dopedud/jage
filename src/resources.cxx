@@ -48,25 +48,38 @@ namespace JAGE
         }
     }
 
+    std::string_view TextResource::content() const { return m_content; }
+
     ImageResource::ImageResource(const std::string& filepath_str)
+    : m_size {}, m_width {}, m_height {}
     {
         std::string path_str { path + "images/" + filepath_str };
 
+        int width {};
+        int height {};
+
         stbi_set_flip_vertically_on_load(true);
-        m_data = static_cast<void*>(stbi_load(path_str.c_str(), &m_width, &m_height, &m_channels, 0));
+        m_data = stbi_load(path_str.c_str(), &width, &height, nullptr, 4);
 
         if (!m_data)
         {
             JAGE_LOG_ERROR("JAGE I/O error: failed to load image at path - {}", path_str);
             JAGE_MSG_ERROR("Returning empty contents.");
+            return;
         }
+
+        m_width = width;
+        m_height = height;
+        m_size = m_width * m_height * 4 * sizeof(unsigned char);
     }
+
+    ImageResource::~ImageResource() { stbi_image_free(m_data); }
 
     ImageResource::ImageResource(ImageResource&& other) noexcept
     : m_data { other.m_data }
+    , m_size { other.m_size }
     , m_width { other.m_width }
     , m_height { other.m_height }
-    , m_channels { other.m_channels }
     {
         other.m_data = nullptr;
     }
@@ -77,19 +90,20 @@ namespace JAGE
         {
             stbi_image_free(m_data);
             m_data = other.m_data;
+            m_size = other.m_size;
             m_width = other.m_width;
             m_height = other.m_height;
-            m_channels = other.m_channels;
             other.m_data = nullptr;
         }
 
         return *this;
     }
 
-    ImageResource::~ImageResource()
-    {
-        stbi_image_free(m_data);
-    }
+    unsigned char* ImageResource::data() const { return m_data; }
+
+    unsigned ImageResource::size() const { return m_size; }
+    unsigned ImageResource::width() const { return m_width; }
+    unsigned ImageResource::height() const { return m_height; }
 
     ModelResource::ModelResource(std::string_view filepath_str)
     {
@@ -97,16 +111,18 @@ namespace JAGE
 
         Assimp::Importer importer;
 
-        const aiScene* scene { importer.ReadFile(path_str, aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded) };
+        unsigned import_flags { aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded };
 
-        if (!scene)
+        const aiScene* scene { importer.ReadFile(path_str, import_flags) };
+
+        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
         {
             JAGE_LOG_ERROR("{}", importer.GetErrorString());
             JAGE_MSG_ERROR("Returning empty contents.");
             return;
         }
 
-
+        aiMesh* mesh { scene->mMeshes[scene->mRootNode->mMeshes[0]] };
 
         // JAGE_LOG_DEBUG("{}", model.defaultScene);
     }

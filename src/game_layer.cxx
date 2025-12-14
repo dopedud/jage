@@ -68,8 +68,8 @@ namespace JAGE
         TextResource fragment_shader { "default.fs" };
         ModelResource model { "Untitled.glb" };
 
-        texture = Texture::Create(image);
-        shader = Shader::Create(vertex_shader, fragment_shader);
+        texture = Texture::Create(image.data(), image.width(), image.height());
+        shader = Shader::Create(vertex_shader.content(), fragment_shader.content());
 
         std::unique_ptr<VertexBuffer> vbuffer { VertexBuffer::Create(vertices2.data(), sizeof(vertices2)) };
         vbuffer->set_layout(layout);

@@ -50,7 +50,7 @@ namespace JAGE
 
         glViewport(0, 0, window->width(), window->height());
 
-        glfwSetFramebufferSizeCallback(static_cast<GLFWwindow*>(window->handle()), [](GLFWwindow* window, int width, int height) -> void 
+        glfwSetFramebufferSizeCallback(static_cast<GLFWwindow*>(window->handle()), [](GLFWwindow* window, int width, int height) -> void
         {
             glViewport(0, 0, width, height);
         });
@@ -99,7 +99,7 @@ namespace JAGE
         }
     }
 
-    OpenGLTexture::OpenGLTexture(void* data, unsigned width, unsigned height)
+    OpenGLTexture::OpenGLTexture(unsigned char* data, unsigned width, unsigned height)
     {
         glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
         glActiveTexture(GL_TEXTURE0);
@@ -110,7 +110,7 @@ namespace JAGE
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, static_cast<unsigned char*>(data));
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
@@ -126,6 +126,7 @@ namespace JAGE
     DISABLE_WARNING_GCC_CLANG("-Wvla")
 
     OpenGLShader::OpenGLShader(std::string_view vertex_str, std::string_view fragment_str)
+    : Shader{ vertex_str, fragment_str }
     {
         JAGE_MSG_TRACE("Initialising a OpenGL shader.");
 
@@ -211,10 +212,7 @@ namespace JAGE
         JAGE_MSG_TRACE("OpenGL shader initialised.");
     }
 
-    OpenGLShader::~OpenGLShader()
-    {
-        glDeleteProgram(shaderID);
-    }
+    OpenGLShader::~OpenGLShader() { glDeleteProgram(shaderID); }
 
     DISABLE_WARNING_POP
 
@@ -254,8 +252,8 @@ namespace JAGE
     OpenGLMesh::OpenGLMesh(
         const std::vector<Vertex>& vertices,
         const std::vector<unsigned>& indices,
-        std::vector<std::unique_ptr<Texture>>&& textures
-    ) : Mesh{ vertices, indices, std::move(textures) }
+        const std::vector<std::unique_ptr<Texture>>& textures
+    ) : Mesh{ vertices, indices, textures }
     {
         glCreateVertexArrays(1, &vao);
         glCreateBuffers(1, &vbo);
@@ -310,10 +308,7 @@ namespace JAGE
         glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
     }
 
-    OpenGLVertexBuffer::~OpenGLVertexBuffer()
-    {
-        glDeleteBuffers(1, &rendererID);
-    }
+    OpenGLVertexBuffer::~OpenGLVertexBuffer() { glDeleteBuffers(1, &rendererID); }
 
     void OpenGLVertexBuffer::bind() { glBindBuffer(GL_ARRAY_BUFFER, rendererID); }
     void OpenGLVertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }

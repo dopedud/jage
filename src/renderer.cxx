@@ -77,41 +77,44 @@ namespace JAGE
     const std::vector<BufferElement>& BufferLayout::elements() const { return m_elements; };
     unsigned BufferLayout::stride() const { return m_stride; }
 
-    Mesh::Mesh(
-        const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices,
-        std::vector<std::unique_ptr<Texture>>&& textures
-    ) : m_vertices { vertices }, m_indices { indices }, m_textures { std::move(textures) }
-    {}
-
     IndexBuffer::IndexBuffer(unsigned count) : m_count { count } {}
 
     TextureType Texture::texture_type() const { return m_texture_type; }
     void Texture::set_texture_type(TextureType type) { m_texture_type = type; }
 
-    std::unique_ptr<Texture> Texture::Create(void* data, unsigned width, unsigned height)
+    std::unique_ptr<Texture> Texture::Create(unsigned char* data, unsigned width, unsigned height)
     {
         return std::make_unique<OpenGLTexture>(data, width, height);
     }
 
-    std::unique_ptr<Texture> Texture::Create(const ImageResource& resource)
-    {
-        return std::make_unique<OpenGLTexture>(resource.data(), resource.width(), resource.height());
-    }
+    Shader::Shader(std::string_view vertex_str, std::string_view fragment_str)
+    : m_vertex_str { vertex_str }, m_fragment_str { fragment_str }
+    {}
 
     std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
     {
         return std::make_unique<OpenGLShader>(vertex_str, fragment_str);
     }
 
-    std::unique_ptr<Shader> Shader::Create(const TextResource& vs_resource, const TextResource& fs_resource)
-    {
-        return std::make_unique<OpenGLShader>(vs_resource.content(), fs_resource.content());
-    }
+    Mesh::Mesh() : m_vertices {}, m_indices {}, m_textures {} {}
 
-    std::unique_ptr<Mesh> Mesh::Create(const std::vector<Vertex>& vertices, const std::vector<unsigned>& indices, std::vector<std::unique_ptr<Texture>>&& textures)
+    Mesh::Mesh(
+        const std::vector<Vertex>& vertices,
+        const std::vector<unsigned>& indices,
+        std::vector<std::unique_ptr<Texture>>&& textures
+    )
+    : m_vertices { vertices }
+    , m_indices { indices }
+    , m_textures { textures }
+    {}
+
+    std::unique_ptr<Mesh> Mesh::Create(
+        const std::vector<Vertex>& vertices,
+        const std::vector<unsigned>& indices,
+        std::vector<std::unique_ptr<Texture>>&& textures
+    )
     {
-        return std::make_unique<OpenGLMesh>(vertices, indices, std::move(textures));
+        return std::make_unique<OpenGLMesh>(vertices, indices, textures);
     }
 
     std::unique_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, unsigned size)
