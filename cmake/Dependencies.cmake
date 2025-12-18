@@ -5,14 +5,19 @@ include(FetchContent)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "build shared libraries by default" FORCE)
 
 # LIST OF DEPENDENCIES:
-#
 # SPDLOG
 # GLFW
-# GLM
 # GLAD
+# GLM
 # DEAR IMGUI
 # STB_IMAGE
-# TINYGLTF
+# ASSIMP
+# FLECS
+
+# CUSTOM BUILD PROCEDURES:
+# GLAD
+# DEAR IMGUI
+# STB_IMAGE 
 # FLECS
 
 # FETCH SPDLOG
@@ -77,22 +82,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(stb_image_repo)
 # END FETCH STB_IMAGE
 
-# FETCH TINYGLTF
-set(TINYGLTF_VERSION v2.9.6)
-FetchContent_Declare(
-    tinygltf_repo
-    GIT_REPOSITORY https://github.com/syoyo/tinygltf.git
-    GIT_TAG ${TINYGLTF_VERSION}
-)
-
-set(TINYGLTF_HEADER_ONLY ON CACHE BOOL "On: header-only mode. Off: create tinygltf library(No TINYGLTF_IMPLEMENTATION required in your project)" FORCE)
-set(TINYGLTF_BUILD_LOADER_EXAMPLE OFF CACHE BOOL "Build loader_example(load glTF and dump infos)" FORCE)
-set(TINYGLTF_INSTALL OFF CACHE BOOL "Install tinygltf files during install step. Usually set to OFF if you include tinygltf through add_subdirectory()" FORCE)
-set(TINYGLTF_INSTALL_VENDOR OFF CACHE BOOL "Install vendored nlohmann/json and nothings/stb headers" FORCE)
-
-FetchContent_MakeAvailable(tinygltf_repo)
-# END FETCH TINYGLTF
-
 # FETCH ASSIMP
 set(ASSIMP_VERSION v6.0.2)
 FetchContent_Declare(
@@ -117,10 +106,49 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/SanderMertens/flecs.git
     GIT_TAG ${FLECS_VERSION}
 )
+# END FETCH FLECS
 
+# BUILD GLAD
+# NOTE: GLAD is a special case for dependency management because unlike other dependencies where you have to fetch them
+# online from GitHub or other repositories, GLAD does not have that and instead let developers fetch them via a
+# download from a web service. Thus, it might seem like GLAD is part of the project, but really it's a dependency
+# handled manually and should be treated like one (that means no modifying willy-nilly!!!).
+add_subdirectory(${CMAKE_SOURCE_DIR}/src/external/glad)
+# END BUILD GLAD
+
+# BUILD DEAR IMGUI
+# NOTE: Dear IMGUI is build-agnostic. That is, it lets users build its files using their own build system. Hence, only
+# the required files are used to build Dear IMGUI.
+add_library(dear_imgui STATIC
+    ${dear_imgui_repo_SOURCE_DIR}/imgui.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/imgui_draw.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/imgui_tables.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/imgui_widgets.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/imgui_demo.cpp
+
+    ${dear_imgui_repo_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${dear_imgui_repo_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
+target_include_directories(dear_imgui PUBLIC
+    ${dear_imgui_repo_SOURCE_DIR}
+    ${dear_imgui_repo_SOURCE_DIR}/backends
+)
+
+target_link_libraries(dear_imgui PUBLIC glfw glad)
+# END BUILD DEAR IMGUI
+
+# BUILD STB_IMAGE
+# NOTE: stb_image is a header-only library, and since it doesn't have its own build system, a custom but simple build
+# procedure was written to include stb_image as a library.
+add_library(stb_image INTERFACE)
+
+target_include_directories(stb_image INTERFACE ${stb_image_repo_SOURCE_DIR})
+# END BUILD STB_IMAGE
+
+# BUILD FLECS
 # NOTE: Flecs has their own CMakeLists.txt that is intrusive to this project (like installing its own header files),
 # thus a custom build procedure is written to work around this issue.
-
 FetchContent_GetProperties(flecs_repo)
 if(NOT flecs_repo_POPULATED)
     FetchContent_Populate(flecs_repo)
@@ -148,40 +176,4 @@ target_compile_definitions(flecs PRIVATE
     FLECS_PIPELINE
     FLECS_QUERY_DSL
 )
-# END FETCH FLECS
-
-# BUILD GLAD
-# NOTE: GLAD is a special case for dependency management because unlike other dependencies where you have to fetch them
-# online from GitHub or other repositories, GLAD does not have that and instead let developers fetch them via a
-# download from a web service. Thus, it might seem like GLAD is part of the project, but really it's a dependency
-# handled manually and should be treated like one (that means no modifying willy-nilly!!!).
-add_subdirectory(${CMAKE_SOURCE_DIR}/src/external/glad)
-# END BUILD GLAD
-
-# BUILD DEAR IMGUI
-# NOTE: Dear ImGui is build-agnostic. That is, it lets users build its files using their own build system. Hence, only
-# the required files are used to build Dear ImGui.
-add_library(dear_imgui STATIC
-    ${dear_imgui_repo_SOURCE_DIR}/imgui.cpp
-    ${dear_imgui_repo_SOURCE_DIR}/imgui_draw.cpp
-    ${dear_imgui_repo_SOURCE_DIR}/imgui_tables.cpp
-    ${dear_imgui_repo_SOURCE_DIR}/imgui_widgets.cpp
-    ${dear_imgui_repo_SOURCE_DIR}/imgui_demo.cpp
-
-    ${dear_imgui_repo_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-    ${dear_imgui_repo_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
-)
-
-target_include_directories(dear_imgui PUBLIC
-    ${dear_imgui_repo_SOURCE_DIR}
-    ${dear_imgui_repo_SOURCE_DIR}/backends
-)
-
-target_link_libraries(dear_imgui PUBLIC glfw glad)
-# END BUILD DEAR IMGUI
-
-# BUILD STB_IMAGE
-add_library(stb_image INTERFACE)
-
-target_include_directories(stb_image INTERFACE ${stb_image_repo_SOURCE_DIR})
-# END BUILD STB_IMAGE
+# END BUILD FLECS

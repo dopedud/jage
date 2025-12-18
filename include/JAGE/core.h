@@ -223,8 +223,7 @@ namespace JAGE
     struct JAGE_API WindowProperties
     {
         std::string title;
-        unsigned width;
-        unsigned height;
+        unsigned width, height;
         bool vsync;
 
         WindowProperties(

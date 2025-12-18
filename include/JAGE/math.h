@@ -11,27 +11,30 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-// NOTE: THIS LIBRARY IS NOT IN USE FOR NOW
-// ONLY IN USE FOR INCLUSION OF GLM
-
 namespace JAGE
 {
     namespace Math
     {
-//         struct Float2 { float x {}, y {}; };
-//         struct Float3 { float x {}, y {}, z {}; };
-//         struct Float4 { float x {}, y {}, z {}, w {}; };
-// 
-//         struct Mat4
-//         { 
-//             float _0_0 {}, _0_1 {}, _0_2 {}, _0_3 {};
-//             float _1_0 {}, _1_1 {}, _1_2 {}, _1_3 {};
-//             float _2_0 {}, _2_1 {}, _2_2 {}, _2_3 {};
-//             float _3_0 {}, _3_1 {}, _3_2 {}, _3_3 {};
-//         };
-// 
-//         float length(Float2 v);
-//         float length(Float3 v);
-//         float length(Float4 v);
+        class JAGE_API SHA1
+        {
+        public:
+            SHA1();
+
+            void update(const uint8_t* data, size_t len);
+            void final(uint8_t out[20]);
+        private:
+            uint32_t h0, h1, h2, h3, h4;
+            uint8_t buffer[64];
+            size_t buffer_len;
+            uint64_t bit_len;
+
+            uint32_t rotate_left(uint32_t x, uint32_t n);
+
+            uint32_t read_be(const uint8_t* src);
+            void write_be(uint8_t* dst, uint32_t val);
+
+            void process_block(const uint8_t block[64]);
+        };
+
     }
 }
