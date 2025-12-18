@@ -13,21 +13,33 @@ DISABLE_WARNING_GCC_CLANG("-Wmissing-field-initializers")
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#define XXH_INLINE_ALL
+#include <xxhash.h>
+
 DISABLE_WARNING_POP
 
 namespace JAGE
 {
 
-    Resource::Resource(std::string_view path) : m_path { "./resources/" + std::string{ path } } {}
+    Resource::Resource(std::string_view path)
+    {
+        std::filesystem::path canonical_path { "./resources/" + std::string{ path } };
+        canonical_path = std::filesystem::weakly_canonical(canonical_path);
+        m_path = canonical_path.lexically_normal().string();
+    }
+
     std::string_view Resource::path() const { return m_path; }
 
-    template<typename T> ResourceHandle<T>::ResourceHandle(T* asset, ResourceID id) : m_asset { asset }, m_id { id } {}
+    ResourceHandle::ResourceHandle(ResourceID id, Resource* asset)
+    : m_id { id }, m_asset { asset } {}
 
-    template<typename T> T* ResourceHandle<T>::asset() const { return m_asset; }
-    template<typename T> ResourceID ResourceHandle<T>::id() const { return id; }
+    ResourceID ResourceHandle::id() const { return m_id; }
+    Resource* ResourceHandle::asset() const { return m_asset; }
 
-    template class ResourceHandle<TextResource>;
-    template class ResourceHandle<ImageResource>;
+    ResourceManager::ResourceManager() : resources {}
+    {
+
+    }
 
     ResourceManager& ResourceManager::instance()
     {
@@ -43,13 +55,17 @@ namespace JAGE
         m_instance.reset();
     }
 
-    template<typename T> ResourceHandle<T> Load(std::string_view filename) 
+    template<typename T> ResourceHandle ResourceManager::Load(std::string_view filename) 
     {
         std::unique_ptr<Resource> resource { std::make_unique<T>(filename) };
+        ResourceID id_hash { XXH3_64bits(resource->path().data(), resource->path().size())};
+        ResourceHandle result { id_hash, resource.get() };
+        resources.emplace(id_hash, std::move(resource));
+        return result;
     }
 
-    template ResourceHandle<TextResource> Load(std::string_view filename);
-    template ResourceHandle<ImageResource> Load(std::string_view filename);
+    template ResourceHandle ResourceManager::Load<TextResource>(std::string_view filename);
+    template ResourceHandle ResourceManager::Load<ImageResource>(std::string_view filename);
 
     TextResource::TextResource(std::string_view filename)
     : Resource{ "shaders/" + std::string{ filename } }

@@ -15,21 +15,20 @@ namespace JAGE
         Resource(std::string_view path);
         virtual ~Resource() = default;
 
-        std::string_view path() const; 
+        std::string_view path() const;
     protected:
         std::string m_path;
     };
 
-    template<typename T>
     class ResourceHandle
     {
     public:
-        ResourceHandle(T* asset, ResourceID id);
-        T* asset() const;
+        ResourceHandle(ResourceID id, Resource* asset);
         ResourceID id() const;
+        Resource* asset() const;
     private:
-        T* m_asset;
         ResourceID m_id;
+        Resource* m_asset;
     };
 
     class JAGE_API ResourceManager
@@ -44,9 +43,10 @@ namespace JAGE
         ResourceManager(const ResourceManager&) = delete;
         ResourceManager &operator=(const ResourceManager&) = delete;
 
-        template<typename T> ResourceHandle<T> Load(std::string_view filename);
+        template<typename T> void load(std::string_view filename);
+        template<typename T> ResourceHandle get(std::string_view filename);
     private:
-        ResourceManager() = default;
+        ResourceManager();
         inline static std::unique_ptr<ResourceManager> m_instance;
         inline static std::mutex mutex;
 

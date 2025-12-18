@@ -253,7 +253,8 @@ namespace JAGE
         const std::vector<Vertex>& vertices,
         const std::vector<unsigned>& indices,
         const std::vector<std::unique_ptr<Texture>>& textures
-    ) : Mesh{ vertices, indices, textures }
+    )
+    // : Mesh{ vertices, indices, textures }
     {
         glCreateVertexArrays(1, &vao);
         glCreateBuffers(1, &vbo);

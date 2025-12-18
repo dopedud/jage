@@ -13,6 +13,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "build shared libraries by default" FORCE)
 # STB_IMAGE
 # ASSIMP
 # FLECS
+# XXHASH
 
 # CUSTOM BUILD PROCEDURES:
 # GLAD
@@ -108,6 +109,15 @@ FetchContent_Declare(
 )
 # END FETCH FLECS
 
+# FETCH XXHASH
+set(XXHASH_VERSION v0.8.3)
+FetchContent_Declare(
+    xxhash_repo
+    GIT_REPOSITORY https://github.com/Cyan4973/xxHash.git
+    GIT_TAG ${XXHASH_VERSION}
+)
+# END FETCH XXHASH
+
 # BUILD GLAD
 # NOTE: GLAD is a special case for dependency management because unlike other dependencies where you have to fetch them
 # online from GitHub or other repositories, GLAD does not have that and instead let developers fetch them via a
@@ -177,3 +187,14 @@ target_compile_definitions(flecs PRIVATE
     FLECS_QUERY_DSL
 )
 # END BUILD FLECS
+
+# BUILD XXHASH
+set(XXHASH_BUILD_XXHSUM OFF CACHE BOOL "" FORCE)
+
+FetchContent_GetProperties(xxhash_repo)
+if(NOT xxhash_repo_POPULATED)
+    FetchContent_Populate(xxhash_repo)
+endif()
+
+add_subdirectory("${xxhash_repo_SOURCE_DIR}/cmake_unofficial")
+# END BUILD XXHASH

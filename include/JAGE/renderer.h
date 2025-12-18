@@ -108,11 +108,11 @@ namespace JAGE
 
         Mesh();
 
-        Mesh(
-            const std::vector<Vertex>& vertices,
-            const std::vector<unsigned>& indices,
-            std::vector<std::unique_ptr<Texture>>&& textures
-        );
+        // Mesh(
+        //     const std::vector<Vertex>& vertices,
+        //     const std::vector<unsigned>& indices,
+        //     std::vector<std::unique_ptr<Texture>>&& textures
+        // );
 
         virtual ~Mesh() = default;
 

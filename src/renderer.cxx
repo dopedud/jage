@@ -98,15 +98,15 @@ namespace JAGE
 
     Mesh::Mesh() : m_vertices {}, m_indices {}, m_textures {} {}
 
-    Mesh::Mesh(
-        const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices,
-        std::vector<std::unique_ptr<Texture>>&& textures
-    )
-    : m_vertices { vertices }
-    , m_indices { indices }
-    , m_textures { textures }
-    {}
+    // Mesh::Mesh(
+    //     const std::vector<Vertex>& vertices,
+    //     const std::vector<unsigned>& indices,
+    //     std::vector<std::unique_ptr<Texture>>&& textures
+    // )
+    // : m_vertices { vertices }
+    // , m_indices { indices }
+    // , m_textures { textures }
+    // {}
 
     std::unique_ptr<Mesh> Mesh::Create(
         const std::vector<Vertex>& vertices,

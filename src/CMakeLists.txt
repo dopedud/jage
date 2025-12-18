@@ -66,6 +66,7 @@ set(PRIVATE_LIBRARIES
     dear_imgui
     stb_image
     assimp
+    xxhash
 )
 
 target_precompile_headers(${ENGINE_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include/jgpch.h)
