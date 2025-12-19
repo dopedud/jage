@@ -20,13 +20,12 @@ DISABLE_WARNING_POP
 
 namespace JAGE
 {
+    std::string_view Resource::dir_path() { return "./resources/"; }
+    std::string_view TextResource::dir_path() { return "shaders/"; }
+    std::string_view ImageResource::dir_path() { return "images/"; }
 
     Resource::Resource(std::string_view path)
-    {
-        std::filesystem::path canonical_path { "./resources/" + std::string{ path } };
-        canonical_path = std::filesystem::weakly_canonical(canonical_path);
-        m_path = canonical_path.lexically_normal().string();
-    }
+    : m_path { std::string{ dir_path() } + std::string{ path } } {}
 
     std::string_view Resource::path() const { return m_path; }
 
@@ -36,10 +35,7 @@ namespace JAGE
     ResourceID ResourceHandle::id() const { return m_id; }
     Resource* ResourceHandle::asset() const { return m_asset; }
 
-    ResourceManager::ResourceManager() : resources {}
-    {
-
-    }
+    ResourceManager::ResourceManager() : resources {} {}
 
     ResourceManager& ResourceManager::instance()
     {
@@ -55,20 +51,30 @@ namespace JAGE
         m_instance.reset();
     }
 
-    template<typename T> ResourceHandle ResourceManager::Load(std::string_view filename) 
+    ResourceID ResourceManager::path_to_ID(std::string_view str) { return XXH3_64bits(str.data(), str.size()); }
+
+    template<typename T> void ResourceManager::load(std::string_view filename) 
     {
         std::unique_ptr<Resource> resource { std::make_unique<T>(filename) };
-        ResourceID id_hash { XXH3_64bits(resource->path().data(), resource->path().size())};
-        ResourceHandle result { id_hash, resource.get() };
+        ResourceID id_hash { path_to_ID(resource->path()) };
         resources.emplace(id_hash, std::move(resource));
-        return result;
     }
 
-    template ResourceHandle ResourceManager::Load<TextResource>(std::string_view filename);
-    template ResourceHandle ResourceManager::Load<ImageResource>(std::string_view filename);
+    template<typename T> ResourceHandle ResourceManager::get(std::string_view filename)
+    {
+        std::string path { std::string{ Resource::dir_path() } + std::string{ T::dir_path() } + std::string{ filename } };
+        ResourceID id_hash { path_to_ID(path) };
+        Resource* resource { resources.find(id_hash)->second.get() };
+        return ResourceHandle{ id_hash, resource };
+    }
+
+    template void               ResourceManager::load<TextResource>(std::string_view filename);
+    template void               ResourceManager::load<ImageResource>(std::string_view filename);
+    template ResourceHandle     ResourceManager::get<TextResource>(std::string_view filename);
+    template ResourceHandle     ResourceManager::get<ImageResource>(std::string_view filename);
 
     TextResource::TextResource(std::string_view filename)
-    : Resource{ "shaders/" + std::string{ filename } }
+    : Resource{ std::string{ dir_path() } + std::string{ filename } }
     {
         std::ifstream file {};
 
@@ -98,7 +104,7 @@ namespace JAGE
     std::string_view TextResource::content() const { return m_content; }
 
     ImageResource::ImageResource(std::string_view filename)
-    : Resource{ "images/" + std::string{ filename } }, m_size {}, m_width {}, m_height {}
+    : Resource{ std::string{ dir_path() } + std::string{ filename } }, m_size {}, m_width {}, m_height {}
     {
         int width {};
         int height {};

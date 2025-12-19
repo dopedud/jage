@@ -12,6 +12,8 @@ namespace JAGE
     class JAGE_API Resource
     {
     public:
+        static std::string_view dir_path();
+
         Resource(std::string_view path);
         virtual ~Resource() = default;
 
@@ -43,6 +45,8 @@ namespace JAGE
         ResourceManager(const ResourceManager&) = delete;
         ResourceManager &operator=(const ResourceManager&) = delete;
 
+        ResourceID path_to_ID(std::string_view str);
+
         template<typename T> void load(std::string_view filename);
         template<typename T> ResourceHandle get(std::string_view filename);
     private:
@@ -56,6 +60,8 @@ namespace JAGE
     class JAGE_API TextResource final : public Resource
     {
     public:
+        static std::string_view dir_path();
+
         TextResource(std::string_view filename);
         ~TextResource() = default;
 
@@ -67,6 +73,8 @@ namespace JAGE
     class JAGE_API ImageResource final : public Resource
     {
     public:
+        static std::string_view dir_path();
+
         ImageResource(std::string_view filename);
         ~ImageResource();
 

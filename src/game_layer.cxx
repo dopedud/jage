@@ -66,7 +66,7 @@ namespace JAGE
         ImageResource image { "image.jpg" };
         TextResource vertex_shader { "default.vs" };
         TextResource fragment_shader { "default.fs" };
-        ModelResource model { "Untitled.glb" };
+        // ModelResource model { "Untitled.glb" };
 
         texture = Texture::Create(image.data(), image.width(), image.height());
         shader = Shader::Create(vertex_shader.content(), fragment_shader.content());
