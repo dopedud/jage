@@ -35,7 +35,12 @@ namespace JAGE
     ResourceID ResourceHandle::id() const { return m_id; }
     Resource* ResourceHandle::asset() const { return m_asset; }
 
-    ResourceManager::ResourceManager() : resources {} {}
+    ResourceManager::ResourceManager() : resources {}
+    {
+        load<TextResource>("default.vs");
+        load<TextResource>("default.fs");
+        load<ImageResource>("image.jpg");
+    }
 
     ResourceManager& ResourceManager::instance()
     {

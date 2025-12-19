@@ -7,7 +7,9 @@ namespace JAGE
 {
     using ResourceID = uint64_t;
 
-    // TODO: transform resource path to ID
+    // NOTE: Resources could technically be instantiated directly from classes derived from Resource, but this should
+    // be avoided and only get resources from ResourceManager, albeit ResourceManager and the resources do not enforce
+    // this rule.
 
     class JAGE_API Resource
     {
@@ -26,6 +28,7 @@ namespace JAGE
     {
     public:
         ResourceHandle(ResourceID id, Resource* asset);
+
         ResourceID id() const;
         Resource* asset() const;
     private:
@@ -55,8 +58,6 @@ namespace JAGE
         inline static std::mutex mutex;
 
         std::unordered_map<ResourceID, std::unique_ptr<Resource>> resources;
-
-        class Key { private: Key() = default; };
     };
 
     class JAGE_API TextResource final : public Resource
