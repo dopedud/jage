@@ -55,6 +55,8 @@ namespace JAGE
         inline static std::mutex mutex;
 
         std::unordered_map<ResourceID, std::unique_ptr<Resource>> resources;
+
+        class Key { private: Key() = default; };
     };
 
     class JAGE_API TextResource final : public Resource

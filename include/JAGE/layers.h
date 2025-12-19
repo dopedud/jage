@@ -17,8 +17,8 @@ namespace JAGE
         void OnEvent(const Event& e) override;
     private:
         std::unique_ptr<VertexArray> varray;
-        std::unique_ptr<Shader> shader;
-        std::unique_ptr<Texture> texture;
+        // std::unique_ptr<Shader> shader;
+        // std::unique_ptr<Texture> texture;
 
         World world {};
         Entity camera { &world, "MainCamera" };
