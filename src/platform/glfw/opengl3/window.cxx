@@ -46,7 +46,7 @@ namespace JAGE
 
         if (glfwRawMouseMotionSupported()) glfwSetInputMode(m_handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-        glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        // glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         // BUNCH OF CALLBACK DEFINITIONS
 
@@ -166,6 +166,8 @@ namespace JAGE
         for (Layer* layer : layers) layer->OnRender();
 
         graphics_context->SwapBuffers();
+
+        Time::Lap();
     }
 
     void GLFWWindow::set_vsync(bool enabled)

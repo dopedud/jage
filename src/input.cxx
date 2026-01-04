@@ -187,11 +187,22 @@ namespace JAGE
             return str;
         }
 
+        std::string to_string(CursorMode mode)
+        {
+            switch(mode)
+            {
+                case JAGE_CURSOR_MODE_NORMAL:       return "CURSOR MODE NORMAL";
+                case JAGE_CURSOR_MODE_HIDDEN:       return "CURSOR MODE HIDDEN";
+                case JAGE_CURSOR_MODE_DISABLED:     return "CURSOR MODE DISABLED";
+            }
+        }
+
         DISABLE_WARNING_POP
 
         std::ostream& operator<<(std::ostream& os, const KeyCode& key)          { return os << to_string(key); }
         std::ostream& operator<<(std::ostream& os, const Action& action)        { return os << to_string(action); }
         std::ostream& operator<<(std::ostream& os, const MouseButton& button)   { return os << to_string(button); }
         std::ostream& operator<<(std::ostream& os, const int& mods)             { return os << to_string(mods); }
+        std::ostream& operator<<(std::ostream& os, const CursorMode& mode)      { return os << to_string(mode); }
     }
 }

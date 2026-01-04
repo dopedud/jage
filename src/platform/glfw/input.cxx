@@ -55,7 +55,9 @@ namespace JAGE
             glfwGetCursorPos(glfw_handle, &current_mouse_positionX, &current_mouse_positionY);
         }
 
+        //
         // REALLY LONG CONVERSIONS LIST
+        //
 
         DISABLE_WARNING_PUSH
         DISABLE_WARNING_GCC_CLANG("-Wreturn-type")
@@ -352,6 +354,8 @@ namespace JAGE
 
         DISABLE_WARNING_POP
 
+        //
         // END REALLY LONG CONVERSIONS LIST
+        //
     }
 }

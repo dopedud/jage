@@ -4,18 +4,18 @@ set(ENGINE_NAME JAGE CACHE STRING "" FORCE)
 set(CORE_SRC
     jgpch.cxx
     init.cxx
-    "log.cxx"
+    log.cxx
     event.cxx
-    "input.cxx"
+    input.cxx
+    time.cxx
     window.cxx
     renderer.cxx
     resources.cxx
-    "math.cxx"
+    math.cxx
     ecs.cxx
     game_layer.cxx
 
     platform/glfw/input.cxx
-    platform/glfw/time.cxx
     platform/glfw/opengl3/window.cxx
     platform/glfw/opengl3/renderer.cxx
     platform/glfw/opengl3/imgui_layer.cxx

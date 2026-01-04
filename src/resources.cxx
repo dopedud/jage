@@ -29,11 +29,12 @@ namespace JAGE
 
     std::string_view Resource::path() const { return m_path; }
 
-    ResourceHandle::ResourceHandle(ResourceID id, Resource* asset)
-    : m_id { id }, m_asset { asset } {}
+    template<typename T>
+    ResourceHandle<T>::ResourceHandle(ResourceID id, T* resource)
+    : m_id { id }, m_resource { resource } {}
 
-    ResourceID ResourceHandle::id() const { return m_id; }
-    Resource* ResourceHandle::asset() const { return m_asset; }
+    template<typename T> ResourceID ResourceHandle<T>::id() const { return m_id; }
+    template<typename T> T* ResourceHandle<T>::resource() const { return m_resource; }
 
     ResourceManager::ResourceManager() : resources {}
     {
@@ -58,25 +59,30 @@ namespace JAGE
 
     ResourceID ResourceManager::path_to_ID(std::string_view str) { return XXH3_64bits(str.data(), str.size()); }
 
-    template<typename T> void ResourceManager::load(std::string_view filename) 
+    template<typename T>
+    void ResourceManager::load(std::string_view filename) 
     {
         std::unique_ptr<Resource> resource { std::make_unique<T>(filename) };
         ResourceID id_hash { path_to_ID(resource->path()) };
         resources.emplace(id_hash, std::move(resource));
     }
 
-    template<typename T> ResourceHandle ResourceManager::get(std::string_view filename)
+    template<typename T>
+    ResourceHandle<T> ResourceManager::get(std::string_view filename)
     {
         std::string path { std::string{ Resource::dir_path() } + std::string{ T::dir_path() } + std::string{ filename } };
         ResourceID id_hash { path_to_ID(path) };
         Resource* resource { resources.find(id_hash)->second.get() };
-        return ResourceHandle{ id_hash, resource };
+        return ResourceHandle<T>{ id_hash, static_cast<T*>(resource) };
     }
 
-    template void               ResourceManager::load<TextResource>(std::string_view filename);
-    template void               ResourceManager::load<ImageResource>(std::string_view filename);
-    template ResourceHandle     ResourceManager::get<TextResource>(std::string_view filename);
-    template ResourceHandle     ResourceManager::get<ImageResource>(std::string_view filename);
+    template class ResourceHandle<TextResource>;
+    template class ResourceHandle<ImageResource>;
+
+    template void                           ResourceManager::load<TextResource>(std::string_view filename);
+    template void                           ResourceManager::load<ImageResource>(std::string_view filename);
+    template ResourceHandle<TextResource>   ResourceManager::get<TextResource>(std::string_view filename);
+    template ResourceHandle<ImageResource>  ResourceManager::get<ImageResource>(std::string_view filename);
 
     TextResource::TextResource(std::string_view filename)
     : Resource{ std::string{ dir_path() } + std::string{ filename } }

@@ -24,16 +24,17 @@ namespace JAGE
         std::string m_path;
     };
 
+    template<typename T>
     class ResourceHandle
     {
     public:
-        ResourceHandle(ResourceID id, Resource* asset);
+        ResourceHandle<T>(ResourceID id, T* resource);
 
         ResourceID id() const;
-        Resource* asset() const;
+        T* resource() const;
     private:
         ResourceID m_id;
-        Resource* m_asset;
+        T* m_resource;
     };
 
     class JAGE_API ResourceManager
@@ -51,7 +52,7 @@ namespace JAGE
         ResourceID path_to_ID(std::string_view str);
 
         template<typename T> void load(std::string_view filename);
-        template<typename T> ResourceHandle get(std::string_view filename);
+        template<typename T> ResourceHandle<T> get(std::string_view filename);
     private:
         ResourceManager();
         inline static std::unique_ptr<ResourceManager> m_instance;

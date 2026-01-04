@@ -110,8 +110,8 @@ namespace JAGE
         constexpr uint64_t SECONDS_TO_MILLI { 1000 };
         constexpr uint64_t MILLI_TO_NANO { 1000000 };
 
-        void JAGE_API StartLoop();
-        void JAGE_API EndLoop();
+        void Lap();
+
         void JAGE_API SetTargetFPS(unsigned fps);
 
         float JAGE_API ElapsedTime();
@@ -440,11 +440,13 @@ namespace JAGE
         JAGE_API std::string to_string(Action action);
         JAGE_API std::string to_string(MouseButton button);
         JAGE_API std::string to_string(int mods);
+        JAGE_API std::string to_string(CursorMode mode);
 
         JAGE_API std::ostream& operator<<(std::ostream& os, const KeyCode& key);
         JAGE_API std::ostream& operator<<(std::ostream& os, const Action& action);
         JAGE_API std::ostream& operator<<(std::ostream& os, const MouseButton& button);
         JAGE_API std::ostream& operator<<(std::ostream& os, const int& mods);
+        JAGE_API std::ostream& operator<<(std::ostream& os, const CursorMode& mode);
 
         #define JAGE_KEY_UNKNOWN JAGE::Input::KeyCode::UNKNOWN
         #define JAGE_KEY_A JAGE::Input::KeyCode::A

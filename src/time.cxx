@@ -1,7 +1,5 @@
 #include "JAGE/core.h"
 
-#include "platform/platform.h"
-
 #include "log.h"
 
 namespace JAGE
@@ -12,22 +10,17 @@ namespace JAGE
 
         static time_point<high_resolution_clock> start { high_resolution_clock::now() };
 
-        static time_point<high_resolution_clock> frame_start {};
-        static time_point<high_resolution_clock> frame_end {};
+        static time_point<high_resolution_clock> current {};
+        static time_point<high_resolution_clock> previous {};
         static duration<uint64_t, std::nano> deltatime {};
         static duration<uint64_t, std::nano> target_deltatime {};
-
         static bool target_fps_set {};
 
-        void StartLoop()
+        void Lap()
         {
-            frame_start = high_resolution_clock::now();
-        }
-
-        void EndLoop()
-        {
-            frame_end = high_resolution_clock::now();            
-            deltatime = duration_cast<nanoseconds>(frame_end - frame_start);
+            current = high_resolution_clock::now();
+            deltatime = duration_cast<nanoseconds>(current - previous);
+            previous = current;
 
             if (target_fps_set && deltatime < target_deltatime)
             {

@@ -64,12 +64,14 @@ namespace JAGE
         };
 
         ImageResource image { "image.jpg" };
-        TextResource vertex_shader { "default.vs" };
+        // TextResource vertex_shader { "default.vs" };
         TextResource fragment_shader { "default.fs" };
-        // ModelResource model { "Untitled.glb" };
+        // ModelResource model { "Untitled.glb" }; 
+
+        ResourceHandle<TextResource> vertex_shader { ResourceManager::instance().get<TextResource>("default.vs") };
 
         // texture = Texture::Create(image.data(), image.width(), image.height());
-        // shader = Shader::Create(vertex_shader.content(), fragment_shader.content());
+        shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.content());
 
         std::unique_ptr<VertexBuffer> vbuffer { VertexBuffer::Create(vertices2.data(), sizeof(vertices2)) };
         vbuffer->set_layout(layout);
@@ -89,7 +91,7 @@ namespace JAGE
         JAGE_MSG_TRACE("Detaching Game layer from layer stack.");
 
         varray.reset();
-        // shader.reset();
+        shader.reset();
         // texture.reset();
 
         JAGE_MSG_TRACE("Detached Game layer from layer stack.");
@@ -99,16 +101,16 @@ namespace JAGE
     {
         world.progress(Time::DeltaTime());
 
-        // shader->bind();
+        shader->bind();
 
         glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.0f }) };
-        // shader->set_uniform_mat4("model", model);
+        shader->set_uniform_mat4("model", model);
 
         const Camera* c { camera.GetComponent<Camera>() };
-        // shader->set_uniform_mat4("view", c->view_matrix);
+        shader->set_uniform_mat4("view", c->view_matrix);
 
         glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(60.0f), window->aspect_ratio(), 0.05f) };
-        // shader->set_uniform_mat4("projection", projection);
+        shader->set_uniform_mat4("projection", projection);
 
         // texture->bind();
         varray->bind();
@@ -123,6 +125,7 @@ namespace JAGE
         {
             if (e.action() == JAGE_ACTION_PRESSED && e.key() == JAGE_KEY_ESCAPE)
             {
+                JAGE_LOG_DEBUG("{}", to_string(Input::GetCursorMode()));
                 if (Input::GetCursorMode() == JAGE_CURSOR_MODE_NORMAL) Input::SetCursorMode(JAGE_CURSOR_MODE_DISABLED);
                 else Input::SetCursorMode(JAGE_CURSOR_MODE_NORMAL);
             }

@@ -38,11 +38,7 @@ int main(int argc, char** argv)
 
     while (running)
     {
-        Time::StartLoop();
-
         window->OnRender();
-
-        Time::EndLoop();
     }
 
     APP_MSG_INFO("Exiting application.");
