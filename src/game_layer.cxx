@@ -63,15 +63,14 @@ namespace JAGE
             { ShaderData::Type::Float2, "v_texcoord" },
         };
 
-        ImageResource image { "image.jpg" };
-        // TextResource vertex_shader { "default.vs" };
-        TextResource fragment_shader { "default.fs" };
         // ModelResource model { "Untitled.glb" }; 
 
+        ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };
         ResourceHandle<TextResource> vertex_shader { ResourceManager::instance().get<TextResource>("default.vs") };
+        ResourceHandle<TextResource> fragment_shader { ResourceManager::instance().get<TextResource>("default.fs") };
 
-        // texture = Texture::Create(image.data(), image.width(), image.height());
-        shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.content());
+        texture = Texture::Create(image.resource()->data(), image.resource()->width(), image.resource()->height());
+        shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());
 
         std::unique_ptr<VertexBuffer> vbuffer { VertexBuffer::Create(vertices2.data(), sizeof(vertices2)) };
         vbuffer->set_layout(layout);
@@ -92,7 +91,7 @@ namespace JAGE
 
         varray.reset();
         shader.reset();
-        // texture.reset();
+        texture.reset();
 
         JAGE_MSG_TRACE("Detached Game layer from layer stack.");
     }
@@ -112,7 +111,7 @@ namespace JAGE
         glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(60.0f), window->aspect_ratio(), 0.05f) };
         shader->set_uniform_mat4("projection", projection);
 
-        // texture->bind();
+        texture->bind();
         varray->bind();
         Renderer::Render();
     }
