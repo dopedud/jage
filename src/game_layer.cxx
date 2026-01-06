@@ -123,7 +123,7 @@ namespace JAGE
         debug_renderer->shader()->set_uniform_mat4("model", model);
         debug_renderer->shader()->set_uniform_mat4("view", c->view_matrix);
         debug_renderer->shader()->set_uniform_mat4("projection", projection);
-        debug_renderer->RenderGridLines(10, 1.0f);
+        debug_renderer->RenderGridLines(10, 1.0f, 2);
         debug_renderer->shader()->unbind();
     }
 

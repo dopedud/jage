@@ -46,7 +46,7 @@ namespace JAGE
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
 #endif
 
-        // glEnable(GL_DEPTH_TEST);
+        glEnable(GL_DEPTH_TEST);
 
         glViewport(0, 0, window->width(), window->height());
 
@@ -346,7 +346,7 @@ namespace JAGE
                 ShaderData::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
                 layout.stride(),
-                (const void*)elements[i].offset
+                (void*)elements[i].offset
             );
         }
 
@@ -395,7 +395,7 @@ namespace JAGE
 
                 void main()
                 {
-                    color = vec4(1.0, 0.0, 0.0, 1.0);
+                    color = vec4(0.5, 0.5, 0.5, 1.0);
                 }
             )"
         };
@@ -415,7 +415,7 @@ namespace JAGE
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
-    void OpenGLDebugRenderer::RenderGridLines(unsigned slices, float spacing)
+    void OpenGLDebugRenderer::RenderGridLines(unsigned slices, float spacing, unsigned major)
     {
         static bool init { true };
         static unsigned m_slices {};
@@ -433,37 +433,40 @@ namespace JAGE
             vertices.clear();
             indices.clear();
 
-            unsigned half_slices { slices / 2 };
+            int slices_int { static_cast<int>(slices) };
 
-            int subslices { -half_slices };
-            unsigned i {};
-            for (; subslices <= static_cast<int>(half_slices); subslices++, i++)
-            {
-                // first vertex of vertices pair along X-axis
-                vertices.push_back(static_cast<float>(subslices) * spacing);
-                vertices.push_back(0.0f);
-                vertices.push_back(static_cast<float>(-half_slices) * spacing);
+            int slice_index { -slices_int };
+            unsigned i {}, j {};
+            // for ()
+            // {
+                for (; slice_index <= slices_int; slice_index++, i++)
+                {
+                    // first vertex of vertices pair along X-axis
+                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(-slices_int) * spacing);
+                    vertices.push_back(0.0f);
 
-                // second vertex of vertices pair along X-axis
-                vertices.push_back(static_cast<float>(subslices) * spacing);
-                vertices.push_back(0.0f);
-                vertices.push_back(static_cast<float>(half_slices) * spacing);
+                    // second vertex of vertices pair along X-axis
+                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(slices_int) * spacing);
+                    vertices.push_back(0.0f);
 
-                // first vertex of vertices pair along Z-axis
-                vertices.push_back(static_cast<float>(-half_slices) * spacing);
-                vertices.push_back(0.0f);
-                vertices.push_back(static_cast<float>(subslices) * spacing);
+                    // first vertex of vertices pair along Y-axis
+                    vertices.push_back(static_cast<float>(-slices_int) * spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(0.0f);
 
-                // second vertex of vertices pair along Z-axis
-                vertices.push_back(static_cast<float>(half_slices) * spacing);
-                vertices.push_back(0.0f);
-                vertices.push_back(static_cast<float>(subslices) * spacing);
+                    // second vertex of vertices pair along Y-axis
+                    vertices.push_back(static_cast<float>(slices_int) * spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(0.0f);
 
-                unsigned index { i * 4 };
+                    unsigned index { i * 4 };
 
-                indices.push_back(index + 0); indices.push_back(index + 1);
-                indices.push_back(index + 2); indices.push_back(index + 3);
-            }
+                    indices.push_back(index + 0); indices.push_back(index + 1);
+                    indices.push_back(index + 2); indices.push_back(index + 3);
+                }
+            // }
 
             glBindVertexArray(grid_vao);
 

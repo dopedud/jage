@@ -180,13 +180,14 @@ namespace JAGE
          * @fn RenderGridLines()
          * @brief Render grid lines in the game world.
          * 
-         * Ideally, @c slices should take even values to get half slices correctly. Odd values will work, but would not
-         * be correctly presented in the game world.
+         * Ideally, @c slices should take even values to get half slices correctly. Odd values will be truncated to the
+         * lowest and nearest even value.
          * 
          * @param slices number of slices
          * @param spacing spacing between slices
+         * @param major spacing between major slices
          */
-        virtual void RenderGridLines(unsigned slices, float spacing) = 0;
+        virtual void RenderGridLines(unsigned slices, float spacing, unsigned major) = 0;
 
         Shader* shader() const;
     protected:
