@@ -12,6 +12,8 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Attaching Game layer to layer stack.");
 
+        debug_renderer = DebugRenderer::Create();
+
         varray = VertexArray::Create();
 
         std::array<float, 8 * 7> vertices
@@ -113,7 +115,16 @@ namespace JAGE
 
         texture->bind();
         varray->bind();
-        Renderer::Render();
+        debug_renderer->Render();
+        texture->unbind();
+        shader->unbind();
+
+        debug_renderer->shader()->bind();
+        debug_renderer->shader()->set_uniform_mat4("model", model);
+        debug_renderer->shader()->set_uniform_mat4("view", c->view_matrix);
+        debug_renderer->shader()->set_uniform_mat4("projection", projection);
+        debug_renderer->RenderGridLines(10, 1.0f);
+        debug_renderer->shader()->unbind();
     }
 
     void GameLayer::OnEvent(const Event& e)
@@ -124,7 +135,6 @@ namespace JAGE
         {
             if (e.action() == JAGE_ACTION_PRESSED && e.key() == JAGE_KEY_ESCAPE)
             {
-                JAGE_LOG_DEBUG("{}", to_string(Input::GetCursorMode()));
                 if (Input::GetCursorMode() == JAGE_CURSOR_MODE_NORMAL) Input::SetCursorMode(JAGE_CURSOR_MODE_DISABLED);
                 else Input::SetCursorMode(JAGE_CURSOR_MODE_NORMAL);
             }

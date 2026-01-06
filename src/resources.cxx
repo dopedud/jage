@@ -23,6 +23,7 @@ namespace JAGE
     std::string_view Resource::dir_path() { return "./resources/"; }
     std::string_view TextResource::dir_path() { return "shaders/"; }
     std::string_view ImageResource::dir_path() { return "images/"; }
+    std::string_view ModelResource::dir_path() { return "models/"; }
 
     Resource::Resource(std::string_view path)
     : m_path { std::string{ dir_path() } + std::string{ path } } {}
@@ -132,12 +133,12 @@ namespace JAGE
 
         m_width = width;
         m_height = height;
-        m_size = m_width * m_height * 4 * sizeof(unsigned char);
+        m_size = m_width * m_height * 4 * sizeof(uint8_t);
     }
 
     ImageResource::~ImageResource() { stbi_image_free(m_data); }
 
-    unsigned char* ImageResource::data() const { return m_data; }
+    uint8_t* ImageResource::data() const { return m_data; }
 
     unsigned ImageResource::size() const { return m_size; }
     unsigned ImageResource::width() const { return m_width; }
@@ -160,7 +161,5 @@ namespace JAGE
         }
 
         aiMesh* mesh { scene->mMeshes[scene->mRootNode->mMeshes[0]] };
-
-        // JAGE_LOG_DEBUG("{}", model.defaultScene);
     }
 }

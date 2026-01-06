@@ -5,12 +5,6 @@
 
 namespace JAGE
 {
-    class JAGE_API Renderer
-    {
-    public:
-        void static Render();
-    };
-
     namespace ShaderData
     {
         enum class Type : uint8_t
@@ -79,11 +73,11 @@ namespace JAGE
         virtual void bind() const = 0;
         virtual void unbind() const = 0;
 
-        virtual void set_uniform_bool(std::string_view name, bool value) = 0;
-        virtual void set_uniform_int(std::string_view name, int value) = 0;
-        virtual void set_uniform_uint(std::string_view name, unsigned value) = 0;
-        virtual void set_uniform_float(std::string_view name, float value) = 0;
-        virtual void set_uniform_mat4(std::string_view name, const glm::mat4& value) = 0;
+        virtual void set_uniform_bool   (std::string_view name, bool value) = 0;
+        virtual void set_uniform_int    (std::string_view name, int value) = 0;
+        virtual void set_uniform_uint   (std::string_view name, unsigned value) = 0;
+        virtual void set_uniform_float  (std::string_view name, float value) = 0;
+        virtual void set_uniform_mat4   (std::string_view name, const glm::mat4& value) = 0;
     protected:
         std::string m_vertex_str;
         std::string m_fragment_str;
@@ -116,7 +110,7 @@ namespace JAGE
 
         virtual ~Mesh() = default;
 
-        virtual void draw(const std::unique_ptr<Shader>& shader) = 0;
+        virtual void render(const std::unique_ptr<Shader>& shader) = 0;
     protected:
         std::vector<Vertex> m_vertices;
         std::vector<unsigned> m_indices;
@@ -173,4 +167,30 @@ namespace JAGE
         std::vector<std::unique_ptr<VertexBuffer>> vbuffers {};
         std::unique_ptr<IndexBuffer> ibuffer;
     };
+
+    class JAGE_API DebugRenderer
+    {
+    public:
+        static std::unique_ptr<DebugRenderer> Create();
+        virtual ~DebugRenderer() = default;
+
+        virtual void Render() = 0;
+
+        /**
+         * @fn RenderGridLines()
+         * @brief Render grid lines in the game world.
+         * 
+         * Ideally, @c slices should take even values to get half slices correctly. Odd values will work, but would not
+         * be correctly presented in the game world.
+         * 
+         * @param slices number of slices
+         * @param spacing spacing between slices
+         */
+        virtual void RenderGridLines(unsigned slices, float spacing) = 0;
+
+        Shader* shader() const;
+    protected:
+        std::unique_ptr<Shader> m_shader;
+    };
+
 }

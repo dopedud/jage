@@ -28,7 +28,7 @@ namespace JAGE
     class ResourceHandle
     {
     public:
-        ResourceHandle<T>(ResourceID id, T* resource);
+        ResourceHandle(ResourceID id, T* resource);
 
         ResourceID id() const;
         T* resource() const;
@@ -82,18 +82,20 @@ namespace JAGE
         ImageResource(std::string_view filename);
         ~ImageResource();
 
-        unsigned char* data() const;
+        uint8_t* data() const;
         unsigned size() const;
         unsigned width() const;
         unsigned height() const;
     private:
-        unsigned char* m_data;
+        uint8_t* m_data;
         unsigned m_size, m_width, m_height;
     };
 
     class JAGE_API ModelResource final : public Resource
     {
     public:
+        static std::string_view dir_path();
+
         ModelResource(std::string_view filename);
         ~ModelResource() = default;
     private:

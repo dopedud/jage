@@ -77,15 +77,13 @@ namespace JAGE
     const std::vector<BufferElement>& BufferLayout::elements() const { return m_elements; };
     unsigned BufferLayout::stride() const { return m_stride; }
 
-    IndexBuffer::IndexBuffer(unsigned count) : m_count { count } {}
-
-    TextureType Texture::texture_type() const { return m_texture_type; }
-    void Texture::set_texture_type(TextureType type) { m_texture_type = type; }
-
     std::unique_ptr<Texture> Texture::Create(unsigned char* data, unsigned width, unsigned height)
     {
         return std::make_unique<OpenGLTexture>(data, width, height);
     }
+
+    TextureType Texture::texture_type() const { return m_texture_type; }
+    void Texture::set_texture_type(TextureType type) { m_texture_type = type; }
 
     Shader::Shader(std::string_view vertex_str, std::string_view fragment_str)
     : m_vertex_str { vertex_str }, m_fragment_str { fragment_str }
@@ -122,6 +120,8 @@ namespace JAGE
         return std::make_unique<OpenGLVertexBuffer>(vertices, size);
     }
 
+    IndexBuffer::IndexBuffer(unsigned count) : m_count { count } {}
+
     std::unique_ptr<IndexBuffer> IndexBuffer::Create(unsigned* indices, unsigned count)
     {
         return std::make_unique<OpenGLIndexBuffer>(indices, count);
@@ -131,4 +131,11 @@ namespace JAGE
     {
         return std::make_unique<OpenGLVertexArray>();
     }
+
+    std::unique_ptr<DebugRenderer> DebugRenderer::Create()
+    {
+        return std::make_unique<OpenGLDebugRenderer>();
+    }
+
+    Shader* DebugRenderer::shader() const { return m_shader.get(); }
 }

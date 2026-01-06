@@ -43,11 +43,11 @@ namespace JAGE
         void bind() const override;
         void unbind() const override;
 
-        void set_uniform_bool(std::string_view name, bool value) override;
-        void set_uniform_int(std::string_view name, int value) override;
-        void set_uniform_uint(std::string_view name, unsigned value) override;
-        void set_uniform_float(std::string_view name, float value) override;
-        void set_uniform_mat4(std::string_view name, const glm::mat4& value) override;
+        void set_uniform_bool   (std::string_view name, bool value) override;
+        void set_uniform_int    (std::string_view name, int value) override;
+        void set_uniform_uint   (std::string_view name, unsigned value) override;
+        void set_uniform_float  (std::string_view name, float value) override;
+        void set_uniform_mat4   (std::string_view name, const glm::mat4& value) override;
     private:
         unsigned shaderID;
     };
@@ -61,7 +61,7 @@ namespace JAGE
             const std::vector<std::unique_ptr<Texture>>& textures
         );
 
-        void draw(const std::unique_ptr<Shader>& shader) override;
+        void render(const std::unique_ptr<Shader>& shader) override;
     private:
         unsigned vao, vbo, ebo;
     };
@@ -97,5 +97,17 @@ namespace JAGE
 
         void add_vbuffer(std::unique_ptr<VertexBuffer>&& vbuffer) override;
         void set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer) override;
+    };
+
+    class OpenGLDebugRenderer final : public DebugRenderer
+    {
+    public:
+        OpenGLDebugRenderer();
+        ~OpenGLDebugRenderer();
+
+        void Render() override;
+        void RenderGridLines(unsigned slices, float spacing) override;
+    private:
+        unsigned grid_vao, grid_vbo, grid_ebo;
     };
 }

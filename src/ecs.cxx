@@ -80,8 +80,8 @@ namespace JAGE
         c.up = glm::vec3{ 0.0f, 1.0f, 0.0f };
         c.front = glm::vec3{ 0.0f, 0.0f, 1.0f };
 
-        c.speed = 0.001f;
-        c.sensitivity = 0.085f;
+        c.speed = 0.01f;
+        c.sensitivity = 8.5f * 0.01f;
     }
 
     void CameraSystem(ecs_iter_t* it)
@@ -98,6 +98,9 @@ namespace JAGE
         if (Input::IsKeyPressed(JAGE_KEY_S)) move_vector.z -= 1.0f;
 
         glm::vec2 look_vector { Input::GetMousePositionDeltaX(), Input::GetMousePositionDeltaY() };
+
+        float speed_multiplier { 1.0f };
+        if (Input::IsKeyPressed(JAGE_KEY_LEFT_SHIFT)) speed_multiplier = 5.0f;
 
         // glm::normalize will produce UB for vectors with length ~ 0.0f, so it must be tested first for such cases
         move_vector = !glm::length(move_vector) ? glm::vec3{} : (glm::normalize(move_vector) * it->delta_time);
@@ -125,7 +128,7 @@ namespace JAGE
             c.right * move_vector.x +
             c.up * move_vector.y +
             c.front * move_vector.z
-        ) * c.speed;
+        ) * c.speed * speed_multiplier;
 
         c.view_matrix = glm::lookAtLH(t.position, t.position + c.front, c.up);
     }

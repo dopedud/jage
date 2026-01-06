@@ -46,11 +46,12 @@ namespace JAGE
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
 #endif
 
-        glEnable(GL_DEPTH_TEST);
+        // glEnable(GL_DEPTH_TEST);
 
         glViewport(0, 0, window->width(), window->height());
 
-        glfwSetFramebufferSizeCallback(static_cast<GLFWwindow*>(window->handle()), [](GLFWwindow* window, int width, int height) -> void
+        glfwSetFramebufferSizeCallback(static_cast<GLFWwindow*>(window->handle()),
+        [](GLFWwindow* window, int width, int height) -> void
         {
             glViewport(0, 0, width, height);
         });
@@ -66,11 +67,6 @@ namespace JAGE
     {
         glfwPollEvents();
         glfwSwapBuffers(static_cast<GLFWwindow*>(window->handle()));
-    }
-
-    void Renderer::Render()
-    {
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
     namespace ShaderData
@@ -99,6 +95,83 @@ namespace JAGE
         }
     }
 
+    DISABLE_WARNING_PUSH
+    DISABLE_WARNING_GCC_CLANG("-Wvla")
+
+    GLuint CreateSubShader(const GLchar* source, unsigned subshader_type)
+    {
+        JAGE_MSG_TRACE("Initialising subshader.");
+
+        GLint compiled {};
+
+        GLuint subshader { glCreateShader(subshader_type) };
+        glShaderSource(subshader, 1, &source, 0);
+
+        glCompileShader(subshader);
+        glGetShaderiv(subshader, GL_COMPILE_STATUS, &compiled);
+        if(compiled == GL_FALSE)
+        {
+            GLint max_length {};
+            glGetShaderiv(subshader, GL_INFO_LOG_LENGTH, &max_length);
+
+            GLchar infoLog[max_length];
+            glGetShaderInfoLog(subshader, max_length, &max_length, &infoLog[0]);
+
+            glDeleteShader(subshader);
+
+            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
+            JAGE_MSG_ERROR("Returning invalid subshader.");
+
+            return 0;
+        }
+
+        JAGE_MSG_TRACE("Subshader initialised.");
+
+        return subshader;
+    }
+
+    template<typename... SubShaders>
+    GLuint CreateShaderProgram(SubShaders... subshaders)
+    {
+        JAGE_MSG_TRACE("Initialising shader program.");
+
+        GLuint shaderID { glCreateProgram() };
+        GLint linked {};
+
+        // coerce all received arguments to be of type GLuint
+        GLuint subshaders_array[] { subshaders... };
+
+        for (GLuint subshader : subshaders_array) glAttachShader(shaderID, subshader);
+
+        glLinkProgram(shaderID);
+
+        glGetProgramiv(shaderID, GL_LINK_STATUS, &linked);
+        if (linked == GL_FALSE)
+        {
+            GLint max_length {};
+            glGetProgramiv(shaderID, GL_INFO_LOG_LENGTH, &max_length);
+
+            GLchar infoLog[max_length];
+            glGetProgramInfoLog(shaderID, max_length, &max_length, &infoLog[0]);
+
+            glDeleteProgram(shaderID);
+            for (GLuint subshader : subshaders_array) glDeleteShader(subshader);
+
+            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
+            JAGE_MSG_ERROR("Returning invalid shader program.");
+
+            return 0;
+        }
+
+        for (GLuint subshader : subshaders_array) glDetachShader(shaderID, subshader);
+
+        JAGE_MSG_TRACE("Shader program initialised.");
+
+        return shaderID;
+    }
+
+    DISABLE_WARNING_POP
+
     OpenGLTexture::OpenGLTexture(unsigned char* data, unsigned width, unsigned height)
     {
         glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
@@ -122,99 +195,20 @@ namespace JAGE
     void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
     void OpenGLTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
-    DISABLE_WARNING_PUSH
-    DISABLE_WARNING_GCC_CLANG("-Wvla")
-
     OpenGLShader::OpenGLShader(std::string_view vertex_str, std::string_view fragment_str)
     : Shader{ vertex_str, fragment_str }
     {
-        JAGE_MSG_TRACE("Initialising a OpenGL shader.");
+        JAGE_MSG_TRACE("Initialising an OpenGL shader.");
 
-        const GLchar* source {};
-        GLint compiled {};
+        GLuint vertex_shader { CreateSubShader(vertex_str.data(), GL_VERTEX_SHADER) };
+        GLuint fragment_shader { CreateSubShader(fragment_str.data(), GL_FRAGMENT_SHADER) };
 
-        GLuint vertex_shader { glCreateShader(GL_VERTEX_SHADER) };
-        source = vertex_str.data();
-        glShaderSource(vertex_shader, 1, &source, 0);
-
-        glCompileShader(vertex_shader);
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &compiled);
-        if(compiled == GL_FALSE)
-        {
-            GLint max_length {};
-            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &max_length);
-
-            GLchar infoLog[max_length];
-            glGetShaderInfoLog(vertex_shader, max_length, &max_length, &infoLog[0]);
-
-            glDeleteShader(vertex_shader);
-
-            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
-
-            return;
-        }
-
-        JAGE_MSG_TRACE("Vertex shader initialised.");
-
-        GLuint fragment_shader { glCreateShader(GL_FRAGMENT_SHADER) };
-        source = fragment_str.data();
-        glShaderSource(fragment_shader, 1, &source, 0);
-
-        glCompileShader(fragment_shader);
-        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &compiled);
-        if (compiled == GL_FALSE)
-        {
-            GLint max_length {};
-            glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &max_length);
-
-            GLchar infoLog[max_length];
-            glGetShaderInfoLog(fragment_shader, max_length, &max_length, &infoLog[0]);
-
-            glDeleteShader(fragment_shader);
-
-            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
-
-            return;
-        }
-
-        JAGE_MSG_TRACE("Fragment shader initialised.");
-
-        shaderID = glCreateProgram();
-        GLint linked {};
-
-        glAttachShader(shaderID, vertex_shader);
-        glAttachShader(shaderID, fragment_shader);
-        glLinkProgram(shaderID);
-
-        glGetProgramiv(shaderID, GL_LINK_STATUS, (int *)&linked);
-        if (linked == GL_FALSE)
-        {
-            GLint max_length {};
-            glGetProgramiv(shaderID, GL_INFO_LOG_LENGTH, &max_length);
-
-            GLchar infoLog[max_length];
-            glGetProgramInfoLog(shaderID, max_length, &max_length, &infoLog[0]);
-
-            glDeleteProgram(shaderID);
-            glDeleteShader(vertex_shader);
-            glDeleteShader(fragment_shader);
-
-            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
-
-            return;
-        }
-
-        JAGE_MSG_TRACE("Shader program initialised.");
-
-        glDetachShader(shaderID, vertex_shader);
-        glDetachShader(shaderID, fragment_shader);
+        shaderID = CreateShaderProgram(vertex_shader, fragment_shader);
 
         JAGE_MSG_TRACE("OpenGL shader initialised.");
     }
 
     OpenGLShader::~OpenGLShader() { glDeleteProgram(shaderID); }
-
-    DISABLE_WARNING_POP
 
     void OpenGLShader::bind() const { glUseProgram(shaderID); }
     void OpenGLShader::unbind() const { glUseProgram(0); }
@@ -293,7 +287,7 @@ namespace JAGE
         glBindVertexArray(0);
     }
 
-    void OpenGLMesh::draw(const std::unique_ptr<Shader>& shader)
+    void OpenGLMesh::render(const std::unique_ptr<Shader>& shader)
     {
         shader->bind();
         glBindVertexArray(vao);
@@ -304,9 +298,10 @@ namespace JAGE
 
     OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, unsigned size)
     {
-        glCreateBuffers(1, &rendererID);
+        glGenBuffers(1, &rendererID);
         glBindBuffer(GL_ARRAY_BUFFER, rendererID);
         glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     OpenGLVertexBuffer::~OpenGLVertexBuffer() { glDeleteBuffers(1, &rendererID); }
@@ -316,12 +311,13 @@ namespace JAGE
 
     OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned* indices, unsigned count) : IndexBuffer{ count }
     {
-        glCreateBuffers(1, &rendererID);
+        glGenBuffers(1, &rendererID);
 
         // GL_ELEMENT_ARRAY_BUFFER is not valid without an actively bound VAO
         // binding with GL_ARRAY_BUFFER allows the data to be loaded regardless of VAO state
         glBindBuffer(GL_ARRAY_BUFFER, rendererID);
         glBufferData(GL_ARRAY_BUFFER, count * sizeof(unsigned), indices, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     OpenGLIndexBuffer::~OpenGLIndexBuffer() { glDeleteBuffers(1, &rendererID); }
@@ -329,7 +325,7 @@ namespace JAGE
     void OpenGLIndexBuffer::bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID); }
     void OpenGLIndexBuffer::unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
 
-    OpenGLVertexArray::OpenGLVertexArray() { glCreateVertexArrays(1, &rendererID); }
+    OpenGLVertexArray::OpenGLVertexArray() { glGenVertexArrays(1, &rendererID); }
     OpenGLVertexArray::~OpenGLVertexArray() { glDeleteVertexArrays(1, &rendererID); }
 
     void OpenGLVertexArray::bind() { glBindVertexArray(rendererID); }
@@ -355,6 +351,7 @@ namespace JAGE
         }
 
         vbuffers.push_back(std::move(vbuffer));
+        glBindVertexArray(0);
     }
 
     void OpenGLVertexArray::set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer)
@@ -363,6 +360,131 @@ namespace JAGE
         ibuffer->bind();
 
         this->ibuffer = std::move(ibuffer);
+        glBindVertexArray(0);
+    }
+
+    OpenGLDebugRenderer::OpenGLDebugRenderer()
+    {
+        glGenVertexArrays(1, &grid_vao);
+        glGenBuffers(1, &grid_vbo);
+        glGenBuffers(1, &grid_ebo);
+
+        std::string_view vertex_str
+        {
+            R"(
+                #version 460 core
+                layout (location = 0) in vec3 v_position;
+
+                uniform mat4 model;
+                uniform mat4 view;
+                uniform mat4 projection;
+
+                void main()
+                {
+                    gl_Position = projection * view * model * vec4(v_position, 1.0);
+                }
+            )"
+        };
+
+        std::string_view fragment_str
+        {
+            R"(
+                #version 460 core
+
+                out vec4 color;
+
+                void main()
+                {
+                    color = vec4(1.0, 0.0, 0.0, 1.0);
+                }
+            )"
+        };
+
+        m_shader = Shader::Create(vertex_str, fragment_str);
+    }
+
+    OpenGLDebugRenderer::~OpenGLDebugRenderer()
+    {
+        glDeleteVertexArrays(1, &grid_vao);
+        glDeleteBuffers(1, &grid_vbo);
+        glDeleteBuffers(1, &grid_ebo);
+    }
+
+    void OpenGLDebugRenderer::Render()
+    {
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    }
+
+    void OpenGLDebugRenderer::RenderGridLines(unsigned slices, float spacing)
+    {
+        static bool init { true };
+        static unsigned m_slices {};
+        static float m_spacing {};
+        static std::vector<float> vertices {};
+        static std::vector<unsigned> indices {};
+
+        if (init || m_slices != slices || m_spacing != spacing)
+        {
+            init = false;
+
+            m_slices = slices;
+            m_spacing = spacing;
+
+            vertices.clear();
+            indices.clear();
+
+            unsigned half_slices { slices / 2 };
+
+            int subslices { -half_slices };
+            unsigned i {};
+            for (; subslices <= static_cast<int>(half_slices); subslices++, i++)
+            {
+                // first vertex of vertices pair along X-axis
+                vertices.push_back(static_cast<float>(subslices) * spacing);
+                vertices.push_back(0.0f);
+                vertices.push_back(static_cast<float>(-half_slices) * spacing);
+
+                // second vertex of vertices pair along X-axis
+                vertices.push_back(static_cast<float>(subslices) * spacing);
+                vertices.push_back(0.0f);
+                vertices.push_back(static_cast<float>(half_slices) * spacing);
+
+                // first vertex of vertices pair along Z-axis
+                vertices.push_back(static_cast<float>(-half_slices) * spacing);
+                vertices.push_back(0.0f);
+                vertices.push_back(static_cast<float>(subslices) * spacing);
+
+                // second vertex of vertices pair along Z-axis
+                vertices.push_back(static_cast<float>(half_slices) * spacing);
+                vertices.push_back(0.0f);
+                vertices.push_back(static_cast<float>(subslices) * spacing);
+
+                unsigned index { i * 4 };
+
+                indices.push_back(index + 0); indices.push_back(index + 1);
+                indices.push_back(index + 2); indices.push_back(index + 3);
+            }
+
+            glBindVertexArray(grid_vao);
+
+            glBindBuffer(GL_ARRAY_BUFFER, grid_vbo);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, grid_ebo);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float), indices.data(), GL_STATIC_DRAW);
+
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
+            glEnableVertexAttribArray(0);
+
+            glBindVertexArray(0);
+        }
+
+        // to get the transformation matrices (model, view, projection) to transform vertices correctly, uniform
+        // matrix values must be uploaded to the shader, and to do that it must be binded beforehand; thus the
+        // shader was binded outside of this function to upload uniform matrix values accordingly
+
+        glBindVertexArray(grid_vao);
+        glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
     }
 }
-
