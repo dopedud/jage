@@ -23,7 +23,7 @@ namespace JAGE
 
         glm::vec3 right;
         glm::vec3 up;
-        glm::vec3 front;
+        glm::vec3 forward;
 
         float speed;
         float sensitivity;

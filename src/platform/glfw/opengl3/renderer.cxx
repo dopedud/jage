@@ -363,30 +363,52 @@ namespace JAGE
         glBindVertexArray(0);
     }
 
-    OpenGLDebugRenderer::OpenGLDebugRenderer()
+    OpenGLDebugRenderer::OpenGLDebugRenderer(Window* window) : DebugRenderer{ window }
     {
         glGenVertexArrays(1, &grid_vao);
+        glGenVertexArrays(1, &coord_vao);
         glGenBuffers(1, &grid_vbo);
+        glGenBuffers(1, &coord_vbo);
         glGenBuffers(1, &grid_ebo);
+        glGenBuffers(1, &coord_ebo);
 
-        std::string_view vertex_str
+        std::string_view grid_vertex_str
         {
             R"(
                 #version 460 core
                 layout (location = 0) in vec3 v_position;
 
-                uniform mat4 model;
                 uniform mat4 view;
                 uniform mat4 projection;
 
                 void main()
                 {
-                    gl_Position = projection * view * model * vec4(v_position, 1.0);
+                    gl_Position = projection * view * vec4(v_position, 1.0);
                 }
             )"
         };
 
-        std::string_view fragment_str
+        std::string_view coord_vertex_str
+        {
+            R"(
+                #version 460 core
+                layout (location = 0) in vec3 v_position;
+
+                out vec3 f_position;
+
+                uniform mat4 view;
+                uniform mat4 projection;
+
+                void main()
+                {
+                    f_position = v_position;
+                    gl_Position = projection * view * vec4(v_position, 1.0);
+
+                }
+            )"
+        };
+
+        std::string_view grid_fragment_str
         {
             R"(
                 #version 460 core
@@ -395,12 +417,29 @@ namespace JAGE
 
                 void main()
                 {
-                    color = vec4(0.5, 0.5, 0.5, 1.0);
+                    color = vec4(0.5, 0.5, 0.5, 0.5);
                 }
             )"
         };
 
-        m_shader = Shader::Create(vertex_str, fragment_str);
+        std::string_view coord_fragment_str
+        {
+            R"(
+                #version 460 core
+
+                in vec3 f_position;
+
+                out vec4 color;
+
+                void main()
+                {
+                    color = vec4(normalize(f_position), 1.0);
+                }
+            )"
+        };
+
+        m_grid_shader = Shader::Create(grid_vertex_str, grid_fragment_str);
+        m_coord_shader = Shader::Create(coord_vertex_str, coord_fragment_str);
     }
 
     OpenGLDebugRenderer::~OpenGLDebugRenderer()
@@ -418,12 +457,15 @@ namespace JAGE
     void OpenGLDebugRenderer::RenderGridLines(unsigned slices, float spacing, unsigned major)
     {
         static bool init { true };
-        static unsigned m_slices {};
-        static float m_spacing {};
         static std::vector<float> vertices {};
         static std::vector<unsigned> indices {};
 
-        if (init || m_slices != slices || m_spacing != spacing)
+        static unsigned m_slices {};
+        static float m_spacing {};
+        static unsigned m_major {};
+
+        if (init ||
+            m_slices != slices || m_spacing != spacing || m_major != major)
         {
             init = false;
 
@@ -435,38 +477,47 @@ namespace JAGE
 
             int slices_int { static_cast<int>(slices) };
 
-            int slice_index { -slices_int };
-            unsigned i {}, j {};
-            // for ()
-            // {
-                for (; slice_index <= slices_int; slice_index++, i++)
+            for (int slice_index { -slices_int }; slice_index <= slices_int; slice_index++)
+            {
+                for (int sub_slice_index { -slices_int }; sub_slice_index <= slices_int; sub_slice_index++)
                 {
                     // first vertex of vertices pair along X-axis
-                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
                     vertices.push_back(static_cast<float>(-slices_int) * spacing);
-                    vertices.push_back(0.0f);
+                    vertices.push_back(static_cast<float>(slice_index) * spacing);
 
                     // second vertex of vertices pair along X-axis
-                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
                     vertices.push_back(static_cast<float>(slices_int) * spacing);
-                    vertices.push_back(0.0f);
+                    vertices.push_back(static_cast<float>(slice_index) * spacing);
 
                     // first vertex of vertices pair along Y-axis
                     vertices.push_back(static_cast<float>(-slices_int) * spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
                     vertices.push_back(static_cast<float>(slice_index) * spacing);
-                    vertices.push_back(0.0f);
 
                     // second vertex of vertices pair along Y-axis
                     vertices.push_back(static_cast<float>(slices_int) * spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
                     vertices.push_back(static_cast<float>(slice_index) * spacing);
-                    vertices.push_back(0.0f);
 
-                    unsigned index { i * 4 };
+                    // first vertex of vertices pair along Z-axis
+                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(-slices_int) * spacing);
+
+                    // second vertex of vertices pair along Z-axis
+                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(slices_int) * spacing);
+
+                    unsigned index { indices.size() };
 
                     indices.push_back(index + 0); indices.push_back(index + 1);
                     indices.push_back(index + 2); indices.push_back(index + 3);
+                    indices.push_back(index + 4); indices.push_back(index + 5);
                 }
-            // }
+            }
 
             glBindVertexArray(grid_vao);
 
@@ -482,12 +533,75 @@ namespace JAGE
             glBindVertexArray(0);
         }
 
-        // to get the transformation matrices (model, view, projection) to transform vertices correctly, uniform
-        // matrix values must be uploaded to the shader, and to do that it must be binded beforehand; thus the
-        // shader was binded outside of this function to upload uniform matrix values accordingly
+        m_grid_shader->bind();
+        m_grid_shader->set_uniform_mat4("view", m_view);
+        m_grid_shader->set_uniform_mat4("projection", m_projection);
 
         glBindVertexArray(grid_vao);
         glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+        m_grid_shader->unbind();
+    }
+
+    void OpenGLDebugRenderer::RenderCoordinateIndicator(float size)
+    {
+        static bool init { true };
+        static std::vector<float> vertices {};
+        static std::vector<unsigned> indices {};
+
+        static float m_size {};
+
+        if (init ||
+        m_size != size)
+        {
+            init = false;
+
+            m_size = size;
+
+            vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(0.0f);
+            vertices.push_back(1.0f); vertices.push_back(0.0f); vertices.push_back(0.0f);
+            vertices.push_back(0.0f); vertices.push_back(1.0f); vertices.push_back(0.0f);
+            vertices.push_back(0.0f); vertices.push_back(0.0f); vertices.push_back(1.0f);
+
+            indices.push_back(0); indices.push_back(1);
+            indices.push_back(0); indices.push_back(2);
+            indices.push_back(0); indices.push_back(3);
+
+            glBindVertexArray(coord_vao);
+
+            glBindBuffer(GL_ARRAY_BUFFER, coord_vbo);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, coord_ebo);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float), indices.data(), GL_STATIC_DRAW);
+
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
+            glEnableVertexAttribArray(0);
+
+            glBindVertexArray(0);
+        }
+
+        glm::vec3 forward { m_view[0][2], m_view[1][2], m_view[2][2] };
+        glm::vec3 up { m_view[0][1], m_view[1][1], m_view[2][1] };
+
+        glm::mat4 inv_view { glm::inverse(m_view) };
+        glm::vec3 view_pos {};
+        view_pos -= forward * 5.0f;
+
+        glm::mat4 orbited_view { glm::lookAtLH(view_pos, view_pos + forward, up) };
+
+        m_coord_shader->bind();
+        m_coord_shader->set_uniform_mat4("view", orbited_view);
+        m_coord_shader->set_uniform_mat4("projection",
+            glm::orthoLH(
+                -size * m_window->aspect_ratio(),
+                size * m_window->aspect_ratio(),
+                -size, size, 0.01f, 100.0f
+            ));
+
+        glBindVertexArray(coord_vao);
+        glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+        m_coord_shader->unbind();
     }
 }

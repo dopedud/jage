@@ -12,7 +12,7 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Attaching Game layer to layer stack.");
 
-        debug_renderer = DebugRenderer::Create();
+        debug_renderer = DebugRenderer::Create(window);
 
         varray = VertexArray::Create();
 
@@ -104,13 +104,13 @@ namespace JAGE
 
         shader->bind();
 
-        glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 0.0f, 0.0f, 1.0f }) };
+        glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 1.0f, 0.0f, 2.0f }) };
+        glm::mat4 view { camera.GetComponent<Camera>()->view_matrix };
+        glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(90.0f), window->aspect_ratio(), 0.01f) };
+        // glm::mat4 projection { glm::orthoLH(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f) };
+
         shader->set_uniform_mat4("model", model);
-
-        const Camera* c { camera.GetComponent<Camera>() };
-        shader->set_uniform_mat4("view", c->view_matrix);
-
-        glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(60.0f), window->aspect_ratio(), 0.05f) };
+        shader->set_uniform_mat4("view", view);
         shader->set_uniform_mat4("projection", projection);
 
         texture->bind();
@@ -119,12 +119,9 @@ namespace JAGE
         texture->unbind();
         shader->unbind();
 
-        debug_renderer->shader()->bind();
-        debug_renderer->shader()->set_uniform_mat4("model", model);
-        debug_renderer->shader()->set_uniform_mat4("view", c->view_matrix);
-        debug_renderer->shader()->set_uniform_mat4("projection", projection);
-        debug_renderer->RenderGridLines(10, 1.0f, 2);
-        debug_renderer->shader()->unbind();
+        debug_renderer->set_vp(view, projection);
+        debug_renderer->RenderGridLines(10, 10.0f, 2);
+        debug_renderer->RenderCoordinateIndicator(10.0f);
     }
 
     void GameLayer::OnEvent(const Event& e)

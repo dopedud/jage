@@ -13,8 +13,8 @@ namespace JAGE
     public:
         OpenGLContext(Window* window);
 
-        void Clear() override;
-        void SwapBuffers() override;
+        virtual void Clear() override;
+        virtual void SwapBuffers() override;
     };
 
     namespace ShaderData
@@ -28,8 +28,8 @@ namespace JAGE
         OpenGLTexture(unsigned char* data, unsigned width, unsigned height);
         ~OpenGLTexture();
 
-        void bind() override;
-        void unbind() override;
+        virtual void bind() override;
+        virtual void unbind() override;
     private:
         unsigned textureID;
     };
@@ -40,14 +40,14 @@ namespace JAGE
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
         ~OpenGLShader();
 
-        void bind() const override;
-        void unbind() const override;
+        virtual void bind() const override;
+        virtual void unbind() const override;
 
-        void set_uniform_bool   (std::string_view name, bool value) override;
-        void set_uniform_int    (std::string_view name, int value) override;
-        void set_uniform_uint   (std::string_view name, unsigned value) override;
-        void set_uniform_float  (std::string_view name, float value) override;
-        void set_uniform_mat4   (std::string_view name, const glm::mat4& value) override;
+        virtual void set_uniform_bool   (std::string_view name, bool value) override;
+        virtual void set_uniform_int    (std::string_view name, int value) override;
+        virtual void set_uniform_uint   (std::string_view name, unsigned value) override;
+        virtual void set_uniform_float  (std::string_view name, float value) override;
+        virtual void set_uniform_mat4   (std::string_view name, const glm::mat4& value) override;
     private:
         unsigned shaderID;
     };
@@ -61,7 +61,7 @@ namespace JAGE
             const std::vector<std::unique_ptr<Texture>>& textures
         );
 
-        void render(const std::unique_ptr<Shader>& shader) override;
+        virtual void render(const std::unique_ptr<Shader>& shader) override;
     private:
         unsigned vao, vbo, ebo;
     };
@@ -72,8 +72,8 @@ namespace JAGE
         OpenGLVertexBuffer(float* vertices, unsigned size);
         ~OpenGLVertexBuffer();
 
-        void bind() override;
-        void unbind() override;
+        virtual void bind() override;
+        virtual void unbind() override;
     };
 
     class OpenGLIndexBuffer final : public IndexBuffer
@@ -82,8 +82,8 @@ namespace JAGE
         OpenGLIndexBuffer(unsigned* indices, unsigned count);
         ~OpenGLIndexBuffer();
 
-        void bind() override;
-        void unbind() override;
+        virtual void bind() override;
+        virtual void unbind() override;
     };
 
     class OpenGLVertexArray final : public VertexArray
@@ -92,22 +92,24 @@ namespace JAGE
         OpenGLVertexArray();
         ~OpenGLVertexArray();
 
-        void bind() override;
-        void unbind() override;
+        virtual void bind() override;
+        virtual void unbind() override;
 
-        void add_vbuffer(std::unique_ptr<VertexBuffer>&& vbuffer) override;
-        void set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer) override;
+        virtual void add_vbuffer(std::unique_ptr<VertexBuffer>&& vbuffer) override;
+        virtual void set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer) override;
     };
 
     class OpenGLDebugRenderer final : public DebugRenderer
     {
     public:
-        OpenGLDebugRenderer();
+        OpenGLDebugRenderer(Window* window);
         ~OpenGLDebugRenderer();
 
-        void Render() override;
-        void RenderGridLines(unsigned slices, float spacing, unsigned major) override;
+        virtual void Render() override;
+        virtual void RenderGridLines(unsigned slices, float spacing, unsigned major) override;
+        virtual void RenderCoordinateIndicator(float size) override;
     private:
         unsigned grid_vao, grid_vbo, grid_ebo;
+        unsigned coord_vao, coord_vbo, coord_ebo;
     };
 }

@@ -24,7 +24,6 @@ namespace JAGE
         io.IniFilename = nullptr;
         // io.DisplaySize = ImVec2{ window->width(), window->height() };
 
-
         ImGui::StyleColorsDark();
 
         bool imgui_glfw_success { ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window->handle()), false) };

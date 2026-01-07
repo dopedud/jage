@@ -171,7 +171,8 @@ namespace JAGE
     class JAGE_API DebugRenderer
     {
     public:
-        static std::unique_ptr<DebugRenderer> Create();
+        static std::unique_ptr<DebugRenderer> Create(Window* window);
+        DebugRenderer(Window* window);
         virtual ~DebugRenderer() = default;
 
         virtual void Render() = 0;
@@ -189,9 +190,16 @@ namespace JAGE
          */
         virtual void RenderGridLines(unsigned slices, float spacing, unsigned major) = 0;
 
-        Shader* shader() const;
+        virtual void RenderCoordinateIndicator(float size) = 0;
+
+        virtual void set_vp(glm::mat4 view, glm::mat4 projection);
     protected:
-        std::unique_ptr<Shader> m_shader;
+        Window* m_window;
+
+        std::unique_ptr<Shader> m_grid_shader;
+        std::unique_ptr<Shader> m_coord_shader;
+
+        glm::mat4 m_view, m_projection;
     };
 
 }

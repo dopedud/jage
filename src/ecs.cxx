@@ -78,7 +78,7 @@ namespace JAGE
 
         c.right = glm::vec3{ 1.0f, 0.0f, 0.0f };
         c.up = glm::vec3{ 0.0f, 1.0f, 0.0f };
-        c.front = glm::vec3{ 0.0f, 0.0f, 1.0f };
+        c.forward = glm::vec3{ 0.0f, 0.0f, 1.0f };
 
         c.speed = 0.01f;
         c.sensitivity = 8.5f * 0.01f;
@@ -119,17 +119,17 @@ namespace JAGE
 
         glm::mat4 rotation_matrix { t.rotation_matrix() };
 
-        c.right = glm::normalize(rotation_matrix[0]);
-        c.up    = glm::normalize(rotation_matrix[1]);
-        c.front = glm::normalize(rotation_matrix[2]);
+        c.right     = glm::normalize(rotation_matrix[0]);
+        c.up        = glm::normalize(rotation_matrix[1]);
+        c.forward   = glm::normalize(rotation_matrix[2]);
 
         t.position +=
         (
             c.right * move_vector.x +
             c.up * move_vector.y +
-            c.front * move_vector.z
+            c.forward * move_vector.z
         ) * c.speed * speed_multiplier;
 
-        c.view_matrix = glm::lookAtLH(t.position, t.position + c.front, c.up);
+        c.view_matrix = glm::lookAtLH(t.position, t.position + c.forward, c.up);
     }
 }

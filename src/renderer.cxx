@@ -132,10 +132,12 @@ namespace JAGE
         return std::make_unique<OpenGLVertexArray>();
     }
 
-    std::unique_ptr<DebugRenderer> DebugRenderer::Create()
+    DebugRenderer::DebugRenderer(Window* window) : m_window { window } {}
+
+    std::unique_ptr<DebugRenderer> DebugRenderer::Create(Window* window)
     {
-        return std::make_unique<OpenGLDebugRenderer>();
+        return std::make_unique<OpenGLDebugRenderer>(window);
     }
 
-    Shader* DebugRenderer::shader() const { return m_shader.get(); }
+    void DebugRenderer::set_vp(glm::mat4 view, glm::mat4 projection) { m_view = view; m_projection = projection; }
 }

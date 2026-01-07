@@ -82,12 +82,12 @@ namespace JAGE
         ImageResource(std::string_view filename);
         ~ImageResource();
 
-        uint8_t* data() const;
+        ui8* data() const;
         unsigned size() const;
         unsigned width() const;
         unsigned height() const;
     private:
-        uint8_t* m_data;
+        ui8* m_data;
         unsigned m_size, m_width, m_height;
     };
 

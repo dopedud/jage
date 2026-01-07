@@ -252,12 +252,12 @@ namespace JAGE
 
         float aspect_ratio() const;
 
-        virtual void OnRender() = 0;
-
-        void set_eventcallback(const EventCallbackFn& callback) { data.callback = callback; }
-
         bool vsync() const;
         virtual void set_vsync(bool enabled) = 0;
+
+        void set_eventcallback(const EventCallbackFn& callback);
+
+        virtual void OnRender() = 0;
 
         /**
          * @fn handle()

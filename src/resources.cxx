@@ -133,12 +133,12 @@ namespace JAGE
 
         m_width = width;
         m_height = height;
-        m_size = m_width * m_height * 4 * sizeof(uint8_t);
+        m_size = m_width * m_height * 4 * sizeof(ui8);
     }
 
     ImageResource::~ImageResource() { stbi_image_free(m_data); }
 
-    uint8_t* ImageResource::data() const { return m_data; }
+    ui8* ImageResource::data() const { return m_data; }
 
     unsigned ImageResource::size() const { return m_size; }
     unsigned ImageResource::width() const { return m_width; }
@@ -155,7 +155,7 @@ namespace JAGE
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
         {
-            JAGE_LOG_ERROR("{}", importer.GetErrorString());
+            JAGE_LOG_ERROR("JAGE I/O error: {}", importer.GetErrorString());
             JAGE_MSG_ERROR("Returning empty contents.");
             return;
         }

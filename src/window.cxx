@@ -9,6 +9,8 @@ namespace JAGE
     unsigned Window::height() const { return data.properties.height; }
 
     bool Window::vsync() const { return data.properties.vsync; }
+        
+    void Window::set_eventcallback(const EventCallbackFn& callback) { data.callback = callback; }
 
     float Window::aspect_ratio() const
     {
