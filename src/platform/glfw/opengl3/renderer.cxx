@@ -378,12 +378,13 @@ namespace JAGE
                 #version 460 core
                 layout (location = 0) in vec3 v_position;
 
+                uniform mat4 model;
                 uniform mat4 view;
                 uniform mat4 projection;
 
                 void main()
                 {
-                    gl_Position = projection * view * vec4(v_position, 1.0);
+                    gl_Position = projection * view * model * vec4(v_position, 1.0);
                 }
             )"
         };
@@ -454,7 +455,7 @@ namespace JAGE
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
-    void OpenGLDebugRenderer::RenderGridLines(unsigned slices, float spacing, unsigned major)
+    void OpenGLDebugRenderer::RenderGridLines(unsigned slices, float spacing)
     {
         static bool init { true };
         static std::vector<float> vertices {};
@@ -465,12 +466,12 @@ namespace JAGE
         static unsigned m_major {};
 
         if (init ||
-            m_slices != slices || m_spacing != spacing || m_major != major)
+            m_slices != slices || m_spacing != spacing)
         {
             init = false;
 
             m_slices = slices;
-            m_spacing = spacing;
+            m_spacing = glm::abs(spacing);
 
             vertices.clear();
             indices.clear();
@@ -482,34 +483,34 @@ namespace JAGE
                 for (int sub_slice_index { -slices_int }; sub_slice_index <= slices_int; sub_slice_index++)
                 {
                     // first vertex of vertices pair along X-axis
-                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
-                    vertices.push_back(static_cast<float>(-slices_int) * spacing);
-                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * m_spacing);
+                    vertices.push_back(static_cast<float>(-slices_int) * m_spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * m_spacing);
 
                     // second vertex of vertices pair along X-axis
-                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
-                    vertices.push_back(static_cast<float>(slices_int) * spacing);
-                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * m_spacing);
+                    vertices.push_back(static_cast<float>(slices_int) * m_spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * m_spacing);
 
                     // first vertex of vertices pair along Y-axis
-                    vertices.push_back(static_cast<float>(-slices_int) * spacing);
-                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
-                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(-slices_int) * m_spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * m_spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * m_spacing);
 
                     // second vertex of vertices pair along Y-axis
-                    vertices.push_back(static_cast<float>(slices_int) * spacing);
-                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
-                    vertices.push_back(static_cast<float>(slice_index) * spacing);
+                    vertices.push_back(static_cast<float>(slices_int) * m_spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * m_spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * m_spacing);
 
                     // first vertex of vertices pair along Z-axis
-                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
-                    vertices.push_back(static_cast<float>(slice_index) * spacing);
-                    vertices.push_back(static_cast<float>(-slices_int) * spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * m_spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * m_spacing);
+                    vertices.push_back(static_cast<float>(-slices_int) * m_spacing);
 
                     // second vertex of vertices pair along Z-axis
-                    vertices.push_back(static_cast<float>(sub_slice_index) * spacing);
-                    vertices.push_back(static_cast<float>(slice_index) * spacing);
-                    vertices.push_back(static_cast<float>(slices_int) * spacing);
+                    vertices.push_back(static_cast<float>(sub_slice_index) * m_spacing);
+                    vertices.push_back(static_cast<float>(slice_index) * m_spacing);
+                    vertices.push_back(static_cast<float>(slices_int) * m_spacing);
 
                     unsigned index { indices.size() };
 
@@ -533,7 +534,11 @@ namespace JAGE
             glBindVertexArray(0);
         }
 
+        glm::vec3 view_pos { glm::inverse(m_view)[3] };
+        glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::floor(view_pos / m_spacing) * m_spacing) };
+
         m_grid_shader->bind();
+        m_grid_shader->set_uniform_mat4("model", model);
         m_grid_shader->set_uniform_mat4("view", m_view);
         m_grid_shader->set_uniform_mat4("projection", m_projection);
 
@@ -543,7 +548,7 @@ namespace JAGE
         m_grid_shader->unbind();
     }
 
-    void OpenGLDebugRenderer::RenderCoordinateIndicator(float size)
+    void OpenGLDebugRenderer::RenderBaseAxes(float size)
     {
         static bool init { true };
         static std::vector<float> vertices {};
@@ -590,13 +595,15 @@ namespace JAGE
 
         glm::mat4 orbited_view { glm::lookAtLH(view_pos, view_pos + forward, up) };
 
+        float inv_size { 1 / size };
+
         m_coord_shader->bind();
         m_coord_shader->set_uniform_mat4("view", orbited_view);
         m_coord_shader->set_uniform_mat4("projection",
             glm::orthoLH(
-                -size * m_window->aspect_ratio(),
-                size * m_window->aspect_ratio(),
-                -size, size, 0.01f, 100.0f
+                -inv_size * m_window->aspect_ratio(),
+                inv_size * m_window->aspect_ratio(),
+                -inv_size, inv_size, 0.01f, 100.0f
             ));
 
         glBindVertexArray(coord_vao);

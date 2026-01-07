@@ -186,11 +186,10 @@ namespace JAGE
          * 
          * @param slices number of slices
          * @param spacing spacing between slices
-         * @param major spacing between major slices
          */
-        virtual void RenderGridLines(unsigned slices, float spacing, unsigned major) = 0;
+        virtual void RenderGridLines(unsigned slices, float spacing) = 0;
 
-        virtual void RenderCoordinateIndicator(float size) = 0;
+        virtual void RenderBaseAxes(float size) = 0;
 
         virtual void set_vp(glm::mat4 view, glm::mat4 projection);
     protected:

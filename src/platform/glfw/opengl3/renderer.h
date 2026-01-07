@@ -106,8 +106,8 @@ namespace JAGE
         ~OpenGLDebugRenderer();
 
         virtual void Render() override;
-        virtual void RenderGridLines(unsigned slices, float spacing, unsigned major) override;
-        virtual void RenderCoordinateIndicator(float size) override;
+        virtual void RenderGridLines(unsigned slices, float spacing) override;
+        virtual void RenderBaseAxes(float size) override;
     private:
         unsigned grid_vao, grid_vbo, grid_ebo;
         unsigned coord_vao, coord_vbo, coord_ebo;

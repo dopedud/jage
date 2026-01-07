@@ -120,8 +120,8 @@ namespace JAGE
         shader->unbind();
 
         debug_renderer->set_vp(view, projection);
-        debug_renderer->RenderGridLines(10, 10.0f, 2);
-        debug_renderer->RenderCoordinateIndicator(10.0f);
+        debug_renderer->RenderGridLines(5, 25.0f);
+        debug_renderer->RenderBaseAxes(0.1f);
     }
 
     void GameLayer::OnEvent(const Event& e)
