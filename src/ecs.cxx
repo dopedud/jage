@@ -4,11 +4,24 @@
 
 namespace JAGE
 {
-    glm::mat4 Transform::rotation_matrix() const
+    glm::vec3 Transform::right() const      { return glm::normalize(orientation * glm::vec3{1.0f, 0.0f, 0.0f}); }
+    glm::vec3 Transform::up() const         { return glm::normalize(orientation * glm::vec3{0.0f, 1.0f, 0.0f}); }
+    glm::vec3 Transform::forward() const    { return glm::normalize(orientation * glm::vec3{0.0f, 0.0f, 1.0f}); }
+
+    glm::mat4 Transform::transformation_matrix() const
     {
-        glm::vec3 rotrad { glm::radians(rotation) };
-        return glm::yawPitchRoll(rotrad.y, rotrad.x, rotrad.z);
-    } 
+        return
+            glm::translate(glm::mat4{ 1.0f }, position) *
+            glm::mat4_cast(orientation) *
+            glm::scale(glm::mat4{ 1.0f }, scale);
+    }
+
+    void Transform::rotateGlobalX(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 1.0f, 0.0f, 0.0f }) * orientation; }
+    void Transform::rotateGlobalY(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 1.0f, 0.0f }) * orientation; }
+    void Transform::rotateGlobalZ(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 0.0f, 1.0f }) * orientation; }
+    void Transform::rotateLocalX(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), right()) * orientation; }
+    void Transform::rotateLocalY(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), up()) * orientation; }
+    void Transform::rotateLocalZ(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), forward()) * orientation; }
 
     ECS_COMPONENT_DECLARE(Transform);
     ECS_COMPONENT_DECLARE(Camera);
@@ -18,8 +31,12 @@ namespace JAGE
         ECS_COMPONENT_DEFINE(m_world, Transform);
         ECS_COMPONENT_DEFINE(m_world, Camera);
 
-        ECS_SYSTEM(m_world, CameraSystem, EcsOnUpdate, Transform, Camera);
+        ECS_SYSTEM(m_world, TransformSystem, EcsOnUpdate, Transform);
+
         ECS_SYSTEM(m_world, CameraSystem_Initialise, EcsOnStart, Transform, Camera);
+        ECS_SYSTEM(m_world, CameraSystem, EcsOnUpdate, Transform, Camera);
+        ECS_SYSTEM(m_world, RenderSystem_Initialise, EcsOnStart, Transform, Camera);
+        ECS_SYSTEM(m_world, RenderSystem, EcsOnUpdate, Transform, Camera);
     }
 
     World::~World() { ecs_fini(m_world); }
@@ -41,6 +58,7 @@ namespace JAGE
     Entity::~Entity() { ecs_delete(m_world, m_entity); }
 
     // TEMPLATE INSTANTIATIONS
+
     // NOTE: Template specializations are used here (instead of template instantiations) due to Flecs fundamentally
     // using macros to implement generic programming patterns. The template definitions are still provided for
     // reference.
@@ -48,19 +66,29 @@ namespace JAGE
     // template<typename T> void       Entity::AddComponent() { ecs_add(m_world, m_entity, T); }
     // template<typename T> void       Entity::AddComponent(const T* component) { ecs_set_ptr(m_world, m_entity, T, component); }
     // template<typename T> const T*   Entity::GetComponent() { return ecs_get(m_world, m_entity, T); }
+    // template<typename T> T*         Entity::GetComponentMutable() { return ecs_get_mut(m_world, m_entity, T); }
     // template<typename T> void       Entity::RemoveComponent() { ecs_remove(m_world, m_entity, T); }
 
     template<> void                 Entity::AddComponent<Transform>()                               { ecs_add(m_world, m_entity, Transform); }
     template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_world, m_entity, Transform, component); }
     template<> const Transform*     Entity::GetComponent<Transform>()                               { return ecs_get(m_world, m_entity, Transform); }
+    template<> Transform*           Entity::GetComponentMutable<Transform>()                        { return ecs_get_mut(m_world, m_entity, Transform); }
     template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_world, m_entity, Transform); }
 
     template<> void             Entity::AddComponent<Camera>()                          { ecs_add(m_world, m_entity, Camera); }
     template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_world, m_entity, Camera, component); }
     template<> const Camera*    Entity::GetComponent<Camera>()                          { return ecs_get(m_world, m_entity, Camera); }
+    template<> Camera*          Entity::GetComponentMutable<Camera>()                   { return ecs_get_mut(m_world, m_entity, Camera); }
     template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_world, m_entity, Camera); }
 
     // END TEMPLATE INSTANTIATIONS
+
+    void TransformSystem(ecs_iter_t* it)
+    {
+        Transform* transform { ecs_field(it, Transform, 0) };
+        Transform& t { transform[0] };
+        glm::mat4 transformation_matrix { t.transformation_matrix() };
+    }
 
     void CameraSystem_Initialise(ecs_iter_t* it)
     {
@@ -71,17 +99,20 @@ namespace JAGE
         Camera& c { camera[0] };
 
         t.position = glm::vec3{};
-        t.rotation = glm::vec3{};
+        t.orientation = glm::quat{ 1.0f, 0.0f, 0.0f, 0.0f };
         t.scale = glm::vec3{ 1.0f };
-
-        c.view_matrix = glm::mat4{ 1.0f };
-
-        c.right = glm::vec3{ 1.0f, 0.0f, 0.0f };
-        c.up = glm::vec3{ 0.0f, 1.0f, 0.0f };
-        c.forward = glm::vec3{ 0.0f, 0.0f, 1.0f };
 
         c.speed = 0.01f;
         c.sensitivity = 8.5f * 0.01f;
+
+        c.fov = 90.0f;
+    }
+
+    JAGE_API void RenderSystem_Initialise(ecs_iter_t* it)
+    {
+        Camera* camera { ecs_field(it, Camera, 1) };
+        Camera& c { camera[0] };
+        c.view_matrix = glm::mat4{ 1.0f };
     }
 
     void CameraSystem(ecs_iter_t* it)
@@ -102,7 +133,8 @@ namespace JAGE
         float speed_multiplier { 1.0f };
         if (Input::IsKeyPressed(JAGE_KEY_LEFT_SHIFT)) speed_multiplier = 5.0f;
 
-        // glm::normalize will produce UB for vectors with length ~ 0.0f, so it must be tested first for such cases
+        // glm::normalize will produce undefined behaviour for vectors with length ~ 0.0f, so it must be tested first
+        // for such cases
         move_vector = !glm::length(move_vector) ? glm::vec3{} : (glm::normalize(move_vector) * it->delta_time);
 
         Transform* transform { ecs_field(it, Transform, 0) };
@@ -111,25 +143,29 @@ namespace JAGE
         Transform& t { transform[0] };
         Camera& c { camera[0] };
 
-        t.rotation.x += look_vector.y * c.sensitivity;
-        t.rotation.y += look_vector.x * c.sensitivity;
+        t.rotateGlobalY(look_vector.x * c.sensitivity);
+        t.rotateLocalX(look_vector.y * c.sensitivity);
 
-        // if (t.rotation.x > 89.0f) t.rotation.x = 89.0f;
-        // if (t.rotation.x < -89.0f) t.rotation.x = -89.0f;
-
-        glm::mat4 rotation_matrix { t.rotation_matrix() };
-
-        c.right     = glm::normalize(rotation_matrix[0]);
-        c.up        = glm::normalize(rotation_matrix[1]);
-        c.forward   = glm::normalize(rotation_matrix[2]);
+        glm::vec3 euler { glm::eulerAngles(t.orientation) };
+        euler.x = std::clamp(euler.x, glm::radians(-90.0f), glm::radians(90.0f));
+        t.orientation = glm::quat{ euler };
 
         t.position +=
         (
-            c.right * move_vector.x +
-            c.up * move_vector.y +
-            c.forward * move_vector.z
+            t.right() * move_vector.x +
+            t.up() * move_vector.y +
+            t.forward() * move_vector.z
         ) * c.speed * speed_multiplier;
+    }
 
-        c.view_matrix = glm::lookAtLH(t.position, t.position + c.forward, c.up);
+    JAGE_API void RenderSystem(ecs_iter_t* it)
+    {
+        Transform* transform { ecs_field(it, Transform, 0) };
+        Camera* camera { ecs_field(it, Camera, 1) };
+
+        Transform& t { transform[0] };
+        Camera& c { camera[0] };
+
+        c.view_matrix = glm::lookAtLH(t.position, t.position + t.forward(), t.up());
     }
 }

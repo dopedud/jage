@@ -1,6 +1,6 @@
 #include "platform/glfw/window.h"
 
-#include "JAGE/resources.h"
+// #include "JAGE/resources.h"
 
 #include "platform/glfw/opengl3/renderer.h"
 #include "log.h"
@@ -45,8 +45,6 @@ namespace JAGE
         graphics_context = std::make_unique<OpenGLContext>(this);
 
         if (glfwRawMouseMotionSupported()) glfwSetInputMode(m_handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-
-        // glfwSetInputMode(m_handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         // BUNCH OF CALLBACK DEFINITIONS
 
@@ -115,13 +113,13 @@ namespace JAGE
             data.OnEvent(event);
         });
 
-        glfwSetCursorEnterCallback(m_handle, [](GLFWwindow* window, int entered) -> void
-        {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-            MouseEnterEvent event { entered };
-            data.callback(event);
-            data.OnEvent(event);
-        });
+        // glfwSetCursorEnterCallback(m_handle, [](GLFWwindow* window, int entered) -> void
+        // {
+        //     WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+        //     MouseEnterEvent event { entered };
+        //     data.callback(event);
+        //     data.OnEvent(event);
+        // });
 
         glfwSetCursorPosCallback(m_handle, [](GLFWwindow* window, double xpos, double ypos) -> void
         {

@@ -5,7 +5,7 @@
 
 namespace JAGE
 {
-    using ResourceID = uint64_t;
+    using ResourceID = ui64;
 
     // NOTE: Resources could technically be instantiated directly from classes derived from Resource, but this should
     // be avoided and only get resources from ResourceManager, albeit ResourceManager and the resources do not enforce
@@ -89,6 +89,11 @@ namespace JAGE
     private:
         ui8* m_data;
         unsigned m_size, m_width, m_height;
+    };
+
+    struct JAGE_API ModelNode
+    {
+        std::string name;
     };
 
     class JAGE_API ModelResource final : public Resource

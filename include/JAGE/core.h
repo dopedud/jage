@@ -355,7 +355,7 @@ namespace JAGE
 {
     namespace Input
     {
-        enum class KeyCode : uint16_t
+        enum class KeyCode : ui16
         {
             UNKNOWN = 0,
 
@@ -386,17 +386,17 @@ namespace JAGE
             KP1, KP2, KP3, KP4, KP5, KP6, KP7, KP8, KP9, KP0
         };
 
-        enum class MouseButton : uint8_t
+        enum class MouseButton : ui8
         {
             _1 = 0, _2, _3, _4, _5
         };
 
-        enum class Action : uint8_t
+        enum class Action : ui8
         {
             PRESSED = 0, RELEASED, REPEATED
         };
 
-        enum class Modifier : uint8_t
+        enum class Modifier : ui8
         {
             NONE        = 0,
             SHIFT       = BIT(0),
@@ -404,7 +404,7 @@ namespace JAGE
             ALT         = BIT(2),
         };
 
-        enum class CursorMode : uint8_t { NORMAL = 0, DISABLED, HIDDEN };
+        enum class CursorMode : ui8 { NORMAL = 0, DISABLED, HIDDEN };
 
         JAGE_API int operator&(Modifier lhs, Modifier rhs);
         JAGE_API int operator|(Modifier lhs, Modifier rhs);
@@ -579,7 +579,7 @@ namespace JAGE
      * NOTE: @c int is used as the underlying type for @c EventType and @c EventCategory
      */
 
-    enum class EventType : uint8_t
+    enum class EventType : ui8
     {
         None = 0,
         WindowClose, WindowResize, WindowFocus, WindowMoved,
@@ -588,7 +588,7 @@ namespace JAGE
         MouseButton, MouseEnter, MouseMoved, MouseScrolled
     };
 
-    enum class EventCategory : uint8_t
+    enum class EventCategory : ui8
     {
         None = 0,
         Application     = BIT(0),

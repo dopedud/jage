@@ -11,6 +11,9 @@ namespace JAGE
         static double previous_mouse_positionX {}, previous_mouse_positionY {};
         static double current_mouse_positionX {}, current_mouse_positionY {};
 
+        static double mouse_scrollwheel_deltaX {}, mouse_scrollwheel_deltaY {};
+        static bool scrollwheel_event {};
+
         void SetActiveWindow(Window* window)
         {
             glfw_handle = static_cast<GLFWwindow*>(window->handle());

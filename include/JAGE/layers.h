@@ -24,6 +24,8 @@ namespace JAGE
 
         World world {};
         Entity camera { &world, "MainCamera" };
+        const Camera* camera_component;
+        Camera* camera_component_fov;
     };
 
     class JAGE_API ImguiLayer final : public Layer
