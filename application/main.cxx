@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 
     Init(argc, argv);
 
-    APP_MSG_INFO("Creating a window.");
+    APP_MSG_TRACE("Creating a window.");
     std::unique_ptr<Window> window { Window::Create() };
 
     Input::SetActiveWindow(window.get());

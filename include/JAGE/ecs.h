@@ -20,12 +20,15 @@ namespace JAGE
 
         glm::mat4 transformation_matrix() const;
 
-        void rotateGlobalX(float degrees);
-        void rotateGlobalY(float degrees);
-        void rotateGlobalZ(float degrees);
-        void rotateLocalX(float degrees);
-        void rotateLocalY(float degrees);
-        void rotateLocalZ(float degrees);
+        void RotateAbsoluteGlobalX(float degrees);
+        void RotateAbsoluteGlobalY(float degrees);
+        void RotateAbsoluteGlobalZ(float degrees);
+        void RotateRelativeGlobalX(float degrees);
+        void RotateRelativeGlobalY(float degrees);
+        void RotateRelativeGlobalZ(float degrees);
+        void RotateLocalX(float degrees);
+        void RotateLocalY(float degrees);
+        void RotateLocalZ(float degrees);
     };
 
     struct Camera
@@ -35,6 +38,7 @@ namespace JAGE
         float speed;
         float sensitivity;
 
+        float pitch;
         float fov;
     };
 

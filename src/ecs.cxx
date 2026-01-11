@@ -4,9 +4,9 @@
 
 namespace JAGE
 {
-    glm::vec3 Transform::right() const      { return glm::normalize(orientation * glm::vec3{1.0f, 0.0f, 0.0f}); }
-    glm::vec3 Transform::up() const         { return glm::normalize(orientation * glm::vec3{0.0f, 1.0f, 0.0f}); }
-    glm::vec3 Transform::forward() const    { return glm::normalize(orientation * glm::vec3{0.0f, 0.0f, 1.0f}); }
+    glm::vec3 Transform::right()    const { return glm::normalize(orientation * glm::vec3{1.0f, 0.0f, 0.0f}); }
+    glm::vec3 Transform::up()       const { return glm::normalize(orientation * glm::vec3{0.0f, 1.0f, 0.0f}); }
+    glm::vec3 Transform::forward()  const { return glm::normalize(orientation * glm::vec3{0.0f, 0.0f, 1.0f}); }
 
     glm::mat4 Transform::transformation_matrix() const
     {
@@ -16,12 +16,15 @@ namespace JAGE
             glm::scale(glm::mat4{ 1.0f }, scale);
     }
 
-    void Transform::rotateGlobalX(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 1.0f, 0.0f, 0.0f }) * orientation; }
-    void Transform::rotateGlobalY(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 1.0f, 0.0f }) * orientation; }
-    void Transform::rotateGlobalZ(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 0.0f, 1.0f }) * orientation; }
-    void Transform::rotateLocalX(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), right()) * orientation; }
-    void Transform::rotateLocalY(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), up()) * orientation; }
-    void Transform::rotateLocalZ(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), forward()) * orientation; }
+    void Transform::RotateAbsoluteGlobalX(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 1.0f, 0.0f, 0.0f }); }
+    void Transform::RotateAbsoluteGlobalY(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 1.0f, 0.0f }); }
+    void Transform::RotateAbsoluteGlobalZ(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 0.0f, 1.0f }); }
+    void Transform::RotateRelativeGlobalX(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 1.0f, 0.0f, 0.0f }) * orientation; }
+    void Transform::RotateRelativeGlobalY(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 1.0f, 0.0f }) * orientation; }
+    void Transform::RotateRelativeGlobalZ(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 0.0f, 1.0f }) * orientation; }
+    void Transform::RotateLocalX(float degrees) { orientation = orientation * glm::angleAxis(glm::radians(degrees), glm::vec3{ 1.0f, 0.0f, 0.0f }); }
+    void Transform::RotateLocalY(float degrees) { orientation = orientation * glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 1.0f, 0.0f }); }
+    void Transform::RotateLocalZ(float degrees) { orientation = orientation * glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 0.0f, 1.0f }); }
 
     ECS_COMPONENT_DECLARE(Transform);
     ECS_COMPONENT_DECLARE(Camera);
@@ -105,6 +108,7 @@ namespace JAGE
         c.speed = 0.01f;
         c.sensitivity = 8.5f * 0.01f;
 
+        c.pitch = 0.0f;
         c.fov = 90.0f;
     }
 
@@ -143,12 +147,17 @@ namespace JAGE
         Transform& t { transform[0] };
         Camera& c { camera[0] };
 
-        t.rotateGlobalY(look_vector.x * c.sensitivity);
-        t.rotateLocalX(look_vector.y * c.sensitivity);
+        c.pitch += look_vector.y * c.sensitivity;
+        c.pitch = std::clamp(c.pitch, -90.0f, 90.0f);
 
-        glm::vec3 euler { glm::eulerAngles(t.orientation) };
-        euler.x = std::clamp(euler.x, glm::radians(-90.0f), glm::radians(90.0f));
-        t.orientation = glm::quat{ euler };
+        JAGE_LOG_DEBUG("{}", c.pitch);
+
+        t.RotateRelativeGlobalY(look_vector.x * c.sensitivity);
+        t.RotateLocalX(look_vector.y * c.sensitivity);
+
+        // glm::vec3 euler { glm::eulerAngles(t.orientation) };
+        // euler.x = std::clamp(euler.x, glm::radians(-90.0f), glm::radians(90.0f));
+        // t.orientation = glm::quat{ euler };
 
         t.position +=
         (
