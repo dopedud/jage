@@ -18,13 +18,6 @@ namespace JAGE
             glm::scale(glm::mat4{ 1.0f }, scale);
     }
 
-    void Transform::RotateGlobalX(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 1.0f, 0.0f, 0.0f }) * orientation; }
-    void Transform::RotateGlobalY(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 1.0f, 0.0f }) * orientation; }
-    void Transform::RotateGlobalZ(float degrees) { orientation = glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 0.0f, 1.0f }) * orientation; }
-    void Transform::RotateLocalX(float degrees) { orientation = orientation * glm::angleAxis(glm::radians(degrees), glm::vec3{ 1.0f, 0.0f, 0.0f }); }
-    void Transform::RotateLocalY(float degrees) { orientation = orientation * glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 1.0f, 0.0f }); }
-    void Transform::RotateLocalZ(float degrees) { orientation = orientation * glm::angleAxis(glm::radians(degrees), glm::vec3{ 0.0f, 0.0f, 1.0f }); }
-
     ECS_COMPONENT_DECLARE(Transform);
     ECS_COMPONENT_DECLARE(Camera);
 

@@ -94,6 +94,16 @@ namespace JAGE
     struct JAGE_API ModelNode
     {
         std::string name;
+        ModelNode* parent;
+        unsigned children_amount;
+        ModelNode** children;
+        unsigned meshes_amount;
+        unsigned* meshes_index;
+    };
+
+    struct JAGE_API ModelScene
+    {
+        
     };
 
     class JAGE_API ModelResource final : public Resource

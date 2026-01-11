@@ -21,13 +21,6 @@ namespace JAGE
         glm::vec3 euler_angles() const;
 
         glm::mat4 transformation_matrix() const;
-
-        void RotateGlobalX(float degrees);
-        void RotateGlobalY(float degrees);
-        void RotateGlobalZ(float degrees);
-        void RotateLocalX(float degrees);
-        void RotateLocalY(float degrees);
-        void RotateLocalZ(float degrees);
     };
 
     struct Camera
