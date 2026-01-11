@@ -18,14 +18,13 @@ namespace JAGE
         glm::vec3 up() const;
         glm::vec3 forward() const;
 
+        glm::vec3 euler_angles() const;
+
         glm::mat4 transformation_matrix() const;
 
-        void RotateAbsoluteGlobalX(float degrees);
-        void RotateAbsoluteGlobalY(float degrees);
-        void RotateAbsoluteGlobalZ(float degrees);
-        void RotateRelativeGlobalX(float degrees);
-        void RotateRelativeGlobalY(float degrees);
-        void RotateRelativeGlobalZ(float degrees);
+        void RotateGlobalX(float degrees);
+        void RotateGlobalY(float degrees);
+        void RotateGlobalZ(float degrees);
         void RotateLocalX(float degrees);
         void RotateLocalY(float degrees);
         void RotateLocalZ(float degrees);
@@ -39,6 +38,7 @@ namespace JAGE
         float sensitivity;
 
         float pitch;
+        float yaw;
         float fov;
     };
 
