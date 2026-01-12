@@ -116,7 +116,8 @@ namespace JAGE
     std::string_view TextResource::content() const { return m_content; }
 
     ImageResource::ImageResource(std::string_view filename)
-    : Resource{ std::string{ dir_path() } + std::string{ filename } }, m_size {}, m_width {}, m_height {}
+    : Resource{ std::string{ dir_path() } + std::string{ filename } }
+    , m_size {}, m_width {}, m_height {}
     {
         int width {};
         int height {};
@@ -133,16 +134,91 @@ namespace JAGE
 
         m_width = width;
         m_height = height;
+
+        // literal 4 here indicates number of channels the image has
+        // since desired channels was set to 4 upon loading the image via stbi_load, there is no need for variable
+        // number of channels
         m_size = m_width * m_height * 4 * sizeof(ui8);
     }
 
     ImageResource::~ImageResource() { stbi_image_free(m_data); }
+
+    ImageResource::ImageResource(const ImageResource& other)
+    : Resource{ "" }
+    , m_size { other.m_size }, m_width { other.m_width }, m_height { other.m_height }
+    {
+        m_path = other.m_path;
+
+        if (other.m_data)
+        {
+            // data is allocated using C's malloc() to match stb_image's way of allocating image data
+            // (which also uses C's malloc())
+            m_data = static_cast<ui8*>(std::malloc(other.m_size));
+            std::memcpy(m_data, other.m_data, other.m_size);
+        }
+
+        else m_data = nullptr;
+    }
+
+    ImageResource& ImageResource::operator=(const ImageResource& other)
+    {
+        if (this != &other)
+        {
+            ImageResource temp { other };
+            std::swap(m_path, temp.m_path);
+            std::swap(m_data, temp.m_data);
+            std::swap(m_size, temp.m_size);
+            std::swap(m_width, temp.m_width);
+            std::swap(m_height, temp.m_height);
+        }
+
+        return *this;
+    }
+
+    ImageResource::ImageResource(ImageResource&& other) noexcept
+    : Resource{ "" }
+    , m_data { other.m_data }, m_size { other.m_size }, m_width { other.m_width }, m_height { other.m_height }
+    {
+        m_path = other.m_path;
+
+        other.m_path = "";
+        other.m_data = nullptr;
+        other.m_size = 0;
+        other.m_width = 0;
+        other.m_height = 0;
+    }
+
+    ImageResource& ImageResource::operator=(ImageResource&& other) noexcept
+    {
+        if (this != &other)
+        {
+            if (m_data) { stbi_image_free(m_data); }
+
+            m_path = other.m_path;
+            m_data = other.m_data;
+            m_size = other.m_size;
+            m_width = other.m_width;
+            m_height = other.m_height;
+
+            other.m_path = "";
+            other.m_data = nullptr;
+            other.m_size = 0;
+            other.m_width = 0;
+            other.m_height = 0;
+        }
+
+        return *this;
+    }
 
     ui8* ImageResource::data() const { return m_data; }
 
     unsigned ImageResource::size() const { return m_size; }
     unsigned ImageResource::width() const { return m_width; }
     unsigned ImageResource::height() const { return m_height; }
+
+    struct ModelResource::ModelResource_Impl
+    {
+    };
 
     ModelResource::ModelResource(std::string_view filename)
     : Resource{ "models/" + std::string{ filename } }
@@ -159,7 +235,5 @@ namespace JAGE
             JAGE_MSG_ERROR("Returning empty contents.");
             return;
         }
-
-        aiMesh* mesh { scene->mMeshes[scene->mRootNode->mMeshes[0]] };
     }
 }

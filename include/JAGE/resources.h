@@ -82,28 +82,19 @@ namespace JAGE
         ImageResource(std::string_view filename);
         ~ImageResource();
 
+        ImageResource(const ImageResource& other);
+        ImageResource& operator=(const ImageResource& other);
+        ImageResource(ImageResource&& other) noexcept;
+        ImageResource& operator=(ImageResource&& other) noexcept;
+
         ui8* data() const;
+
         unsigned size() const;
         unsigned width() const;
         unsigned height() const;
     private:
         ui8* m_data;
         unsigned m_size, m_width, m_height;
-    };
-
-    struct JAGE_API ModelNode
-    {
-        std::string name;
-        ModelNode* parent;
-        unsigned children_amount;
-        ModelNode** children;
-        unsigned meshes_amount;
-        unsigned* meshes_index;
-    };
-
-    struct JAGE_API ModelScene
-    {
-        
     };
 
     class JAGE_API ModelResource final : public Resource
@@ -114,6 +105,7 @@ namespace JAGE
         ModelResource(std::string_view filename);
         ~ModelResource() = default;
     private:
-        
+        struct ModelResource_Impl;
+        ModelResource_Impl* impl;
     };
 }
