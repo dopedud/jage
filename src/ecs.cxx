@@ -117,6 +117,8 @@ namespace JAGE
         if (Input::GetCursorMode() == JAGE_CURSOR_MODE_NORMAL) return;
 
         glm::vec3 move_vector {};
+        float speed_multiplier { 1.0f };
+        float zoom {};
 
         if (Input::IsKeyPressed(JAGE_KEY_D)) move_vector.x += 1.0f;
         if (Input::IsKeyPressed(JAGE_KEY_A)) move_vector.x -= 1.0f;
@@ -124,11 +126,12 @@ namespace JAGE
         if (Input::IsKeyPressed(JAGE_KEY_LEFT_CONTROL)) move_vector.y -= 1.0f;
         if (Input::IsKeyPressed(JAGE_KEY_W)) move_vector.z += 1.0f;
         if (Input::IsKeyPressed(JAGE_KEY_S)) move_vector.z -= 1.0f;
+        if (Input::IsKeyPressed(JAGE_KEY_LEFT_SHIFT)) speed_multiplier = 5.0f;
+
+        if (Input::IsKeyPressed(JAGE_KEY_E)) zoom -= 0.1f;
+        if (Input::IsKeyPressed(JAGE_KEY_Q)) zoom += 0.1f;
 
         glm::vec2 look_vector { Input::GetMousePositionDeltaX(), Input::GetMousePositionDeltaY() };
-
-        float speed_multiplier { 1.0f };
-        if (Input::IsKeyPressed(JAGE_KEY_LEFT_SHIFT)) speed_multiplier = 5.0f;
 
         // glm::normalize will produce undefined behaviour for vectors with length ~ 0.0f, so it must be tested first
         // for such cases
@@ -145,6 +148,9 @@ namespace JAGE
         c.pitch = glm::clamp(c.pitch, -90.0f, 90.0f);
 
         t.orientation = glm::quat{ glm::radians(glm::vec3{ c.pitch, c.yaw, 0.0f }) };
+
+        float scaled_delta { zoom * Time::DeltaTime() * std::pow(c.fov / 90.0f, 2.0f) };
+        c.fov = std::clamp(c.fov + scaled_delta, 1.0f, 150.0f);
 
         t.position +=
         (

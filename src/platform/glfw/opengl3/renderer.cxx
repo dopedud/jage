@@ -244,11 +244,11 @@ namespace JAGE
     }
 
     OpenGLMesh::OpenGLMesh(
+        PrimitiveType ptype,
         const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices,
-        const std::vector<std::unique_ptr<Texture>>& textures
+        const std::vector<unsigned>& indices
     )
-    // : Mesh{ vertices, indices, textures }
+    : Mesh{ ptype, vertices, indices }
     {
         glCreateVertexArrays(1, &vao);
         glCreateBuffers(1, &vbo);

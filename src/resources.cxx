@@ -42,6 +42,7 @@ namespace JAGE
         load<TextResource>("default.vs");
         load<TextResource>("default.fs");
         load<ImageResource>("image.jpg");
+        load<ModelResource>("Untitled.glb");
     }
 
     ResourceManager& ResourceManager::instance()
@@ -73,17 +74,28 @@ namespace JAGE
     {
         std::string path { std::string{ Resource::dir_path() } + std::string{ T::dir_path() } + std::string{ filename } };
         ResourceID id_hash { path_to_ID(path) };
+
+        if (resources.find(id_hash) == resources.end())
+        { 
+            JAGE_MSG_ERROR("JAGE Resource error: no resource with given ID.");
+            JAGE_MSG_ERROR("Returning null resource.");
+            return ResourceHandle<T>{ id_hash, nullptr };
+        }
+
         Resource* resource { resources.find(id_hash)->second.get() };
         return ResourceHandle<T>{ id_hash, static_cast<T*>(resource) };
     }
 
     template class ResourceHandle<TextResource>;
     template class ResourceHandle<ImageResource>;
+    template class ResourceHandle<ModelResource>;
 
     template void                           ResourceManager::load<TextResource>(std::string_view filename);
     template void                           ResourceManager::load<ImageResource>(std::string_view filename);
+    template void                           ResourceManager::load<ModelResource>(std::string_view filename);
     template ResourceHandle<TextResource>   ResourceManager::get<TextResource>(std::string_view filename);
     template ResourceHandle<ImageResource>  ResourceManager::get<ImageResource>(std::string_view filename);
+    template ResourceHandle<ModelResource>  ResourceManager::get<ModelResource>(std::string_view filename);
 
     TextResource::TextResource(std::string_view filename)
     : Resource{ std::string{ dir_path() } + std::string{ filename } }
@@ -143,73 +155,6 @@ namespace JAGE
 
     ImageResource::~ImageResource() { stbi_image_free(m_data); }
 
-    ImageResource::ImageResource(const ImageResource& other)
-    : Resource{ "" }
-    , m_size { other.m_size }, m_width { other.m_width }, m_height { other.m_height }
-    {
-        m_path = other.m_path;
-
-        if (other.m_data)
-        {
-            // data is allocated using C's malloc() to match stb_image's way of allocating image data
-            // (which also uses C's malloc())
-            m_data = static_cast<ui8*>(std::malloc(other.m_size));
-            std::memcpy(m_data, other.m_data, other.m_size);
-        }
-
-        else m_data = nullptr;
-    }
-
-    ImageResource& ImageResource::operator=(const ImageResource& other)
-    {
-        if (this != &other)
-        {
-            ImageResource temp { other };
-            std::swap(m_path, temp.m_path);
-            std::swap(m_data, temp.m_data);
-            std::swap(m_size, temp.m_size);
-            std::swap(m_width, temp.m_width);
-            std::swap(m_height, temp.m_height);
-        }
-
-        return *this;
-    }
-
-    ImageResource::ImageResource(ImageResource&& other) noexcept
-    : Resource{ "" }
-    , m_data { other.m_data }, m_size { other.m_size }, m_width { other.m_width }, m_height { other.m_height }
-    {
-        m_path = other.m_path;
-
-        other.m_path = "";
-        other.m_data = nullptr;
-        other.m_size = 0;
-        other.m_width = 0;
-        other.m_height = 0;
-    }
-
-    ImageResource& ImageResource::operator=(ImageResource&& other) noexcept
-    {
-        if (this != &other)
-        {
-            if (m_data) { stbi_image_free(m_data); }
-
-            m_path = other.m_path;
-            m_data = other.m_data;
-            m_size = other.m_size;
-            m_width = other.m_width;
-            m_height = other.m_height;
-
-            other.m_path = "";
-            other.m_data = nullptr;
-            other.m_size = 0;
-            other.m_width = 0;
-            other.m_height = 0;
-        }
-
-        return *this;
-    }
-
     ui8* ImageResource::data() const { return m_data; }
 
     unsigned ImageResource::size() const { return m_size; }
@@ -218,22 +163,27 @@ namespace JAGE
 
     struct ModelResource::ModelResource_Impl
     {
+        const aiScene* scene;
     };
 
     ModelResource::ModelResource(std::string_view filename)
-    : Resource{ "models/" + std::string{ filename } }
+    : Resource{ "models/" + std::string{ filename } }, impl { std::make_unique<ModelResource_Impl>() }
     {
-        Assimp::Importer importer;
+        Assimp::Importer importer {};
 
         unsigned import_flags { aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded };
 
-        const aiScene* scene { importer.ReadFile(m_path, import_flags) };
+        impl->scene = importer.ReadFile(m_path, import_flags);
 
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+        if (!impl->scene || impl->scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !impl->scene->mRootNode)
         {
             JAGE_LOG_ERROR("JAGE I/O error: {}", importer.GetErrorString());
             JAGE_MSG_ERROR("Returning empty contents.");
             return;
         }
+
+        // for (unsigned i {}; i < scene->
     }
+
+    ModelResource::~ModelResource() = default;
 }

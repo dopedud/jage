@@ -94,25 +94,25 @@ namespace JAGE
         return std::make_unique<OpenGLShader>(vertex_str, fragment_str);
     }
 
-    Mesh::Mesh() : m_vertices {}, m_indices {}, m_textures {} {}
+    Mesh::Mesh() : m_ptype {}, m_vertices {}, m_indices {} {}
 
-    // Mesh::Mesh(
-    //     const std::vector<Vertex>& vertices,
-    //     const std::vector<unsigned>& indices,
-    //     std::vector<std::unique_ptr<Texture>>&& textures
-    // )
-    // : m_vertices { vertices }
-    // , m_indices { indices }
-    // , m_textures { textures }
-    // {}
+    Mesh::Mesh(
+        PrimitiveType ptype,
+        const std::vector<Vertex>& vertices,
+        const std::vector<unsigned>& indices
+    )
+    : m_ptype { ptype }
+    , m_vertices { vertices }
+    , m_indices { indices }
+    {}
 
     std::unique_ptr<Mesh> Mesh::Create(
+        PrimitiveType ptype,
         const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices,
-        std::vector<std::unique_ptr<Texture>>&& textures
+        const std::vector<unsigned>& indices
     )
     {
-        return std::make_unique<OpenGLMesh>(vertices, indices, textures);
+        return std::make_unique<OpenGLMesh>(ptype, vertices, indices);
     }
 
     std::unique_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, unsigned size)

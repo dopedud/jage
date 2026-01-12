@@ -82,11 +82,6 @@ namespace JAGE
         ImageResource(std::string_view filename);
         ~ImageResource();
 
-        ImageResource(const ImageResource& other);
-        ImageResource& operator=(const ImageResource& other);
-        ImageResource(ImageResource&& other) noexcept;
-        ImageResource& operator=(ImageResource&& other) noexcept;
-
         ui8* data() const;
 
         unsigned size() const;
@@ -103,9 +98,9 @@ namespace JAGE
         static std::string_view dir_path();
 
         ModelResource(std::string_view filename);
-        ~ModelResource() = default;
+        ~ModelResource();
     private:
         struct ModelResource_Impl;
-        ModelResource_Impl* impl;
+        std::unique_ptr<ModelResource_Impl> impl;
     };
 }

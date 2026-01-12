@@ -56,9 +56,9 @@ namespace JAGE
     {
     public:
         OpenGLMesh(
+            PrimitiveType ptype,
             const std::vector<Vertex>& vertices,
-            const std::vector<unsigned>& indices,
-            const std::vector<std::unique_ptr<Texture>>& textures
+            const std::vector<unsigned>& indices
         );
 
         virtual void render(const std::unique_ptr<Shader>& shader) override;

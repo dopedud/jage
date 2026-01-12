@@ -86,35 +86,38 @@ namespace JAGE
     class JAGE_API Mesh
     {
     public:
+        enum class PrimitiveType : ui8 { POINT, LINE, TRIANGLE };
+
         struct JAGE_API Vertex
         {
             glm::vec3 position;
             glm::vec3 normal;
             glm::vec4 color;
-            glm::vec2 texcoords;
+            // glm::vec2 texcoords;
         };
 
         static std::unique_ptr<Mesh> Create(
+            PrimitiveType ptype,
             const std::vector<Vertex>& vertices,
-            const std::vector<unsigned>& indices,
-            std::vector<std::unique_ptr<Texture>>&& textures
+            const std::vector<unsigned>& indices
         );
 
         Mesh();
 
-        // Mesh(
-        //     const std::vector<Vertex>& vertices,
-        //     const std::vector<unsigned>& indices,
-        //     std::vector<std::unique_ptr<Texture>>&& textures
-        // );
+        Mesh(
+            PrimitiveType ptype,
+            const std::vector<Vertex>& vertices,
+            const std::vector<unsigned>& indices
+        );
 
         virtual ~Mesh() = default;
 
         virtual void render(const std::unique_ptr<Shader>& shader) = 0;
     protected:
+        PrimitiveType m_ptype;
         std::vector<Vertex> m_vertices;
         std::vector<unsigned> m_indices;
-        std::vector<std::unique_ptr<Texture>> m_textures;
+        std::vector<Texture*> m_textures;
     };
 
     class JAGE_API VertexBuffer
@@ -191,7 +194,7 @@ namespace JAGE
 
         virtual void RenderBaseAxes(float size) = 0;
 
-        virtual void set_vp(glm::mat4 view, glm::mat4 projection);
+        void set_vp(glm::mat4 view, glm::mat4 projection);
     protected:
         Window* m_window;
 

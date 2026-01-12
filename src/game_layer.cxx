@@ -65,11 +65,10 @@ namespace JAGE
             { ShaderData::Type::Float2, "v_texcoord" },
         };
 
-        // ModelResource model { "Untitled.glb" }; 
-
         ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };
         ResourceHandle<TextResource> vertex_shader { ResourceManager::instance().get<TextResource>("default.vs") };
         ResourceHandle<TextResource> fragment_shader { ResourceManager::instance().get<TextResource>("default.fs") };
+        ResourceHandle<ModelResource> cube { ResourceManager::instance().get<ModelResource>("Untitled.glb")};
 
         texture = Texture::Create(image.resource()->data(), image.resource()->width(), image.resource()->height());
         shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());
@@ -146,7 +145,6 @@ namespace JAGE
         dispatcher.dispatch<MouseScrolledEvent>([this](const MouseScrolledEvent& e) -> bool
         {
             float scaled_delta { -e.offsetY() * 10.0f * std::pow(camera_component_fov->fov / 90.0f, 2.0f) };
-            // camera_component_fov->fov = std::fmax(1.0f, std::fmin(150.0f, camera_component_fov->fov + scaled_delta));
             camera_component_fov->fov = std::clamp(camera_component_fov->fov + scaled_delta, 1.0f, 150.0f);
 
             return true;
