@@ -77,7 +77,7 @@ namespace JAGE
     const std::vector<BufferElement>& BufferLayout::elements() const { return m_elements; };
     unsigned BufferLayout::stride() const { return m_stride; }
 
-    std::unique_ptr<Texture> Texture::Create(unsigned char* data, unsigned width, unsigned height)
+    std::unique_ptr<Texture> Texture::Create(ui8* data, unsigned width, unsigned height)
     {
         return std::make_unique<OpenGLTexture>(data, width, height);
     }

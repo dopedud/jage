@@ -1,4 +1,4 @@
-#include "JAGE/core.h"
+#include "time.h"
 
 #include "log.h"
 
@@ -16,7 +16,7 @@ namespace JAGE
         static duration<uint64_t, std::nano> target_deltatime {};
         static bool target_fps_set {};
 
-        void Lap()
+        void FrameLap()
         {
             current = high_resolution_clock::now();
             deltatime = duration_cast<nanoseconds>(current - previous);

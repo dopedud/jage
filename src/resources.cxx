@@ -166,8 +166,17 @@ namespace JAGE
         const aiScene* scene;
     };
 
+    void PrintNodes(aiNode* node)
+    {
+        JAGE_LOG_DEBUG("{}", node->mName.C_Str());
+        if (node->mNumChildren > 0)
+        for (unsigned i {}; i < node->mNumChildren; i++)
+        PrintNodes(node->mChildren[i]);
+    }
+
     ModelResource::ModelResource(std::string_view filename)
-    : Resource{ "models/" + std::string{ filename } }, impl { std::make_unique<ModelResource_Impl>() }
+    : Resource{ "models/" + std::string{ filename } }
+    , impl { std::make_unique<ModelResource_Impl>() }
     {
         Assimp::Importer importer {};
 
@@ -182,8 +191,10 @@ namespace JAGE
             return;
         }
 
-        // for (unsigned i {}; i < scene->
+        PrintNodes(impl->scene->mRootNode);
     }
 
     ModelResource::~ModelResource() = default;
+
+    
 }

@@ -106,11 +106,9 @@ namespace JAGE
 {
     namespace Time
     {
-        constexpr uint64_t SECONDS_TO_NANO { 1000000000 };
-        constexpr uint64_t SECONDS_TO_MILLI { 1000 };
-        constexpr uint64_t MILLI_TO_NANO { 1000000 };
-
-        void Lap();
+        constexpr ui64 SECONDS_TO_NANO { 1000000000 };
+        constexpr ui64 SECONDS_TO_MILLI { 1000 };
+        constexpr ui64 MILLI_TO_NANO { 1000000 };
 
         void JAGE_API SetTargetFPS(unsigned fps);
 

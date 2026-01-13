@@ -172,7 +172,7 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
-    OpenGLTexture::OpenGLTexture(unsigned char* data, unsigned width, unsigned height)
+    OpenGLTexture::OpenGLTexture(ui8* data, unsigned width, unsigned height)
     {
         glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
         glActiveTexture(GL_TEXTURE0);

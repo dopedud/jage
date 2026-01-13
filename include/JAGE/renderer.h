@@ -51,7 +51,7 @@ namespace JAGE
     class JAGE_API Texture
     {
     public:
-        static std::unique_ptr<Texture> Create(unsigned char* data, unsigned width, unsigned height);
+        static std::unique_ptr<Texture> Create(ui8* data, unsigned width, unsigned height);
         virtual ~Texture() = default;
 
         virtual void bind() = 0;

@@ -25,7 +25,7 @@ namespace JAGE
     class OpenGLTexture final : public Texture
     {
     public:
-        OpenGLTexture(unsigned char* data, unsigned width, unsigned height);
+        OpenGLTexture(ui8* data, unsigned width, unsigned height);
         ~OpenGLTexture();
 
         virtual void bind() override;
