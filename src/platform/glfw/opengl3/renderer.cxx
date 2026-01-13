@@ -595,7 +595,7 @@ namespace JAGE
 
         glm::mat4 orbited_view { glm::lookAtLH(view_pos, view_pos + forward, up) };
 
-        float inv_size { 1 / size };
+        float inv_size { 1.0f / size };
 
         m_coord_shader->bind();
         m_coord_shader->set_uniform_mat4("view", orbited_view);

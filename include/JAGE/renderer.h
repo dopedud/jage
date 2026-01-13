@@ -86,7 +86,7 @@ namespace JAGE
     class JAGE_API Mesh
     {
     public:
-        enum class PrimitiveType : ui8 { POINT, LINE, TRIANGLE };
+        enum class PrimitiveType : ui8 { NONE = 0, POINT, LINE, TRIANGLE };
 
         struct JAGE_API Vertex
         {
@@ -94,6 +94,13 @@ namespace JAGE
             glm::vec3 normal;
             glm::vec4 color;
             // glm::vec2 texcoords;
+            glm::vec3 tangent;
+            glm::vec3 bitangent;
+        };
+
+        struct JAGE_API Material
+        {
+
         };
 
         static std::unique_ptr<Mesh> Create(

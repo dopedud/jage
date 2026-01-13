@@ -163,6 +163,7 @@ namespace JAGE
 
     struct ModelResource::ModelResource_Impl
     {
+        Assimp::Importer importer {};
         const aiScene* scene;
     };
 
@@ -178,15 +179,13 @@ namespace JAGE
     : Resource{ "models/" + std::string{ filename } }
     , impl { std::make_unique<ModelResource_Impl>() }
     {
-        Assimp::Importer importer {};
-
         unsigned import_flags { aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded };
 
-        impl->scene = importer.ReadFile(m_path, import_flags);
+        impl->scene = impl->importer.ReadFile(m_path, import_flags);
 
         if (!impl->scene || impl->scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !impl->scene->mRootNode)
         {
-            JAGE_LOG_ERROR("JAGE I/O error: {}", importer.GetErrorString());
+            JAGE_LOG_ERROR("JAGE I/O error: {}", impl->importer.GetErrorString());
             JAGE_MSG_ERROR("Returning empty contents.");
             return;
         }
@@ -196,5 +195,8 @@ namespace JAGE
 
     ModelResource::~ModelResource() = default;
 
-    
+    void ModelResource::print()
+    {
+        PrintNodes(impl->scene->mRootNode);
+    }
 }

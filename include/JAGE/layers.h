@@ -21,6 +21,7 @@ namespace JAGE
         std::unique_ptr<VertexArray> varray;
         std::unique_ptr<Shader> shader;
         std::unique_ptr<Texture> texture;
+        std::unique_ptr<Mesh> mesh;
 
         World world {};
         Entity camera { &world, "MainCamera" };

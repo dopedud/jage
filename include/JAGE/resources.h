@@ -99,6 +99,8 @@ namespace JAGE
 
         ModelResource(std::string_view filename);
         ~ModelResource();
+
+        void print();
     private:
         struct ModelResource_Impl;
         std::unique_ptr<ModelResource_Impl> impl;

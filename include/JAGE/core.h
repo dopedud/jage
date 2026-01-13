@@ -2,7 +2,7 @@
 
 /**
  * @file core.h
- * @brief The Core header file that contains the core subsystems and utilities for JAGE.
+ * @brief The core header file that contains the core subsystems and utilities for JAGE.
  */
 
 #include "jgpch.h"
