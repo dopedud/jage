@@ -69,32 +69,6 @@ namespace JAGE
         glfwSwapBuffers(static_cast<GLFWwindow*>(window->handle()));
     }
 
-    namespace ShaderData
-    {
-        GLenum to_opengl_type(Type type)
-        {
-            switch (type)
-            {
-                case Type::None:        return GL_NONE;
-                case Type::Mat3:
-                case Type::Mat4:
-                case Type::Float:
-                case Type::Float2:
-                case Type::Float3:
-                case Type::Float4:      return GL_FLOAT;
-                case Type::Int:
-                case Type::Int2:
-                case Type::Int3:
-                case Type::Int4:        return GL_INT;
-                case Type::Bool:        return GL_BOOL;
-            }
-
-            JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
-
-            return 0;
-        }
-    }
-
     DISABLE_WARNING_PUSH
     DISABLE_WARNING_GCC_CLANG("-Wvla")
 
@@ -172,28 +146,28 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
-    OpenGLTexture::OpenGLTexture(ui8* data, unsigned width, unsigned height)
+    GLenum OpenGLShader::to_opengl_type(DataType type)
     {
-        glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        switch (type)
+        {
+            case DataType::None:    return GL_NONE;
+            case DataType::Mat3:
+            case DataType::Mat4:
+            case DataType::Float:
+            case DataType::Float2:
+            case DataType::Float3:
+            case DataType::Float4:  return GL_FLOAT;
+            case DataType::Int:
+            case DataType::Int2:
+            case DataType::Int3:
+            case DataType::Int4:    return GL_INT;
+            case DataType::Bool:    return GL_BOOL;
+        }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        return 0;
     }
-
-    OpenGLTexture::~OpenGLTexture()
-    {
-        glDeleteTextures(1, &textureID);
-    }
-
-    void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
-    void OpenGLTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
     OpenGLShader::OpenGLShader(std::string_view vertex_str, std::string_view fragment_str)
     : Shader{ vertex_str, fragment_str }
@@ -243,16 +217,36 @@ namespace JAGE
         glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
     }
 
-    OpenGLMesh::OpenGLMesh(
+    OpenGLTexture::OpenGLTexture(ui8* data, unsigned width, unsigned height)
+    {
+        glGenTextures(1, &textureID);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+    OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &textureID); }
+
+    void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
+    void OpenGLTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
+
+    OpenGLMesh::OpenGLMesh
+    (
         PrimitiveType ptype,
         const std::vector<Vertex>& vertices,
         const std::vector<unsigned>& indices
-    )
-    : Mesh{ ptype, vertices, indices }
+    ) : Mesh{ ptype, vertices, indices }
     {
-        glCreateVertexArrays(1, &vao);
-        glCreateBuffers(1, &vbo);
-        glCreateBuffers(1, &ebo);
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+        glGenBuffers(1, &ebo);
 
         glBindVertexArray(vao);
 
@@ -264,10 +258,10 @@ namespace JAGE
 
         BufferLayout layout
         {
-            { ShaderData::Type::Float3, "v_position" },
-            { ShaderData::Type::Float3, "v_normal" },
-            { ShaderData::Type::Float4, "v_color" },
-            { ShaderData::Type::Float2, "v_texcoords" },
+            { Shader::DataType::Float3, "v_position" },
+            { Shader::DataType::Float3, "v_normal" },
+            { Shader::DataType::Float4, "v_color" },
+            { Shader::DataType::Float2, "v_texcoords" },
         };
 
         const std::vector<BufferElement>& elements { layout.elements() };
@@ -277,7 +271,7 @@ namespace JAGE
             glEnableVertexAttribArray(i);
             glVertexAttribPointer(i,
                 elements[i].component_count(),
-                ShaderData::to_opengl_type(elements[i].shader_datatype),
+                OpenGLShader::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
                 layout.stride(),
                 (void*)elements[i].offset
@@ -343,7 +337,7 @@ namespace JAGE
             glEnableVertexAttribArray(i);
             glVertexAttribPointer(i,
                 elements[i].component_count(),
-                ShaderData::to_opengl_type(elements[i].shader_datatype),
+                OpenGLShader::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
                 layout.stride(),
                 (void*)elements[i].offset
@@ -366,11 +360,11 @@ namespace JAGE
     OpenGLDebugRenderer::OpenGLDebugRenderer(Window* window) : DebugRenderer{ window }
     {
         glGenVertexArrays(1, &grid_vao);
-        glGenVertexArrays(1, &coord_vao);
+        glGenVertexArrays(1, &axes_vao);
         glGenBuffers(1, &grid_vbo);
-        glGenBuffers(1, &coord_vbo);
+        glGenBuffers(1, &axes_vbo);
         glGenBuffers(1, &grid_ebo);
-        glGenBuffers(1, &coord_ebo);
+        glGenBuffers(1, &axes_ebo);
 
         std::string_view grid_vertex_str
         {
@@ -440,7 +434,7 @@ namespace JAGE
         };
 
         m_grid_shader = Shader::Create(grid_vertex_str, grid_fragment_str);
-        m_coord_shader = Shader::Create(coord_vertex_str, coord_fragment_str);
+        m_axes_shader = Shader::Create(coord_vertex_str, coord_fragment_str);
     }
 
     OpenGLDebugRenderer::~OpenGLDebugRenderer()
@@ -572,12 +566,12 @@ namespace JAGE
             indices.push_back(0); indices.push_back(2);
             indices.push_back(0); indices.push_back(3);
 
-            glBindVertexArray(coord_vao);
+            glBindVertexArray(axes_vao);
 
-            glBindBuffer(GL_ARRAY_BUFFER, coord_vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, axes_vbo);
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, coord_ebo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, axes_ebo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float), indices.data(), GL_STATIC_DRAW);
 
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
@@ -597,18 +591,18 @@ namespace JAGE
 
         float inv_size { 1.0f / size };
 
-        m_coord_shader->bind();
-        m_coord_shader->set_uniform_mat4("view", orbited_view);
-        m_coord_shader->set_uniform_mat4("projection",
+        m_axes_shader->bind();
+        m_axes_shader->set_uniform_mat4("view", orbited_view);
+        m_axes_shader->set_uniform_mat4("projection",
             glm::orthoLH(
                 -inv_size * m_window->aspect_ratio(),
                 inv_size * m_window->aspect_ratio(),
                 -inv_size, inv_size, 0.01f, 100.0f
             ));
 
-        glBindVertexArray(coord_vao);
+        glBindVertexArray(axes_vao);
         glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
-        m_coord_shader->unbind();
+        m_axes_shader->unbind();
     }
 }

@@ -17,26 +17,11 @@ namespace JAGE
         virtual void SwapBuffers() override;
     };
 
-    namespace ShaderData
-    {
-        GLenum to_opengl_type(Type type);
-    }
-
-    class OpenGLTexture final : public Texture
-    {
-    public:
-        OpenGLTexture(ui8* data, unsigned width, unsigned height);
-        ~OpenGLTexture();
-
-        virtual void bind() override;
-        virtual void unbind() override;
-    private:
-        unsigned textureID;
-    };
-
     class OpenGLShader final : public Shader
     {
     public:
+        static GLenum to_opengl_type(DataType type);
+
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
         ~OpenGLShader();
 
@@ -52,10 +37,23 @@ namespace JAGE
         unsigned shaderID;
     };
 
+    class OpenGLTexture final : public Texture
+    {
+    public:
+        OpenGLTexture(ui8* data, unsigned width, unsigned height);
+        ~OpenGLTexture();
+
+        virtual void bind() override;
+        virtual void unbind() override;
+    private:
+        unsigned textureID;
+    };
+
     class OpenGLMesh final : public Mesh
     {
     public:
-        OpenGLMesh(
+        OpenGLMesh
+        (
             PrimitiveType ptype,
             const std::vector<Vertex>& vertices,
             const std::vector<unsigned>& indices
@@ -110,6 +108,6 @@ namespace JAGE
         virtual void RenderBaseAxes(float size) override;
     private:
         unsigned grid_vao, grid_vbo, grid_ebo;
-        unsigned coord_vao, coord_vbo, coord_ebo;
+        unsigned axes_vao, axes_vbo, axes_ebo;
     };
 }

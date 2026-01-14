@@ -167,13 +167,7 @@ namespace JAGE
         const aiScene* scene;
     };
 
-    void PrintNodes(aiNode* node)
-    {
-        JAGE_LOG_DEBUG("{}", node->mName.C_Str());
-        if (node->mNumChildren > 0)
-        for (unsigned i {}; i < node->mNumChildren; i++)
-        PrintNodes(node->mChildren[i]);
-    }
+    void process_node(aiNode* node, const aiScene* scene);
 
     ModelResource::ModelResource(std::string_view filename)
     : Resource{ "models/" + std::string{ filename } }
@@ -189,14 +183,7 @@ namespace JAGE
             JAGE_MSG_ERROR("Returning empty contents.");
             return;
         }
-
-        PrintNodes(impl->scene->mRootNode);
     }
 
     ModelResource::~ModelResource() = default;
-
-    void ModelResource::print()
-    {
-        PrintNodes(impl->scene->mRootNode);
-    }
 }
