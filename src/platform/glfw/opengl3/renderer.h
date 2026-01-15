@@ -17,22 +17,6 @@ namespace JAGE
         virtual void SwapBuffers() override;
     };
 
-    namespace ShaderData
-    {
-    }
-
-    class OpenGLTexture final : public Texture
-    {
-    public:
-        OpenGLTexture(ui8* data, unsigned width, unsigned height);
-        ~OpenGLTexture();
-
-        virtual void bind() override;
-        virtual void unbind() override;
-    private:
-        unsigned textureID;
-    };
-
     class OpenGLShader final : public Shader
     {
     public:
@@ -51,6 +35,18 @@ namespace JAGE
         virtual void set_uniform_mat4   (std::string_view name, const glm::mat4& value) override;
     private:
         unsigned shaderID;
+    };
+
+    class OpenGLTexture final : public Texture
+    {
+    public:
+        OpenGLTexture(ui8* data, unsigned width, unsigned height);
+        ~OpenGLTexture();
+
+        virtual void bind() override;
+        virtual void unbind() override;
+    private:
+        unsigned textureID;
     };
 
     class OpenGLMesh final : public Mesh

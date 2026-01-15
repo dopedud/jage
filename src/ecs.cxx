@@ -97,7 +97,8 @@ namespace JAGE
         t.orientation = glm::quat{ 1.0f, 0.0f, 0.0f, 0.0f };
         t.scale = glm::vec3{ 1.0f };
 
-        c.speed = 0.01f;
+        c.move_speed = 0.01f;
+        c.zoom_speed = 0.1f;
         c.sensitivity = 8.5f * 0.01f;
 
         c.pitch = 0.0f;
@@ -117,8 +118,9 @@ namespace JAGE
         if (Input::GetCursorMode() == JAGE_CURSOR_MODE_NORMAL) return;
 
         glm::vec3 move_vector {};
-        float speed_multiplier { 1.0f };
+        float move_multiplier { 1.0f };
         float zoom {};
+        float zoom_multiplier { 1.0f };
 
         if (Input::IsKeyPressed(JAGE_KEY_D)) move_vector.x += 1.0f;
         if (Input::IsKeyPressed(JAGE_KEY_A)) move_vector.x -= 1.0f;
@@ -126,16 +128,21 @@ namespace JAGE
         if (Input::IsKeyPressed(JAGE_KEY_LEFT_CONTROL)) move_vector.y -= 1.0f;
         if (Input::IsKeyPressed(JAGE_KEY_W)) move_vector.z += 1.0f;
         if (Input::IsKeyPressed(JAGE_KEY_S)) move_vector.z -= 1.0f;
-        if (Input::IsKeyPressed(JAGE_KEY_LEFT_SHIFT)) speed_multiplier = 5.0f;
 
-        if (Input::IsKeyPressed(JAGE_KEY_E)) zoom -= 0.1f;
-        if (Input::IsKeyPressed(JAGE_KEY_Q)) zoom += 0.1f;
+        if (Input::IsKeyPressed(JAGE_KEY_E)) zoom -= 1.0f;
+        if (Input::IsKeyPressed(JAGE_KEY_Q)) zoom += 1.0f;
+
+        if (Input::IsKeyPressed(JAGE_KEY_LEFT_SHIFT))
+        {
+            move_multiplier = 5.0f;
+            zoom_multiplier = 5.0f;
+        }
 
         glm::vec2 look_vector { Input::GetMousePositionDeltaX(), Input::GetMousePositionDeltaY() };
 
         // glm::normalize will produce undefined behaviour for vectors with length ~ 0.0f, so it must be tested first
         // for such cases
-        move_vector = !glm::length(move_vector) ? glm::vec3{} : (glm::normalize(move_vector) * it->delta_time);
+        move_vector = glm::length(move_vector) ? glm::normalize(move_vector) : glm::vec3{};
 
         Transform* transform { ecs_field(it, Transform, 0) };
         Camera* camera { ecs_field(it, Camera, 1) };
@@ -149,7 +156,7 @@ namespace JAGE
 
         t.orientation = glm::quat{ glm::radians(glm::vec3{ c.pitch, c.yaw, 0.0f }) };
 
-        float scaled_delta { zoom * Time::DeltaTime() * std::pow(c.fov / 90.0f, 2.0f) };
+        float scaled_delta { zoom * c.zoom_speed * zoom_multiplier * it->delta_time * std::pow(c.fov / 90.0f, 2.0f) };
         c.fov = std::clamp(c.fov + scaled_delta, 1.0f, 150.0f);
 
         t.position +=
@@ -157,7 +164,7 @@ namespace JAGE
             t.right() * move_vector.x +
             t.up() * move_vector.y +
             t.forward() * move_vector.z
-        ) * c.speed * speed_multiplier;
+        ) * c.move_speed * move_multiplier * it->delta_time;
     }
 
     JAGE_API void RenderSystem(ecs_iter_t* it)

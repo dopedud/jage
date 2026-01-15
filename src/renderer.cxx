@@ -44,8 +44,6 @@ namespace JAGE
     Texture::Type Texture::type() const { return m_type; }
     void Texture::set_type(Texture::Type type) { m_type = type; }
 
-    Mesh::Mesh() : m_ptype {}, m_vertices {}, m_indices {} {}
-
     Mesh::Mesh(
         PrimitiveType ptype,
         const std::vector<Vertex>& vertices,

@@ -268,7 +268,7 @@ namespace JAGE
             { Shader::DataType::Float3, "v_position" },
             { Shader::DataType::Float3, "v_normal" },
             { Shader::DataType::Float4, "v_color" },
-            { Shader::DataType::Float2, "v_texcoords" },
+            { Shader::DataType::Float2, "v_texcoord" },
         };
 
         const std::vector<BufferElement>& elements { layout.elements() };
@@ -590,7 +590,6 @@ namespace JAGE
         glm::vec3 forward { m_view[0][2], m_view[1][2], m_view[2][2] };
         glm::vec3 up { m_view[0][1], m_view[1][1], m_view[2][1] };
 
-        glm::mat4 inv_view { glm::inverse(m_view) };
         glm::vec3 view_pos {};
         view_pos -= forward * 5.0f;
 

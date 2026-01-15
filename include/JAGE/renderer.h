@@ -32,8 +32,8 @@ namespace JAGE
         virtual void set_uniform_float  (std::string_view name, float value) = 0;
         virtual void set_uniform_mat4   (std::string_view name, const glm::mat4& value) = 0;
     protected:
-        std::string m_vertex_str;
-        std::string m_fragment_str;
+        std::string_view m_vertex_str;
+        std::string_view m_fragment_str;
     };
 
     class JAGE_API Texture
@@ -63,18 +63,18 @@ namespace JAGE
             glm::vec3 position;
             glm::vec3 normal;
             glm::vec4 color;
-            // glm::vec2 texcoords;
+            glm::vec2 texcoord;
         };
 
-        static std::unique_ptr<Mesh> Create(
+        static std::unique_ptr<Mesh> Create
+        (
             PrimitiveType ptype,
             const std::vector<Vertex>& vertices,
             const std::vector<unsigned>& indices
         );
 
-        Mesh();
-
-        Mesh(
+        Mesh
+        (
             PrimitiveType ptype,
             const std::vector<Vertex>& vertices,
             const std::vector<unsigned>& indices
@@ -85,9 +85,8 @@ namespace JAGE
         virtual void render(const std::unique_ptr<Shader>& shader) = 0;
     protected:
         PrimitiveType m_ptype;
-        std::vector<Vertex> m_vertices;
-        std::vector<unsigned> m_indices;
-        std::vector<Texture*> m_textures;
+        const std::vector<Vertex>& m_vertices;
+        const std::vector<unsigned>& m_indices;
     };
 
     struct JAGE_API BufferElement
