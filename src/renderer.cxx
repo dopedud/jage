@@ -5,36 +5,70 @@
 
 namespace JAGE
 {
-    namespace ShaderData
+    Shader::Shader(std::string_view vertex_str, std::string_view fragment_str)
+    : m_vertex_str { vertex_str }, m_fragment_str { fragment_str } {}
+
+    std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
     {
-        unsigned size(Type type)
-        {
-            switch (type)
-            {
-                case Type::None:      return 0;
-                case Type::Float:     return 4;
-                case Type::Float2:    return 4 * 2;
-                case Type::Float3:    return 4 * 3;
-                case Type::Float4:    return 4 * 4;
-                case Type::Int:       return 4;
-                case Type::Int2:      return 4 * 2;
-                case Type::Int3:      return 4 * 3;
-                case Type::Int4:      return 4 * 4;
-                case Type::Mat3:      return 4 * 3 * 3;
-                case Type::Mat4:      return 4 * 4 * 4;
-                case Type::Bool:      return 1;
-            }
-
-            JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
-
-            return 0;
-        }
+        return std::make_unique<OpenGLShader>(vertex_str, fragment_str);
     }
 
-    BufferElement::BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized)
+    unsigned Shader::datatype_size(Shader::DataType datatype)
+    {
+        switch (datatype)
+        {
+            case DataType::None:      return 0;
+            case DataType::Float:     return 4;
+            case DataType::Float2:    return 4 * 2;
+            case DataType::Float3:    return 4 * 3;
+            case DataType::Float4:    return 4 * 4;
+            case DataType::Int:       return 4;
+            case DataType::Int2:      return 4 * 2;
+            case DataType::Int3:      return 4 * 3;
+            case DataType::Int4:      return 4 * 4;
+            case DataType::Mat3:      return 4 * 3 * 3;
+            case DataType::Mat4:      return 4 * 4 * 4;
+            case DataType::Bool:      return 1;
+        }
+
+        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
+
+        return 0;
+    }
+
+    std::unique_ptr<Texture> Texture::Create(ui8* data, unsigned width, unsigned height)
+    {
+        return std::make_unique<OpenGLTexture>(data, width, height);
+    }
+
+    Texture::Type Texture::type() const { return m_type; }
+    void Texture::set_type(Texture::Type type) { m_type = type; }
+
+    Mesh::Mesh() : m_ptype {}, m_vertices {}, m_indices {} {}
+
+    Mesh::Mesh(
+        PrimitiveType ptype,
+        const std::vector<Vertex>& vertices,
+        const std::vector<unsigned>& indices
+    )
+    : m_ptype { ptype }
+    , m_vertices { vertices }
+    , m_indices { indices }
+    {}
+
+    std::unique_ptr<Mesh> Mesh::Create(
+        PrimitiveType ptype,
+        const std::vector<Vertex>& vertices,
+        const std::vector<unsigned>& indices
+    )
+    {
+        return std::make_unique<OpenGLMesh>(ptype, vertices, indices);
+    }
+
+    BufferElement::BufferElement(Shader::DataType shader_datatype, std::string_view name, bool normalized)
     : shader_datatype   { shader_datatype }
     , name              { name }
-    , size              { ShaderData::size(shader_datatype) }
+    , size              { Shader::datatype_size(shader_datatype) }
     , normalized        { normalized }
     {}
 
@@ -42,18 +76,18 @@ namespace JAGE
     {
         switch (shader_datatype)
         {
-            case ShaderData::Type::None:      return 0;
-            case ShaderData::Type::Float:     return 1;
-            case ShaderData::Type::Float2:    return 2;
-            case ShaderData::Type::Float3:    return 3;
-            case ShaderData::Type::Float4:    return 4;
-            case ShaderData::Type::Int:       return 1;
-            case ShaderData::Type::Int2:      return 2;
-            case ShaderData::Type::Int3:      return 3;
-            case ShaderData::Type::Int4:      return 4;
-            case ShaderData::Type::Mat3:      return 3 * 3;
-            case ShaderData::Type::Mat4:      return 4 * 4;
-            case ShaderData::Type::Bool:      return 1;
+            case Shader::DataType::None:    return 0;
+            case Shader::DataType::Float:   return 1;
+            case Shader::DataType::Float2:  return 2;
+            case Shader::DataType::Float3:  return 3;
+            case Shader::DataType::Float4:  return 4;
+            case Shader::DataType::Int:     return 1;
+            case Shader::DataType::Int2:    return 2;
+            case Shader::DataType::Int3:    return 3;
+            case Shader::DataType::Int4:    return 4;
+            case Shader::DataType::Mat3:    return 3 * 3;
+            case Shader::DataType::Mat4:    return 4 * 4;
+            case Shader::DataType::Bool:    return 1;
         }
 
         JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning count 0.");
@@ -76,44 +110,6 @@ namespace JAGE
 
     const std::vector<BufferElement>& BufferLayout::elements() const { return m_elements; };
     unsigned BufferLayout::stride() const { return m_stride; }
-
-    std::unique_ptr<Texture> Texture::Create(unsigned char* data, unsigned width, unsigned height)
-    {
-        return std::make_unique<OpenGLTexture>(data, width, height);
-    }
-
-    TextureType Texture::texture_type() const { return m_texture_type; }
-    void Texture::set_texture_type(TextureType type) { m_texture_type = type; }
-
-    Shader::Shader(std::string_view vertex_str, std::string_view fragment_str)
-    : m_vertex_str { vertex_str }, m_fragment_str { fragment_str }
-    {}
-
-    std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
-    {
-        return std::make_unique<OpenGLShader>(vertex_str, fragment_str);
-    }
-
-    Mesh::Mesh() : m_ptype {}, m_vertices {}, m_indices {} {}
-
-    Mesh::Mesh(
-        PrimitiveType ptype,
-        const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices
-    )
-    : m_ptype { ptype }
-    , m_vertices { vertices }
-    , m_indices { indices }
-    {}
-
-    std::unique_ptr<Mesh> Mesh::Create(
-        PrimitiveType ptype,
-        const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices
-    )
-    {
-        return std::make_unique<OpenGLMesh>(ptype, vertices, indices);
-    }
 
     std::unique_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, unsigned size)
     {

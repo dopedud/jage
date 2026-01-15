@@ -1,4 +1,4 @@
-#include "JAGE/core.h"
+#include "time.h"
 
 #include "log.h"
 
@@ -12,11 +12,11 @@ namespace JAGE
 
         static time_point<high_resolution_clock> current {};
         static time_point<high_resolution_clock> previous {};
-        static duration<uint64_t, std::nano> deltatime {};
-        static duration<uint64_t, std::nano> target_deltatime {};
+        static duration<ui64, std::nano> deltatime {};
+        static duration<ui64, std::nano> target_deltatime {};
         static bool target_fps_set {};
 
-        void Lap()
+        void FrameLap()
         {
             current = high_resolution_clock::now();
             deltatime = duration_cast<nanoseconds>(current - previous);
@@ -32,7 +32,7 @@ namespace JAGE
         void SetTargetFPS(unsigned fps)
         {
             JAGE_LOG_INFO("frame rate capped to {} FPS", fps);
-            target_deltatime = duration<uint64_t, std::nano>{ SECONDS_TO_NANO / fps };
+            target_deltatime = duration<ui64, std::nano>{ SECONDS_TO_NANO / fps };
             target_fps_set = true;
         }
 
@@ -41,7 +41,7 @@ namespace JAGE
         float ElapsedTime()
         {
             time_point<high_resolution_clock> current { high_resolution_clock::now() };
-            duration<uint64_t, std::nano> diff { current - start };
+            duration<ui64, std::nano> diff { current - start };
 
             return static_cast<float>(diff.count()) / static_cast<float>(MILLI_TO_NANO);
         }

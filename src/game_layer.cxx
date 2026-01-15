@@ -60,9 +60,9 @@ namespace JAGE
 
         BufferLayout layout
         {
-            { ShaderData::Type::Float3, "v_position" },
-            { ShaderData::Type::Float4, "v_color" },
-            { ShaderData::Type::Float2, "v_texcoord" },
+            { Shader::DataType::Float3, "v_position" },
+            { Shader::DataType::Float4, "v_color" },
+            { Shader::DataType::Float2, "v_texcoord" },
         };
 
         ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };

@@ -71,28 +71,6 @@ namespace JAGE
 
     namespace ShaderData
     {
-        GLenum to_opengl_type(Type type)
-        {
-            switch (type)
-            {
-                case Type::None:        return GL_NONE;
-                case Type::Mat3:
-                case Type::Mat4:
-                case Type::Float:
-                case Type::Float2:
-                case Type::Float3:
-                case Type::Float4:      return GL_FLOAT;
-                case Type::Int:
-                case Type::Int2:
-                case Type::Int3:
-                case Type::Int4:        return GL_INT;
-                case Type::Bool:        return GL_BOOL;
-            }
-
-            JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
-
-            return 0;
-        }
     }
 
     DISABLE_WARNING_PUSH
@@ -172,7 +150,7 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
-    OpenGLTexture::OpenGLTexture(unsigned char* data, unsigned width, unsigned height)
+    OpenGLTexture::OpenGLTexture(ui8* data, unsigned width, unsigned height)
     {
         glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
         glActiveTexture(GL_TEXTURE0);
@@ -243,6 +221,29 @@ namespace JAGE
         glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
     }
 
+    GLenum OpenGLShader::to_opengl_type(Shader::DataType datatype)
+    {
+        switch (datatype)
+        {
+            case DataType::None:    return GL_NONE;
+            case DataType::Mat3:
+            case DataType::Mat4:
+            case DataType::Float:
+            case DataType::Float2:
+            case DataType::Float3:
+            case DataType::Float4:  return GL_FLOAT;
+            case DataType::Int:
+            case DataType::Int2:
+            case DataType::Int3:
+            case DataType::Int4:    return GL_INT;
+            case DataType::Bool:    return GL_BOOL;
+        }
+
+        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
+
+        return 0;
+    }
+
     OpenGLMesh::OpenGLMesh(
         PrimitiveType ptype,
         const std::vector<Vertex>& vertices,
@@ -264,10 +265,10 @@ namespace JAGE
 
         BufferLayout layout
         {
-            { ShaderData::Type::Float3, "v_position" },
-            { ShaderData::Type::Float3, "v_normal" },
-            { ShaderData::Type::Float4, "v_color" },
-            { ShaderData::Type::Float2, "v_texcoords" },
+            { Shader::DataType::Float3, "v_position" },
+            { Shader::DataType::Float3, "v_normal" },
+            { Shader::DataType::Float4, "v_color" },
+            { Shader::DataType::Float2, "v_texcoords" },
         };
 
         const std::vector<BufferElement>& elements { layout.elements() };
@@ -277,7 +278,7 @@ namespace JAGE
             glEnableVertexAttribArray(i);
             glVertexAttribPointer(i,
                 elements[i].component_count(),
-                ShaderData::to_opengl_type(elements[i].shader_datatype),
+                OpenGLShader::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
                 layout.stride(),
                 (void*)elements[i].offset
@@ -343,7 +344,7 @@ namespace JAGE
             glEnableVertexAttribArray(i);
             glVertexAttribPointer(i,
                 elements[i].component_count(),
-                ShaderData::to_opengl_type(elements[i].shader_datatype),
+                OpenGLShader::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
                 layout.stride(),
                 (void*)elements[i].offset
@@ -512,7 +513,7 @@ namespace JAGE
                     vertices.push_back(static_cast<float>(slice_index) * m_spacing);
                     vertices.push_back(static_cast<float>(slices_int) * m_spacing);
 
-                    unsigned index { indices.size() };
+                    ui64 index { indices.size() };
 
                     indices.push_back(index + 0); indices.push_back(index + 1);
                     indices.push_back(index + 2); indices.push_back(index + 3);

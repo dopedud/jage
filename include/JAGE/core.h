@@ -2,7 +2,7 @@
 
 /**
  * @file core.h
- * @brief The Core header file that contains the core subsystems and utilities for JAGE.
+ * @brief The core header file that contains the core subsystems and utilities for JAGE.
  */
 
 #include "jgpch.h"
@@ -106,11 +106,9 @@ namespace JAGE
 {
     namespace Time
     {
-        constexpr uint64_t SECONDS_TO_NANO { 1000000000 };
-        constexpr uint64_t SECONDS_TO_MILLI { 1000 };
-        constexpr uint64_t MILLI_TO_NANO { 1000000 };
-
-        void Lap();
+        constexpr ui64 SECONDS_TO_NANO { 1000000000 };
+        constexpr ui64 SECONDS_TO_MILLI { 1000 };
+        constexpr ui64 MILLI_TO_NANO { 1000000 };
 
         void JAGE_API SetTargetFPS(unsigned fps);
 
@@ -336,6 +334,7 @@ namespace JAGE
     {
     public:
         GraphicsContext(Window* window) : window { window } {}
+        virtual ~GraphicsContext() = default;
 
         virtual void Clear() = 0;
         virtual void SwapBuffers() = 0;

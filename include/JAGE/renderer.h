@@ -5,9 +5,10 @@
 
 namespace JAGE
 {
-    namespace ShaderData
+    class JAGE_API Shader
     {
-        enum class Type : uint8_t
+    public:
+        enum class DataType : ui8
         {
             None = 0,
             Float, Float2, Float3, Float4,
@@ -16,56 +17,8 @@ namespace JAGE
             Bool
         };
 
-        unsigned JAGE_API size(Type type);
-    }
+        static unsigned JAGE_API datatype_size(DataType datatype);
 
-    enum class TextureType : uint8_t { DIFFUSE = 0, SPECULAR };
-
-    struct JAGE_API BufferElement
-    {
-        ShaderData::Type shader_datatype;
-        std::string name;
-        unsigned size;
-        unsigned offset;
-        bool normalized;
-
-        BufferElement() = default;
-        BufferElement(ShaderData::Type shader_datatype, std::string_view name, bool normalized = false);
-
-        unsigned component_count() const;
-    };
-
-    class JAGE_API BufferLayout
-    {
-    public:
-        BufferLayout() = default;
-        BufferLayout(const std::initializer_list<BufferElement>& elements);
-
-        const std::vector<BufferElement>& elements() const;
-        unsigned stride() const;
-    private:
-        std::vector<BufferElement> m_elements {};
-        unsigned m_stride;
-    };
-
-    class JAGE_API Texture
-    {
-    public:
-        static std::unique_ptr<Texture> Create(unsigned char* data, unsigned width, unsigned height);
-        virtual ~Texture() = default;
-
-        virtual void bind() = 0;
-        virtual void unbind() = 0;
-
-        TextureType texture_type() const;
-        void set_texture_type(TextureType type);
-    protected:
-        TextureType m_texture_type;
-    };
-
-    class JAGE_API Shader
-    {
-    public:
         static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
         Shader(std::string_view vertex_str, std::string_view fragment_str);
         virtual ~Shader() = default;
@@ -81,6 +34,23 @@ namespace JAGE
     protected:
         std::string m_vertex_str;
         std::string m_fragment_str;
+    };
+
+    class JAGE_API Texture
+    {
+    public:
+        enum class Type : ui8 { DIFFUSE = 0, SPECULAR };
+
+        static std::unique_ptr<Texture> Create(ui8* data, unsigned width, unsigned height);
+        virtual ~Texture() = default;
+
+        virtual void bind() = 0;
+        virtual void unbind() = 0;
+
+        Type type() const;
+        void set_type(Type type);
+    protected:
+        Type m_type;
     };
 
     class JAGE_API Mesh
@@ -118,6 +88,33 @@ namespace JAGE
         std::vector<Vertex> m_vertices;
         std::vector<unsigned> m_indices;
         std::vector<Texture*> m_textures;
+    };
+
+    struct JAGE_API BufferElement
+    {
+        Shader::DataType shader_datatype;
+        std::string name;
+        unsigned size;
+        unsigned offset;
+        bool normalized;
+
+        BufferElement() = default;
+        BufferElement(Shader::DataType shader_datatype, std::string_view name, bool normalized = false);
+
+        unsigned component_count() const;
+    };
+
+    class JAGE_API BufferLayout
+    {
+    public:
+        BufferLayout() = default;
+        BufferLayout(const std::initializer_list<BufferElement>& elements);
+
+        const std::vector<BufferElement>& elements() const;
+        unsigned stride() const;
+    private:
+        std::vector<BufferElement> m_elements {};
+        unsigned m_stride;
     };
 
     class JAGE_API VertexBuffer

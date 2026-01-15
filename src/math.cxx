@@ -18,7 +18,7 @@ namespace JAGE
         , bit_len {}
         {}
 
-        void SHA1::update(const uint8_t* data, size_t len)
+        void SHA1::update(const ui8* data, size_t len)
         {
             for (size_t i {}; i < len; i++)
             {
@@ -33,7 +33,7 @@ namespace JAGE
             }
         }
 
-        void SHA1::final(uint8_t out[20])
+        void SHA1::final(ui8 out[20])
         {
             buffer[buffer_len++] = 0x80;
 
@@ -60,11 +60,11 @@ namespace JAGE
             write_be(out + 16, h4);
         }
 
-        uint32_t SHA1::rotate_left(uint32_t x, uint32_t n) { return (x << n) | (x >> (32 - n)); }
+        ui32 SHA1::rotate_left(ui32 x, ui32 n) { return (x << n) | (x >> (32 - n)); }
 
-        uint32_t SHA1::read_be(const uint8_t* src) { return (src[0] << 24) | (src[1] << 16) | (src[2] << 8) | src[3]; }
+        ui32 SHA1::read_be(const ui8* src) { return (src[0] << 24) | (src[1] << 16) | (src[2] << 8) | src[3]; }
 
-        void SHA1::write_be(uint8_t* dst, uint32_t val)
+        void SHA1::write_be(ui8* dst, ui32 val)
         {
             dst[0] = (val >> 24) & 0xFF;
             dst[1] = (val >> 16) & 0xFF;
@@ -72,9 +72,9 @@ namespace JAGE
             dst[3] = val & 0xFF;
         }
 
-        void SHA1::process_block(const uint8_t block[64])
+        void SHA1::process_block(const ui8 block[64])
         {
-            uint32_t w[80];
+            ui32 w[80];
 
             for (int i = 0; i < 16; ++i)
                 w[i] = read_be(block + i * 4);
@@ -82,11 +82,11 @@ namespace JAGE
             for (int i = 16; i < 80; ++i)
                 w[i] = rotate_left(w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16], 1);
 
-            uint32_t a = h0, b = h1, c = h2, d = h3, e = h4;
+            ui32 a = h0, b = h1, c = h2, d = h3, e = h4;
 
             for (int i = 0; i < 80; ++i)
             {
-                uint32_t f, k;
+                ui32 f, k;
                 if (i < 20)
                 {
                     f = (b & c) | (~b & d);
@@ -105,7 +105,7 @@ namespace JAGE
                     k = 0xCA62C1D6;
                 }
 
-                uint32_t temp { rotate_left(a, 5) + f + e + k + w[i] };
+                ui32 temp { rotate_left(a, 5) + f + e + k + w[i] };
                 e = d;
                 d = c;
                 c = rotate_left(b, 30);

@@ -1,8 +1,7 @@
 #include "platform/glfw/window.h"
-
-// #include "JAGE/resources.h"
-
 #include "platform/glfw/opengl3/renderer.h"
+
+#include "time.h"
 #include "log.h"
 
 namespace JAGE
@@ -165,7 +164,7 @@ namespace JAGE
 
         graphics_context->SwapBuffers();
 
-        Time::Lap();
+        Time::FrameLap();
     }
 
     void GLFWWindow::set_vsync(bool enabled)

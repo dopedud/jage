@@ -19,13 +19,12 @@ namespace JAGE
 
     namespace ShaderData
     {
-        GLenum to_opengl_type(Type type);
     }
 
     class OpenGLTexture final : public Texture
     {
     public:
-        OpenGLTexture(unsigned char* data, unsigned width, unsigned height);
+        OpenGLTexture(ui8* data, unsigned width, unsigned height);
         ~OpenGLTexture();
 
         virtual void bind() override;
@@ -37,6 +36,8 @@ namespace JAGE
     class OpenGLShader final : public Shader
     {
     public:
+        static GLenum to_opengl_type(DataType datatype);
+
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
         ~OpenGLShader();
 
