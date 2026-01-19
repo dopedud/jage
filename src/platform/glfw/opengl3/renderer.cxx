@@ -39,12 +39,12 @@ namespace JAGE
         JAGE_LOG_INFO("    Renderer:           {}", (const char*)glGetString(GL_RENDERER));
         JAGE_LOG_INFO("    Version:            {}", (const char*)glGetString(GL_VERSION));
 
-#ifdef DEBUG
+        #ifdef DEBUG
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(opengl_message_callback, nullptr);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
-#endif
+        #endif
 
         glEnable(GL_DEPTH_TEST);
 
@@ -66,7 +66,7 @@ namespace JAGE
     void OpenGLContext::SwapBuffers()
     {
         glfwPollEvents();
-        glfwSwapBuffers(static_cast<GLFWwindow*>(window->handle()));
+        glfwSwapBuffers(static_cast<GLFWwindow*>(m_window->handle()));
     }
 
     DISABLE_WARNING_PUSH
@@ -146,23 +146,11 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
-    GLenum OpenGLShader::to_opengl_type(DataType type)
+    OpenGLTexture::OpenGLTexture(ui8* data, unsigned width, unsigned height)
     {
-        switch (type)
-        {
-            case DataType::None:    return GL_NONE;
-            case DataType::Mat3:
-            case DataType::Mat4:
-            case DataType::Float:
-            case DataType::Float2:
-            case DataType::Float3:
-            case DataType::Float4:  return GL_FLOAT;
-            case DataType::Int:
-            case DataType::Int2:
-            case DataType::Int3:
-            case DataType::Int4:    return GL_INT;
-            case DataType::Bool:    return GL_BOOL;
-        }
+        glGenTextures(1, &textureID);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureID);
 
         JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
 
@@ -217,32 +205,31 @@ namespace JAGE
         glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
     }
 
-    OpenGLTexture::OpenGLTexture(ui8* data, unsigned width, unsigned height)
+    GLenum OpenGLShader::to_opengl_type(Shader::DataType datatype)
     {
-        glGenTextures(1, &textureID);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        switch (datatype)
+        {
+            case DataType::None:    return GL_NONE;
+            case DataType::Mat3:
+            case DataType::Mat4:
+            case DataType::Float:
+            case DataType::Float2:
+            case DataType::Float3:
+            case DataType::Float4:  return GL_FLOAT;
+            case DataType::Int:
+            case DataType::Int2:
+            case DataType::Int3:
+            case DataType::Int4:    return GL_INT;
+            case DataType::Bool:    return GL_BOOL;
+        }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        return 0;
     }
 
-    OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &textureID); }
-
-    void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
-    void OpenGLTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
-
-    OpenGLMesh::OpenGLMesh
-    (
-        PrimitiveType ptype,
-        const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices
-    ) : Mesh{ ptype, vertices, indices }
+    OpenGLMesh::OpenGLMesh(const MeshData* data)
+    : Mesh{ data }
     {
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
@@ -251,17 +238,26 @@ namespace JAGE
         glBindVertexArray(vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, data->vertices.size() * sizeof(MeshData::Vertex), &data->vertices[0], GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned), &indices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data->indices.size() * sizeof(unsigned), &data->indices[0], GL_STATIC_DRAW);
 
         BufferLayout layout
         {
             { Shader::DataType::Float3, "v_position" },
             { Shader::DataType::Float3, "v_normal" },
-            { Shader::DataType::Float4, "v_color" },
-            { Shader::DataType::Float2, "v_texcoords" },
+            { Shader::DataType::Float2, "v_uvcoord" },
+
+            // the number of vertex colors used should follow the size of the MeshData::Vertex::colors array
+            { Shader::DataType::Float4, "v_color1" },
+            { Shader::DataType::Float4, "v_color2" },
+            { Shader::DataType::Float4, "v_color3" },
+            { Shader::DataType::Float4, "v_color4" },
+            { Shader::DataType::Float4, "v_color5" },
+            { Shader::DataType::Float4, "v_color6" },
+            { Shader::DataType::Float4, "v_color7" },
+            { Shader::DataType::Float4, "v_color8" },
         };
 
         const std::vector<BufferElement>& elements { layout.elements() };
@@ -273,7 +269,7 @@ namespace JAGE
                 elements[i].component_count(),
                 OpenGLShader::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
-                layout.stride(),
+                sizeof(MeshData::Vertex),
                 (void*)elements[i].offset
             );
         }
@@ -285,76 +281,9 @@ namespace JAGE
     {
         shader->bind();
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, m_data->indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
         shader->unbind();
-    }
-
-    OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, unsigned size)
-    {
-        glGenBuffers(1, &rendererID);
-        glBindBuffer(GL_ARRAY_BUFFER, rendererID);
-        glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    OpenGLVertexBuffer::~OpenGLVertexBuffer() { glDeleteBuffers(1, &rendererID); }
-
-    void OpenGLVertexBuffer::bind() { glBindBuffer(GL_ARRAY_BUFFER, rendererID); }
-    void OpenGLVertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
-
-    OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned* indices, unsigned count) : IndexBuffer{ count }
-    {
-        glGenBuffers(1, &rendererID);
-
-        // GL_ELEMENT_ARRAY_BUFFER is not valid without an actively bound VAO
-        // binding with GL_ARRAY_BUFFER allows the data to be loaded regardless of VAO state
-        glBindBuffer(GL_ARRAY_BUFFER, rendererID);
-        glBufferData(GL_ARRAY_BUFFER, count * sizeof(unsigned), indices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    OpenGLIndexBuffer::~OpenGLIndexBuffer() { glDeleteBuffers(1, &rendererID); }
-
-    void OpenGLIndexBuffer::bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID); }
-    void OpenGLIndexBuffer::unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
-
-    OpenGLVertexArray::OpenGLVertexArray() { glGenVertexArrays(1, &rendererID); }
-    OpenGLVertexArray::~OpenGLVertexArray() { glDeleteVertexArrays(1, &rendererID); }
-
-    void OpenGLVertexArray::bind() { glBindVertexArray(rendererID); }
-    void OpenGLVertexArray::unbind() { glBindVertexArray(0); }
-
-    void OpenGLVertexArray::add_vbuffer(std::unique_ptr<VertexBuffer>&& vbuffer)
-    {
-        glBindVertexArray(rendererID);
-        vbuffer->bind();
-
-        const BufferLayout& layout { vbuffer->layout() };
-        const auto& elements { layout.elements() };
-        for (int i {}; i < static_cast<int>(elements.size()); i++)
-        {
-            glEnableVertexAttribArray(i);
-            glVertexAttribPointer(i,
-                elements[i].component_count(),
-                OpenGLShader::to_opengl_type(elements[i].shader_datatype),
-                elements[i].normalized ? GL_TRUE : GL_FALSE,
-                layout.stride(),
-                (void*)elements[i].offset
-            );
-        }
-
-        vbuffers.push_back(std::move(vbuffer));
-        glBindVertexArray(0);
-    }
-
-    void OpenGLVertexArray::set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer)
-    {
-        glBindVertexArray(rendererID);
-        ibuffer->bind();
-
-        this->ibuffer = std::move(ibuffer);
-        glBindVertexArray(0);
     }
 
     OpenGLDebugRenderer::OpenGLDebugRenderer(Window* window) : DebugRenderer{ window }
@@ -383,7 +312,7 @@ namespace JAGE
             )"
         };
 
-        std::string_view coord_vertex_str
+        std::string_view axes_vertex_str
         {
             R"(
                 #version 460 core
@@ -417,7 +346,7 @@ namespace JAGE
             )"
         };
 
-        std::string_view coord_fragment_str
+        std::string_view axes_fragment_str
         {
             R"(
                 #version 460 core
@@ -434,7 +363,7 @@ namespace JAGE
         };
 
         m_grid_shader = Shader::Create(grid_vertex_str, grid_fragment_str);
-        m_axes_shader = Shader::Create(coord_vertex_str, coord_fragment_str);
+        m_axes_shader = Shader::Create(axes_vertex_str, axes_fragment_str);
     }
 
     OpenGLDebugRenderer::~OpenGLDebugRenderer()
@@ -442,11 +371,6 @@ namespace JAGE
         glDeleteVertexArrays(1, &grid_vao);
         glDeleteBuffers(1, &grid_vbo);
         glDeleteBuffers(1, &grid_ebo);
-    }
-
-    void OpenGLDebugRenderer::Render()
-    {
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
     void OpenGLDebugRenderer::RenderGridLines(unsigned slices, float spacing)
@@ -506,7 +430,7 @@ namespace JAGE
                     vertices.push_back(static_cast<float>(slice_index) * m_spacing);
                     vertices.push_back(static_cast<float>(slices_int) * m_spacing);
 
-                    unsigned index { indices.size() };
+                    ui64 index { indices.size() };
 
                     indices.push_back(index + 0); indices.push_back(index + 1);
                     indices.push_back(index + 2); indices.push_back(index + 3);
@@ -583,7 +507,6 @@ namespace JAGE
         glm::vec3 forward { m_view[0][2], m_view[1][2], m_view[2][2] };
         glm::vec3 up { m_view[0][1], m_view[1][1], m_view[2][1] };
 
-        glm::mat4 inv_view { glm::inverse(m_view) };
         glm::vec3 view_pos {};
         view_pos -= forward * 5.0f;
 

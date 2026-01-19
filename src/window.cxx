@@ -5,6 +5,31 @@
 
 namespace JAGE
 {
+    WindowProperties::WindowProperties
+    (
+        std::string_view title,
+        unsigned width,
+        unsigned height,
+        bool vsync
+    )
+    : title { title }
+    , width { width }
+    , height { height }
+    , vsync { vsync } {}
+
+    Window::Window(const WindowProperties& properties) 
+    : layers {}
+    , layer_insert_index {}
+    {
+        data.properties = properties;
+        layers.reserve(10);
+    }
+
+    std::unique_ptr<Window> Window::Create(const WindowProperties& properties)
+    {
+        return std::make_unique<GLFWWindow>(properties);
+    }
+
     unsigned Window::width() const { return data.properties.width; }
     unsigned Window::height() const { return data.properties.height; }
 
@@ -17,19 +42,9 @@ namespace JAGE
         return static_cast<float>(data.properties.width) / static_cast<float>(data.properties.height);
     }
 
-    Layer::Layer(Window* window, std::string_view name) : window { window }, m_name { name }
-    {
-        JAGE_MSG_TRACE("Initialised a layer with name: " + m_name);
-    }
-
-    std::unique_ptr<Window> Window::Create(const WindowProperties& properties)
-    {
-        return std::make_unique<GLFWWindow>(properties);
-    }
-
     void Window::OnEvent(const Event& e)
     {
-        for (auto it = layers.end(); it != layers.begin();)
+        for (std::vector<Layer*>::iterator it = layers.end(); it != layers.begin();)
         {
             if (e.handled()) break;
             (*(--it))->OnEvent(e);
@@ -85,5 +100,13 @@ namespace JAGE
         overlay->OnDetach();
 
         JAGE_MSG_TRACE("Popped overlay named: " + overlay->name());
+    }
+
+    std::vector<Layer*>::iterator Window::layers_begin() { return layers.begin(); }
+    std::vector<Layer*>::iterator Window::layers_end() { return layers.end(); }
+
+    Layer::Layer(Window* window, std::string_view name) : window { window }, m_name { name }
+    {
+        JAGE_MSG_TRACE("Initialised a layer with name: " + m_name);
     }
 }

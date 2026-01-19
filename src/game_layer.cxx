@@ -14,71 +14,21 @@ namespace JAGE
 
         debug_renderer = DebugRenderer::Create(window);
 
-        varray = VertexArray::Create();
-
-        std::array<float, 8 * 7> vertices
-        {
-            // position             // color
-            -0.5f, -0.5f, -0.5f,    1.0f, 0.0f, 0.0f, 1.0f,
-            0.5f, -0.5f, -0.5f,     0.0f, 1.0f, 0.0f, 1.0f,
-            0.5f,  0.5f, -0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
-            0.5f,  0.5f, 0.5f,      1.0f, 0.0f, 0.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f,    0.0f, 1.0f, 0.0f, 1.0f,
-            0.5f,  -0.5f, 0.5f,     0.0f, 0.0f, 1.0f, 1.0f,
-            -0.5f,  -0.5f, 0.5f,    1.0f, 0.0f, 0.0f, 1.0f,
-            -0.5f,  0.5f, 0.5f,     0.0f, 1.0f, 0.0f, 1.0f
-        };
-
-        std::array<unsigned, 3 * 12> indices
-        {
-            0, 1, 2,
-            0, 4, 2,
-            1, 2, 3,
-            1, 5, 3,
-            2, 3, 7,
-            2, 4, 7,
-            3, 7, 6,
-            3, 5, 6,
-            7, 6, 0,
-            7, 4, 0,
-            6, 5, 1,
-            6, 0, 1
-        };
-
-        std::array<float, 3 * 9> vertices2
-        {
-            // position             // color                    // texcoords
-            -0.5f, -0.5f, 0.0f,     1.0f, 0.0f, 0.0f, 1.0f,     0.0f, 0.0f,
-            0.0f, 0.5f, 0.0f,       0.0f, 1.0f, 0.0f, 1.0f,     0.5f, 1.0f,
-            0.5f, -0.5f, 0.0f,      0.0f, 0.0f, 1.0f, 1.0f,     1.0f, 0.0f
-        };
-
-        std::array<unsigned, 3> indices2
-        {
-            0, 1, 2
-        };
-
         BufferLayout layout
         {
-            { ShaderData::Type::Float3, "v_position" },
-            { ShaderData::Type::Float4, "v_color" },
-            { ShaderData::Type::Float2, "v_texcoord" },
+            { Shader::DataType::Float3, "v_position" },
+            { Shader::DataType::Float4, "v_color" },
+            { Shader::DataType::Float2, "v_texcoord" },
         };
 
         ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };
         ResourceHandle<TextResource> vertex_shader { ResourceManager::instance().get<TextResource>("default.vs") };
         ResourceHandle<TextResource> fragment_shader { ResourceManager::instance().get<TextResource>("default.fs") };
-        ResourceHandle<ModelResource> cube { ResourceManager::instance().get<ModelResource>("Untitled.glb")};
+        ResourceHandle<ModelResource> cube { ResourceManager::instance().get<ModelResource>("pipo.fbx") };
 
         texture = Texture::Create(image.resource()->data(), image.resource()->width(), image.resource()->height());
         shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());
-
-        std::unique_ptr<VertexBuffer> vbuffer { VertexBuffer::Create(vertices2.data(), sizeof(vertices2)) };
-        vbuffer->set_layout(layout);
-        varray->add_vbuffer(std::move(vbuffer));
-
-        std::unique_ptr<IndexBuffer> ibuffer { IndexBuffer::Create(indices2.data(), sizeof(indices2)) };
-        varray->set_ibuffer(std::move(ibuffer));
+        mesh = Mesh::Create(cube.resource()->data(0));
 
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();
@@ -93,7 +43,6 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Detaching Game layer from layer stack.");
 
-        varray.reset();
         shader.reset();
         texture.reset();
 
@@ -115,11 +64,9 @@ namespace JAGE
         shader->set_uniform_mat4("view", view);
         shader->set_uniform_mat4("projection", projection);
 
-        texture->bind();
-        varray->bind();
-        debug_renderer->Render();
-        texture->unbind();
         shader->unbind();
+
+        mesh->render(shader);
 
         debug_renderer->set_vp(view, projection);
         debug_renderer->RenderGridLines(5, 25.0f);

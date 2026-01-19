@@ -55,6 +55,7 @@ CTestTestfile.cmake
 
 # build files
 build
+build.log
 
 # install directory
 installs

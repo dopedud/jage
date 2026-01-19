@@ -2,6 +2,7 @@
 
 #include "JAGE/core.h"
 #include "JAGE/math.h"
+#include "JAGE/resources.h"
 
 namespace JAGE
 {
@@ -17,7 +18,7 @@ namespace JAGE
             Bool
         };
 
-        static unsigned datatype_size(DataType type);
+        static unsigned JAGE_API datatype_size(DataType datatype);
 
         static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
         Shader(std::string_view vertex_str, std::string_view fragment_str);
@@ -56,44 +57,15 @@ namespace JAGE
     class JAGE_API Mesh
     {
     public:
-        enum class PrimitiveType : ui8 { NONE = 0, POINT, LINE, TRIANGLE };
+        static std::unique_ptr<Mesh> Create(const MeshData* data);
 
-        struct JAGE_API Vertex
-        {
-            glm::vec3 position;
-            glm::vec4 color;
-            glm::vec3 normal;
-            glm::vec2 texcoord;
-        };
-
-        struct JAGE_API Material
-        {
-
-        };
-
-        static std::unique_ptr<Mesh> Create
-        (
-            PrimitiveType ptype,
-            const std::vector<Vertex>& vertices,
-            const std::vector<unsigned>& indices
-        );
-
-        Mesh();
-
-        Mesh
-        (
-            PrimitiveType ptype,
-            const std::vector<Vertex>& vertices,
-            const std::vector<unsigned>& indices
-        );
+        Mesh(const MeshData* data);
 
         virtual ~Mesh() = default;
 
         virtual void render(const std::unique_ptr<Shader>& shader) = 0;
     protected:
-        PrimitiveType m_ptype;
-        const std::vector<Vertex>& m_vertices;
-        const std::vector<unsigned>& m_indices;
+        const MeshData* m_data;
     };
 
     struct JAGE_API BufferElement
@@ -180,8 +152,6 @@ namespace JAGE
         static std::unique_ptr<DebugRenderer> Create(Window* window);
         DebugRenderer(Window* window);
         virtual ~DebugRenderer() = default;
-
-        virtual void Render() = 0;
 
         /**
          * @fn RenderGridLines()

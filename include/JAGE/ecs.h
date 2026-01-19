@@ -27,7 +27,8 @@ namespace JAGE
     { 
         glm::mat4 view_matrix;
 
-        float speed;
+        float move_speed;
+        float zoom_speed;
         float sensitivity;
 
         float pitch;
@@ -41,9 +42,6 @@ namespace JAGE
     JAGE_API void CameraSystem(ecs_iter_t* it);
     JAGE_API void RenderSystem_Initialise(ecs_iter_t* it);
     JAGE_API void RenderSystem(ecs_iter_t* it);
-
-    // JAGE_API void RendererSystem_Initialise(ecs_iter_it* it);
-    // JAGE_API void RendererSystem(ecs_iter_it* it);
 
     class JAGE_API World
     {
