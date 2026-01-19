@@ -2,6 +2,7 @@
 
 #include "JAGE/core.h"
 #include "JAGE/math.h"
+#include "JAGE/resources.h"
 
 namespace JAGE
 {
@@ -56,37 +57,15 @@ namespace JAGE
     class JAGE_API Mesh
     {
     public:
-        enum class PrimitiveType : ui8 { POINT, LINE, TRIANGLE };
+        static std::unique_ptr<Mesh> Create(const MeshData* data);
 
-        struct JAGE_API Vertex
-        {
-            glm::vec3 position;
-            glm::vec3 normal;
-            glm::vec4 color;
-            glm::vec2 texcoord;
-        };
-
-        static std::unique_ptr<Mesh> Create
-        (
-            PrimitiveType ptype,
-            const std::vector<Vertex>& vertices,
-            const std::vector<unsigned>& indices
-        );
-
-        Mesh
-        (
-            PrimitiveType ptype,
-            const std::vector<Vertex>& vertices,
-            const std::vector<unsigned>& indices
-        );
+        Mesh(const MeshData* data);
 
         virtual ~Mesh() = default;
 
         virtual void render(const std::unique_ptr<Shader>& shader) = 0;
     protected:
-        PrimitiveType m_ptype;
-        const std::vector<Vertex>& m_vertices;
-        const std::vector<unsigned>& m_indices;
+        const MeshData* m_data;
     };
 
     struct JAGE_API BufferElement
@@ -174,8 +153,6 @@ namespace JAGE
         DebugRenderer(Window* window);
         virtual ~DebugRenderer() = default;
 
-        virtual void Render() = 0;
-
         /**
          * @fn RenderGridLines()
          * @brief Render grid lines in the game world.
@@ -195,7 +172,7 @@ namespace JAGE
         Window* m_window;
 
         std::unique_ptr<Shader> m_grid_shader;
-        std::unique_ptr<Shader> m_coord_shader;
+        std::unique_ptr<Shader> m_axes_shader;
 
         glm::mat4 m_view, m_projection;
     };

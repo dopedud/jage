@@ -5,6 +5,8 @@
 
 namespace JAGE
 {
+    GraphicsContext::GraphicsContext(Window* window) : m_window { window } {}
+
     Shader::Shader(std::string_view vertex_str, std::string_view fragment_str)
     : m_vertex_str { vertex_str }, m_fragment_str { fragment_str } {}
 
@@ -44,31 +46,18 @@ namespace JAGE
     Texture::Type Texture::type() const { return m_type; }
     void Texture::set_type(Texture::Type type) { m_type = type; }
 
-    Mesh::Mesh(
-        PrimitiveType ptype,
-        const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices
-    )
-    : m_ptype { ptype }
-    , m_vertices { vertices }
-    , m_indices { indices }
-    {}
+    Mesh::Mesh(const MeshData* data) : m_data { data } {} 
 
-    std::unique_ptr<Mesh> Mesh::Create(
-        PrimitiveType ptype,
-        const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices
-    )
+    std::unique_ptr<Mesh> Mesh::Create(const MeshData* data)
     {
-        return std::make_unique<OpenGLMesh>(ptype, vertices, indices);
+        return std::make_unique<OpenGLMesh>(data);
     }
 
     BufferElement::BufferElement(Shader::DataType shader_datatype, std::string_view name, bool normalized)
-    : shader_datatype   { shader_datatype }
-    , name              { name }
-    , size              { Shader::datatype_size(shader_datatype) }
-    , normalized        { normalized }
-    {}
+    : shader_datatype     { shader_datatype }
+    , name                { name }
+    , size                  { Shader::datatype_size(shader_datatype) }
+    , normalized            { normalized } {}
 
     unsigned BufferElement::component_count() const
     {
@@ -108,23 +97,6 @@ namespace JAGE
 
     const std::vector<BufferElement>& BufferLayout::elements() const { return m_elements; };
     unsigned BufferLayout::stride() const { return m_stride; }
-
-    std::unique_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, unsigned size)
-    {
-        return std::make_unique<OpenGLVertexBuffer>(vertices, size);
-    }
-
-    IndexBuffer::IndexBuffer(unsigned count) : m_count { count } {}
-
-    std::unique_ptr<IndexBuffer> IndexBuffer::Create(unsigned* indices, unsigned count)
-    {
-        return std::make_unique<OpenGLIndexBuffer>(indices, count);
-    }
-
-    std::unique_ptr<VertexArray> VertexArray::Create()
-    {
-        return std::make_unique<OpenGLVertexArray>();
-    }
 
     DebugRenderer::DebugRenderer(Window* window) : m_window { window } {}
 

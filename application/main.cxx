@@ -11,7 +11,8 @@ int main(int argc, char** argv)
     Init(argc, argv);
 
     APP_MSG_TRACE("Creating a window.");
-    std::unique_ptr<Window> window { Window::Create() };
+    WindowProperties window_properties {};
+    std::unique_ptr<Window> window { Window::Create(window_properties) };
 
     Input::SetActiveWindow(window.get());
 

@@ -39,12 +39,12 @@ namespace JAGE
         JAGE_LOG_INFO("    Renderer:           {}", (const char*)glGetString(GL_RENDERER));
         JAGE_LOG_INFO("    Version:            {}", (const char*)glGetString(GL_VERSION));
 
-#ifdef DEBUG
+        #ifdef DEBUG
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(opengl_message_callback, nullptr);
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
-#endif
+        #endif
 
         glEnable(GL_DEPTH_TEST);
 
@@ -66,7 +66,7 @@ namespace JAGE
     void OpenGLContext::SwapBuffers()
     {
         glfwPollEvents();
-        glfwSwapBuffers(static_cast<GLFWwindow*>(window->handle()));
+        glfwSwapBuffers(static_cast<GLFWwindow*>(m_window->handle()));
     }
 
     namespace ShaderData
@@ -152,7 +152,7 @@ namespace JAGE
 
     OpenGLTexture::OpenGLTexture(ui8* data, unsigned width, unsigned height)
     {
-        glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+        glGenTextures(1, &textureID);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
@@ -244,31 +244,36 @@ namespace JAGE
         return 0;
     }
 
-    OpenGLMesh::OpenGLMesh(
-        PrimitiveType ptype,
-        const std::vector<Vertex>& vertices,
-        const std::vector<unsigned>& indices
-    )
-    : Mesh{ ptype, vertices, indices }
+    OpenGLMesh::OpenGLMesh(const MeshData* data)
+    : Mesh{ data }
     {
-        glCreateVertexArrays(1, &vao);
-        glCreateBuffers(1, &vbo);
-        glCreateBuffers(1, &ebo);
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+        glGenBuffers(1, &ebo);
 
         glBindVertexArray(vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, data->vertices.size() * sizeof(MeshData::Vertex), &data->vertices[0], GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned), &indices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data->indices.size() * sizeof(unsigned), &data->indices[0], GL_STATIC_DRAW);
 
         BufferLayout layout
         {
             { Shader::DataType::Float3, "v_position" },
             { Shader::DataType::Float3, "v_normal" },
-            { Shader::DataType::Float4, "v_color" },
-            { Shader::DataType::Float2, "v_texcoord" },
+            { Shader::DataType::Float2, "v_uvcoord" },
+
+            // the number of vertex colors used should follow the size of the MeshData::Vertex::colors array
+            { Shader::DataType::Float4, "v_color1" },
+            { Shader::DataType::Float4, "v_color2" },
+            { Shader::DataType::Float4, "v_color3" },
+            { Shader::DataType::Float4, "v_color4" },
+            { Shader::DataType::Float4, "v_color5" },
+            { Shader::DataType::Float4, "v_color6" },
+            { Shader::DataType::Float4, "v_color7" },
+            { Shader::DataType::Float4, "v_color8" },
         };
 
         const std::vector<BufferElement>& elements { layout.elements() };
@@ -280,7 +285,7 @@ namespace JAGE
                 elements[i].component_count(),
                 OpenGLShader::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
-                layout.stride(),
+                sizeof(MeshData::Vertex),
                 (void*)elements[i].offset
             );
         }
@@ -292,86 +297,19 @@ namespace JAGE
     {
         shader->bind();
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, m_data->indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
         shader->unbind();
-    }
-
-    OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, unsigned size)
-    {
-        glGenBuffers(1, &rendererID);
-        glBindBuffer(GL_ARRAY_BUFFER, rendererID);
-        glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    OpenGLVertexBuffer::~OpenGLVertexBuffer() { glDeleteBuffers(1, &rendererID); }
-
-    void OpenGLVertexBuffer::bind() { glBindBuffer(GL_ARRAY_BUFFER, rendererID); }
-    void OpenGLVertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
-
-    OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned* indices, unsigned count) : IndexBuffer{ count }
-    {
-        glGenBuffers(1, &rendererID);
-
-        // GL_ELEMENT_ARRAY_BUFFER is not valid without an actively bound VAO
-        // binding with GL_ARRAY_BUFFER allows the data to be loaded regardless of VAO state
-        glBindBuffer(GL_ARRAY_BUFFER, rendererID);
-        glBufferData(GL_ARRAY_BUFFER, count * sizeof(unsigned), indices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
-    OpenGLIndexBuffer::~OpenGLIndexBuffer() { glDeleteBuffers(1, &rendererID); }
-
-    void OpenGLIndexBuffer::bind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, rendererID); }
-    void OpenGLIndexBuffer::unbind() { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
-
-    OpenGLVertexArray::OpenGLVertexArray() { glGenVertexArrays(1, &rendererID); }
-    OpenGLVertexArray::~OpenGLVertexArray() { glDeleteVertexArrays(1, &rendererID); }
-
-    void OpenGLVertexArray::bind() { glBindVertexArray(rendererID); }
-    void OpenGLVertexArray::unbind() { glBindVertexArray(0); }
-
-    void OpenGLVertexArray::add_vbuffer(std::unique_ptr<VertexBuffer>&& vbuffer)
-    {
-        glBindVertexArray(rendererID);
-        vbuffer->bind();
-
-        const BufferLayout& layout { vbuffer->layout() };
-        const auto& elements { layout.elements() };
-        for (int i {}; i < static_cast<int>(elements.size()); i++)
-        {
-            glEnableVertexAttribArray(i);
-            glVertexAttribPointer(i,
-                elements[i].component_count(),
-                OpenGLShader::to_opengl_type(elements[i].shader_datatype),
-                elements[i].normalized ? GL_TRUE : GL_FALSE,
-                layout.stride(),
-                (void*)elements[i].offset
-            );
-        }
-
-        vbuffers.push_back(std::move(vbuffer));
-        glBindVertexArray(0);
-    }
-
-    void OpenGLVertexArray::set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer)
-    {
-        glBindVertexArray(rendererID);
-        ibuffer->bind();
-
-        this->ibuffer = std::move(ibuffer);
-        glBindVertexArray(0);
     }
 
     OpenGLDebugRenderer::OpenGLDebugRenderer(Window* window) : DebugRenderer{ window }
     {
         glGenVertexArrays(1, &grid_vao);
-        glGenVertexArrays(1, &coord_vao);
+        glGenVertexArrays(1, &axes_vao);
         glGenBuffers(1, &grid_vbo);
-        glGenBuffers(1, &coord_vbo);
+        glGenBuffers(1, &axes_vbo);
         glGenBuffers(1, &grid_ebo);
-        glGenBuffers(1, &coord_ebo);
+        glGenBuffers(1, &axes_ebo);
 
         std::string_view grid_vertex_str
         {
@@ -390,7 +328,7 @@ namespace JAGE
             )"
         };
 
-        std::string_view coord_vertex_str
+        std::string_view axes_vertex_str
         {
             R"(
                 #version 460 core
@@ -424,7 +362,7 @@ namespace JAGE
             )"
         };
 
-        std::string_view coord_fragment_str
+        std::string_view axes_fragment_str
         {
             R"(
                 #version 460 core
@@ -441,7 +379,7 @@ namespace JAGE
         };
 
         m_grid_shader = Shader::Create(grid_vertex_str, grid_fragment_str);
-        m_coord_shader = Shader::Create(coord_vertex_str, coord_fragment_str);
+        m_axes_shader = Shader::Create(axes_vertex_str, axes_fragment_str);
     }
 
     OpenGLDebugRenderer::~OpenGLDebugRenderer()
@@ -449,11 +387,6 @@ namespace JAGE
         glDeleteVertexArrays(1, &grid_vao);
         glDeleteBuffers(1, &grid_vbo);
         glDeleteBuffers(1, &grid_ebo);
-    }
-
-    void OpenGLDebugRenderer::Render()
-    {
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     }
 
     void OpenGLDebugRenderer::RenderGridLines(unsigned slices, float spacing)
@@ -573,12 +506,12 @@ namespace JAGE
             indices.push_back(0); indices.push_back(2);
             indices.push_back(0); indices.push_back(3);
 
-            glBindVertexArray(coord_vao);
+            glBindVertexArray(axes_vao);
 
-            glBindBuffer(GL_ARRAY_BUFFER, coord_vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, axes_vbo);
             glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, coord_ebo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, axes_ebo);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float), indices.data(), GL_STATIC_DRAW);
 
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (const void*)0);
@@ -597,18 +530,18 @@ namespace JAGE
 
         float inv_size { 1 / size };
 
-        m_coord_shader->bind();
-        m_coord_shader->set_uniform_mat4("view", orbited_view);
-        m_coord_shader->set_uniform_mat4("projection",
+        m_axes_shader->bind();
+        m_axes_shader->set_uniform_mat4("view", orbited_view);
+        m_axes_shader->set_uniform_mat4("projection",
             glm::orthoLH(
                 -inv_size * m_window->aspect_ratio(),
                 inv_size * m_window->aspect_ratio(),
                 -inv_size, inv_size, 0.01f, 100.0f
             ));
 
-        glBindVertexArray(coord_vao);
+        glBindVertexArray(axes_vao);
         glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
-        m_coord_shader->unbind();
+        m_axes_shader->unbind();
     }
 }

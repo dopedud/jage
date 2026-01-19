@@ -52,48 +52,11 @@ namespace JAGE
     class OpenGLMesh final : public Mesh
     {
     public:
-        OpenGLMesh(
-            PrimitiveType ptype,
-            const std::vector<Vertex>& vertices,
-            const std::vector<unsigned>& indices
-        );
+        OpenGLMesh(const MeshData* data);
 
         virtual void render(const std::unique_ptr<Shader>& shader) override;
     private:
         unsigned vao, vbo, ebo;
-    };
-
-    class OpenGLVertexBuffer final : public VertexBuffer
-    {
-    public:
-        OpenGLVertexBuffer(float* vertices, unsigned size);
-        ~OpenGLVertexBuffer();
-
-        virtual void bind() override;
-        virtual void unbind() override;
-    };
-
-    class OpenGLIndexBuffer final : public IndexBuffer
-    {
-    public:
-        OpenGLIndexBuffer(unsigned* indices, unsigned count);
-        ~OpenGLIndexBuffer();
-
-        virtual void bind() override;
-        virtual void unbind() override;
-    };
-
-    class OpenGLVertexArray final : public VertexArray
-    {
-    public:
-        OpenGLVertexArray();
-        ~OpenGLVertexArray();
-
-        virtual void bind() override;
-        virtual void unbind() override;
-
-        virtual void add_vbuffer(std::unique_ptr<VertexBuffer>&& vbuffer) override;
-        virtual void set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer) override;
     };
 
     class OpenGLDebugRenderer final : public DebugRenderer
@@ -102,11 +65,10 @@ namespace JAGE
         OpenGLDebugRenderer(Window* window);
         ~OpenGLDebugRenderer();
 
-        virtual void Render() override;
         virtual void RenderGridLines(unsigned slices, float spacing) override;
         virtual void RenderBaseAxes(float size) override;
     private:
         unsigned grid_vao, grid_vbo, grid_ebo;
-        unsigned coord_vao, coord_vbo, coord_ebo;
+        unsigned axes_vao, axes_vbo, axes_ebo;
     };
 }

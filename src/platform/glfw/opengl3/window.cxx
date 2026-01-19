@@ -1,19 +1,18 @@
 #include "platform/glfw/window.h"
 #include "platform/glfw/opengl3/renderer.h"
 
-#include "time.h"
+#include "timing.h"
 #include "log.h"
 
 namespace JAGE
 {
-    GLFWWindow::GLFWWindow(const WindowProperties& properties)
+    GLFWWindow::GLFWWindow(const WindowProperties& properties) : Window{ properties }
     {
         JAGE_MSG_INFO("Window Info:");
         JAGE_MSG_INFO("    Backend:     GLFW");
         JAGE_LOG_INFO("    Title:       \"{}\"", properties.title);
         JAGE_LOG_INFO("    Dimensions:  {} x {}", properties.width, properties.height);
 
-        data.properties = properties;
         data.OnEvent = [this](const Event& e) -> void { OnEvent(e); };
 
         glfwSetErrorCallback([](int error_code, const char* desc) -> void
@@ -112,13 +111,13 @@ namespace JAGE
             data.OnEvent(event);
         });
 
-        // glfwSetCursorEnterCallback(m_handle, [](GLFWwindow* window, int entered) -> void
-        // {
-        //     WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-        //     MouseEnterEvent event { entered };
-        //     data.callback(event);
-        //     data.OnEvent(event);
-        // });
+        glfwSetCursorEnterCallback(m_handle, [](GLFWwindow* window, int entered) -> void
+        {
+            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            MouseEnterEvent event { entered };
+            data.callback(event);
+            data.OnEvent(event);
+        });
 
         glfwSetCursorPosCallback(m_handle, [](GLFWwindow* window, double xpos, double ypos) -> void
         {

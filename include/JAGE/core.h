@@ -130,7 +130,7 @@ namespace JAGE
 {
     /**
      * @class AppLogger
-     * @brief The AppLogger class used to log game operations.
+     * @brief The @c AppLogger class used to log game operations.
      *
      * Both JAGE and the game use @c spdlog as its logging backend. This means that the game won't really rely on JAGE
      * to provide logging utilities, but instead rely directly from @c spdlog . Ideally, the opposite should happen
@@ -218,23 +218,25 @@ namespace JAGE
     class JAGE_API GraphicsContext;
     class JAGE_API Layer;
 
+    /**
+     * @struct WindowProperties
+     * @brief The @c WindowProperties structure that holds data for properties of a window.
+     * 
+     * The data was defined as a seperate structure to allow callbacks from the window manager.
+     */
     struct JAGE_API WindowProperties
     {
         std::string title;
         unsigned width, height;
         bool vsync;
 
-        WindowProperties(
+        WindowProperties
+        (
             std::string_view title = "JAGE Engine",
             unsigned width = 1280,
             unsigned height = 720,
             bool vsync = false
-        )
-        : title { title }
-        , width { width }
-        , height { height }
-        , vsync { vsync }
-        {}
+        );
     };
 
     using EventCallbackFn = std::function<void(const Event&)>;
@@ -243,6 +245,7 @@ namespace JAGE
     {
     public:
         static std::unique_ptr<Window> Create(const WindowProperties& properties = WindowProperties{});
+        Window(const WindowProperties& properties);
         virtual ~Window() = default;
 
         unsigned width() const;
@@ -265,22 +268,22 @@ namespace JAGE
          */
         virtual void* handle() = 0;
 
+        void OnEvent(const Event& e);
+
         void PushLayer(Layer* layer);
         void PushOverlay(Layer* overlay);
         void PopLayer(Layer* layer);
         void PopOverlay(Layer* overlay);
 
-        void OnEvent(const Event& e);
-
         // for use in for loops and search algorithms like std::find
-        std::vector<Layer*>::iterator layers_begin() { return layers.begin(); }
-        std::vector<Layer*>::iterator layers_end() { return layers.end(); }
+        std::vector<Layer*>::iterator layers_begin();
+        std::vector<Layer*>::iterator layers_end();
     protected:
-        std::unique_ptr<GraphicsContext> graphics_context;
 
-        std::vector<Layer*> layers {};
-        int layer_insert_index {};
-
+        /**
+         * @struct WindowData
+         * @brief The @c WindowData structure 
+         */
         struct WindowData
         {
             WindowProperties properties;
@@ -289,6 +292,11 @@ namespace JAGE
         };
 
         WindowData data;
+
+        std::vector<Layer*> layers;
+        int layer_insert_index;
+
+        std::unique_ptr<GraphicsContext> graphics_context;
     };
 }
 
@@ -333,13 +341,13 @@ namespace JAGE
     class JAGE_API GraphicsContext
     {
     public:
-        GraphicsContext(Window* window) : window { window } {}
+        GraphicsContext(Window* window);
         virtual ~GraphicsContext() = default;
 
         virtual void Clear() = 0;
         virtual void SwapBuffers() = 0;
     protected:
-        Window* window;
+        Window* m_window;
     };
 }
 
