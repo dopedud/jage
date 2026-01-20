@@ -28,8 +28,10 @@ endforeach()
 
 add_library(${ENGINE_NAME} SHARED ${CORE_SOURCES})
 
-# it should be safe to remove ${ENGINE_NAME}_ENABLE_ASSERTS but just leave it for now
-target_compile_definitions(${ENGINE_NAME} PRIVATE ${ENGINE_NAME}_EXPORT)
+target_compile_definitions(${ENGINE_NAME} PRIVATE 
+    ${ENGINE_NAME}_EXPORT
+    ${ENGINE_NAME}_ENABLE_ASSERTS
+)
 
 set(VISIBILITY_PRESETS
     C_VISIBILITY_PRESET hidden

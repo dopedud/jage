@@ -42,7 +42,7 @@ namespace JAGE
     public:
         enum class Type : ui8 { DIFFUSE = 0, SPECULAR };
 
-        static std::unique_ptr<Texture> Create(ui8* data, unsigned width, unsigned height);
+        static std::unique_ptr<Texture> Create(const ui8* data, unsigned width, unsigned height);
         virtual ~Texture() = default;
 
         virtual void bind() = 0;
@@ -58,9 +58,7 @@ namespace JAGE
     {
     public:
         static std::unique_ptr<Mesh> Create(const MeshData* data);
-
         Mesh(const MeshData* data);
-
         virtual ~Mesh() = default;
 
         virtual void render(const std::unique_ptr<Shader>& shader) = 0;
@@ -93,57 +91,6 @@ namespace JAGE
     private:
         std::vector<BufferElement> m_elements {};
         unsigned m_stride;
-    };
-
-    class JAGE_API VertexBuffer
-    {
-    public:
-        static std::unique_ptr<VertexBuffer> Create(float* vertices, unsigned size);
-        VertexBuffer() = default;
-        virtual ~VertexBuffer() = default;
-
-        virtual void bind() = 0;
-        virtual void unbind() = 0;
-
-        const BufferLayout& layout() const { return m_layout; }
-        void set_layout(const BufferLayout& layout) { m_layout = layout; }
-    protected:
-        unsigned rendererID;
-        BufferLayout m_layout;
-    };
-
-    class JAGE_API IndexBuffer
-    {
-    public:
-        static std::unique_ptr<IndexBuffer> Create(unsigned* indices, unsigned count);
-        IndexBuffer(unsigned count);
-        virtual ~IndexBuffer() = default;
-
-        virtual void bind() = 0;
-        virtual void unbind() = 0;
-
-        unsigned count() const { return m_count; }
-    protected:
-        unsigned rendererID;
-        unsigned m_count;
-    };
-
-    class JAGE_API VertexArray
-    {
-    public:
-        static std::unique_ptr<VertexArray> Create();
-        virtual ~VertexArray() = default;
-
-        virtual void bind() = 0;
-        virtual void unbind() = 0;
-
-        virtual void add_vbuffer(std::unique_ptr<VertexBuffer>&& vbuffer) = 0;
-        virtual void set_ibuffer(std::unique_ptr<IndexBuffer>&& ibuffer) = 0;
-    protected:
-        unsigned rendererID;
-
-        std::vector<std::unique_ptr<VertexBuffer>> vbuffers {};
-        std::unique_ptr<IndexBuffer> ibuffer;
     };
 
     class JAGE_API DebugRenderer

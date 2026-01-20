@@ -20,11 +20,7 @@ namespace JAGE
     class OpenGLShader final : public Shader
     {
     public:
-<<<<<<< HEAD
-        static GLenum to_opengl_type(DataType type);
-=======
         static GLenum to_opengl_type(DataType datatype);
->>>>>>> buncha-errors-fix
 
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
         ~OpenGLShader();
@@ -44,7 +40,7 @@ namespace JAGE
     class OpenGLTexture final : public Texture
     {
     public:
-        OpenGLTexture(ui8* data, unsigned width, unsigned height);
+        OpenGLTexture(const ui8* data, unsigned width, unsigned height);
         ~OpenGLTexture();
 
         virtual void bind() override;

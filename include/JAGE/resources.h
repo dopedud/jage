@@ -110,7 +110,7 @@ namespace JAGE
             glm::vec3 normal {};
             glm::vec2 uvcoord {};
 
-            std::array<glm::vec4, 8> colors {};
+            std::array<glm::vec4, 4> colors {};
         };
 
         std::string name {};

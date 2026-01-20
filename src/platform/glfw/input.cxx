@@ -25,7 +25,7 @@ namespace JAGE
         bool IsKeyReleased(KeyCode key)
         {
             int state { glfwGetKey(glfw_handle, ToGLFWKey(key)) };
-            return state == GLFW_REPEAT;
+            return state == GLFW_RELEASE;
         }
 
         bool IsMouseButtonPressed(MouseButton button)
@@ -37,7 +37,7 @@ namespace JAGE
         bool IsMouseButtonReleased(MouseButton button)
         {
             int state { glfwGetMouseButton(glfw_handle, ToGLFWMouseButton(button)) };
-            return state == GLFW_REPEAT;
+            return state == GLFW_RELEASE;
         }
         
         void SetCursorMode(CursorMode mode) { glfwSetInputMode(glfw_handle, GLFW_CURSOR, ToGLFWCursorMode(mode)); }

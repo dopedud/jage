@@ -4,7 +4,8 @@
 
 namespace JAGE
 {
-    static void opengl_message_callback(
+    static void opengl_message_callback
+    (
         GLenum, // source
         GLenum, // type
         GLuint, // id
@@ -20,11 +21,9 @@ namespace JAGE
             case GL_DEBUG_SEVERITY_LOW:             JAGE_MSG_WARN(message); return;
             case GL_DEBUG_SEVERITY_MEDIUM:          JAGE_MSG_ERROR(message); return;
             case GL_DEBUG_SEVERITY_HIGH:            JAGE_MSG_CRITICAL(message); return;
+
+            default: JAGE_MSG_ERROR("JAGE error: unknown severity level from OpenGL."); return;
         }
-
-        JAGE_MSG_ERROR("JAGE error: unknown severity level from OpenGL.");
-
-        return;
     }
 
     OpenGLContext::OpenGLContext(Window* window) : GraphicsContext{ window }
@@ -146,16 +145,26 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
-    OpenGLTexture::OpenGLTexture(ui8* data, unsigned width, unsigned height)
+    OpenGLTexture::OpenGLTexture(const ui8* data, unsigned width, unsigned height)
     {
         glGenTextures(1, &textureID);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        return 0;
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &textureID); }
+
+    void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
+    void OpenGLTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
     OpenGLShader::OpenGLShader(std::string_view vertex_str, std::string_view fragment_str)
     : Shader{ vertex_str, fragment_str }
@@ -181,13 +190,13 @@ namespace JAGE
         glUniform1i(loc, static_cast<int>(value));
     }
 
-    void OpenGLShader::set_uniform_int(std::string_view name, int value)
+    void OpenGLShader::set_uniform_uint(std::string_view name, unsigned value)
     {
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
         glUniform1i(loc, value);
     }
 
-    void OpenGLShader::set_uniform_uint(std::string_view name, unsigned value)
+    void OpenGLShader::set_uniform_int(std::string_view name, int value)
     {
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
         glUniform1i(loc, value);
@@ -223,7 +232,7 @@ namespace JAGE
             case DataType::Bool:    return GL_BOOL;
         }
 
-        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning type 0.");
+        JAGE_MSG_ERROR("JAGE shader error: unknown shader data type. Returning type 0.");
 
         return 0;
     }
@@ -254,15 +263,11 @@ namespace JAGE
             { Shader::DataType::Float4, "v_color2" },
             { Shader::DataType::Float4, "v_color3" },
             { Shader::DataType::Float4, "v_color4" },
-            { Shader::DataType::Float4, "v_color5" },
-            { Shader::DataType::Float4, "v_color6" },
-            { Shader::DataType::Float4, "v_color7" },
-            { Shader::DataType::Float4, "v_color8" },
         };
 
         const std::vector<BufferElement>& elements { layout.elements() };
 
-        for (int i {}; i < static_cast<int>(elements.size()); i++)
+        for (unsigned i {}; i < elements.size(); i++)
         {
             glEnableVertexAttribArray(i);
             glVertexAttribPointer(i,

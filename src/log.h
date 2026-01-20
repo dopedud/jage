@@ -76,13 +76,15 @@ namespace JAGE
 }
 
 template <>
-struct fmt::formatter<glm::vec3> {
+struct fmt::formatter<glm::vec3>
+{
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     template <typename FormatContext>
     auto format(const glm::vec3& v, FormatContext& ctx) const
     {
-        return fmt::format_to(
+        return fmt::format_to
+        (
             ctx.out(),
             "[{: .6f}, {: .6f}, {: .6f}]",
             v.x, v.y, v.z
@@ -103,7 +105,9 @@ struct fmt::formatter<glm::mat4>
         fmt::format_to(out, "\n[\n");
         for (int row = 0; row < 4; row++)
         {
-            fmt::format_to(out,
+            fmt::format_to
+            (
+                out,
                 "    [{: .6f}, {: .6f}, {: .6f}, {: .6f}]{}\n",
                 m[row][0], m[row][1], m[row][2], m[row][3],
                 row < 3 ? "," : ""

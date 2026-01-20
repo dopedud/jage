@@ -582,10 +582,6 @@ namespace JAGE
  */
 namespace JAGE
 {
-    /**
-     * NOTE: @c int is used as the underlying type for @c EventType and @c EventCategory
-     */
-
     enum class EventType : ui8
     {
         None = 0,

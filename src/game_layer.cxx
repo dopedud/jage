@@ -14,13 +14,6 @@ namespace JAGE
 
         debug_renderer = DebugRenderer::Create(window);
 
-        BufferLayout layout
-        {
-            { Shader::DataType::Float3, "v_position" },
-            { Shader::DataType::Float4, "v_color" },
-            { Shader::DataType::Float2, "v_texcoord" },
-        };
-
         ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };
         ResourceHandle<TextResource> vertex_shader { ResourceManager::instance().get<TextResource>("default.vs") };
         ResourceHandle<TextResource> fragment_shader { ResourceManager::instance().get<TextResource>("default.fs") };
