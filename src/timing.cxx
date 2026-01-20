@@ -20,20 +20,24 @@ namespace JAGE
         {
             current = high_resolution_clock::now();
             deltatime = duration_cast<nanoseconds>(current - previous);
-            previous = current;
 
             if (target_fps_set && deltatime < target_deltatime)
             {
-                deltatime = target_deltatime - deltatime;
-                std::this_thread::sleep_for(deltatime);
+                duration<ui64, std::nano> remaining_deltatime { target_deltatime - deltatime };
+                deltatime = target_deltatime;
+                // std::this_thread::sleep_for(remaining_deltatime);
+
+                while (high_resolution_clock::now() - previous < target_deltatime) {}
             }
+
+            previous = high_resolution_clock::now();
         }
 
         void SetTargetFPS(unsigned fps)
         {
-            JAGE_LOG_INFO("frame rate capped to {} FPS", fps);
             target_deltatime = duration<ui64, std::nano>{ SECONDS_TO_NANO / fps };
             target_fps_set = true;
+            JAGE_LOG_INFO("frame rate capped to {} FPS", fps);
         }
 
         void UncapFPS() { target_fps_set = false; }

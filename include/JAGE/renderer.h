@@ -21,7 +21,6 @@ namespace JAGE
         static unsigned JAGE_API datatype_size(DataType datatype);
 
         static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
-        Shader(std::string_view vertex_str, std::string_view fragment_str);
         virtual ~Shader() = default;
 
         virtual void bind() const = 0;
@@ -32,9 +31,6 @@ namespace JAGE
         virtual void set_uniform_uint   (std::string_view name, unsigned value) = 0;
         virtual void set_uniform_float  (std::string_view name, float value) = 0;
         virtual void set_uniform_mat4   (std::string_view name, const glm::mat4& value) = 0;
-    protected:
-        std::string_view m_vertex_str;
-        std::string_view m_fragment_str;
     };
 
     class JAGE_API Texture
@@ -49,7 +45,6 @@ namespace JAGE
         virtual void unbind() = 0;
 
         Type type() const;
-        void set_type(Type type);
     protected:
         Type m_type;
     };
@@ -64,6 +59,34 @@ namespace JAGE
         virtual void render(const std::unique_ptr<Shader>& shader) = 0;
     protected:
         const MeshData* m_data;
+    };
+
+    class JAGE_API DebugRenderer
+    {
+    public:
+        static std::unique_ptr<DebugRenderer> Create(Window* window);
+        DebugRenderer(Window* window);
+        virtual ~DebugRenderer() = default;
+
+        /**
+         * @fn RenderGridLines()
+         * @brief Render grid lines in the game world.
+         * 
+         * Ideally, @c slices should take even values to get half slices correctly. Odd values will be truncated to the
+         * lowest and nearest even value.
+         * 
+         * @param slices number of slices
+         * @param spacing spacing between slices
+         */
+        virtual void RenderGridLines(unsigned slices, float spacing) = 0;
+
+        virtual void RenderBaseAxes(float size) = 0;
+
+        void set_vp(glm::mat4 view, glm::mat4 projection);
+    protected:
+        Window* m_window;
+
+        glm::mat4 m_view, m_projection;
     };
 
     struct JAGE_API BufferElement
@@ -92,36 +115,4 @@ namespace JAGE
         std::vector<BufferElement> m_elements {};
         unsigned m_stride;
     };
-
-    class JAGE_API DebugRenderer
-    {
-    public:
-        static std::unique_ptr<DebugRenderer> Create(Window* window);
-        DebugRenderer(Window* window);
-        virtual ~DebugRenderer() = default;
-
-        /**
-         * @fn RenderGridLines()
-         * @brief Render grid lines in the game world.
-         * 
-         * Ideally, @c slices should take even values to get half slices correctly. Odd values will be truncated to the
-         * lowest and nearest even value.
-         * 
-         * @param slices number of slices
-         * @param spacing spacing between slices
-         */
-        virtual void RenderGridLines(unsigned slices, float spacing) = 0;
-
-        virtual void RenderBaseAxes(float size) = 0;
-
-        void set_vp(glm::mat4 view, glm::mat4 projection);
-    protected:
-        Window* m_window;
-
-        std::unique_ptr<Shader> m_grid_shader;
-        std::unique_ptr<Shader> m_axes_shader;
-
-        glm::mat4 m_view, m_projection;
-    };
-
 }

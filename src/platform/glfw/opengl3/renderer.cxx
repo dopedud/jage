@@ -145,29 +145,30 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
-    OpenGLTexture::OpenGLTexture(const ui8* data, unsigned width, unsigned height)
+    GLenum OpenGLShader::to_opengl_type(Shader::DataType datatype)
     {
-        glGenTextures(1, &textureID);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        switch (datatype)
+        {
+            case DataType::None:    return GL_NONE;
+            case DataType::Mat3:
+            case DataType::Mat4:
+            case DataType::Float:
+            case DataType::Float2:
+            case DataType::Float3:
+            case DataType::Float4:  return GL_FLOAT;
+            case DataType::Int:
+            case DataType::Int2:
+            case DataType::Int3:
+            case DataType::Int4:    return GL_INT;
+            case DataType::Bool:    return GL_BOOL;
+        }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        JAGE_MSG_ERROR("JAGE shader error: unknown shader data type. Returning type 0.");
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        return 0;
     }
 
-    OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &textureID); }
-
-    void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
-    void OpenGLTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
-
     OpenGLShader::OpenGLShader(std::string_view vertex_str, std::string_view fragment_str)
-    : Shader{ vertex_str, fragment_str }
     {
         JAGE_MSG_TRACE("Initialising an OpenGL shader.");
 
@@ -214,28 +215,26 @@ namespace JAGE
         glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
     }
 
-    GLenum OpenGLShader::to_opengl_type(Shader::DataType datatype)
+    OpenGLTexture::OpenGLTexture(const ui8* data, unsigned width, unsigned height)
     {
-        switch (datatype)
-        {
-            case DataType::None:    return GL_NONE;
-            case DataType::Mat3:
-            case DataType::Mat4:
-            case DataType::Float:
-            case DataType::Float2:
-            case DataType::Float3:
-            case DataType::Float4:  return GL_FLOAT;
-            case DataType::Int:
-            case DataType::Int2:
-            case DataType::Int3:
-            case DataType::Int4:    return GL_INT;
-            case DataType::Bool:    return GL_BOOL;
-        }
+        glGenTextures(1, &textureID);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureID);
 
-        JAGE_MSG_ERROR("JAGE shader error: unknown shader data type. Returning type 0.");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        return 0;
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &textureID); }
+
+    void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
+    void OpenGLTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
     OpenGLMesh::OpenGLMesh(const MeshData* data)
     : Mesh{ data }
@@ -291,7 +290,65 @@ namespace JAGE
         shader->unbind();
     }
 
-    OpenGLDebugRenderer::OpenGLDebugRenderer(Window* window) : DebugRenderer{ window }
+    OpenGLDebugRenderer::OpenGLDebugRenderer(Window* window)
+    : DebugRenderer{ window }
+    , grid_shader
+    {
+        R"(
+            #version 460 core
+            layout (location = 0) in vec3 v_position;
+
+            uniform mat4 model;
+            uniform mat4 view;
+            uniform mat4 projection;
+
+            void main()
+            {
+                gl_Position = projection * view * model * vec4(v_position, 1.0);
+            }
+        )",
+        R"(
+            #version 460 core
+
+            out vec4 color;
+
+            void main()
+            {
+                color = vec4(0.5, 0.5, 0.5, 0.5);
+            }
+        )"
+    }
+    , axes_shader
+    {
+        R"(
+            #version 460 core
+            layout (location = 0) in vec3 v_position;
+
+            out vec3 f_position;
+
+            uniform mat4 view;
+            uniform mat4 projection;
+
+            void main()
+            {
+                f_position = v_position;
+                gl_Position = projection * view * vec4(v_position, 1.0);
+
+            }
+        )",
+        R"(
+            #version 460 core
+
+            in vec3 f_position;
+
+            out vec4 color;
+
+            void main()
+            {
+                color = vec4(normalize(f_position), 1.0);
+            }
+        )"
+    }
     {
         glGenVertexArrays(1, &grid_vao);
         glGenVertexArrays(1, &axes_vao);
@@ -299,76 +356,6 @@ namespace JAGE
         glGenBuffers(1, &axes_vbo);
         glGenBuffers(1, &grid_ebo);
         glGenBuffers(1, &axes_ebo);
-
-        std::string_view grid_vertex_str
-        {
-            R"(
-                #version 460 core
-                layout (location = 0) in vec3 v_position;
-
-                uniform mat4 model;
-                uniform mat4 view;
-                uniform mat4 projection;
-
-                void main()
-                {
-                    gl_Position = projection * view * model * vec4(v_position, 1.0);
-                }
-            )"
-        };
-
-        std::string_view axes_vertex_str
-        {
-            R"(
-                #version 460 core
-                layout (location = 0) in vec3 v_position;
-
-                out vec3 f_position;
-
-                uniform mat4 view;
-                uniform mat4 projection;
-
-                void main()
-                {
-                    f_position = v_position;
-                    gl_Position = projection * view * vec4(v_position, 1.0);
-
-                }
-            )"
-        };
-
-        std::string_view grid_fragment_str
-        {
-            R"(
-                #version 460 core
-
-                out vec4 color;
-
-                void main()
-                {
-                    color = vec4(0.5, 0.5, 0.5, 0.5);
-                }
-            )"
-        };
-
-        std::string_view axes_fragment_str
-        {
-            R"(
-                #version 460 core
-
-                in vec3 f_position;
-
-                out vec4 color;
-
-                void main()
-                {
-                    color = vec4(normalize(f_position), 1.0);
-                }
-            )"
-        };
-
-        m_grid_shader = Shader::Create(grid_vertex_str, grid_fragment_str);
-        m_axes_shader = Shader::Create(axes_vertex_str, axes_fragment_str);
     }
 
     OpenGLDebugRenderer::~OpenGLDebugRenderer()
@@ -460,15 +447,15 @@ namespace JAGE
         glm::vec3 view_pos { glm::inverse(m_view)[3] };
         glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::floor(view_pos / m_spacing) * m_spacing) };
 
-        m_grid_shader->bind();
-        m_grid_shader->set_uniform_mat4("model", model);
-        m_grid_shader->set_uniform_mat4("view", m_view);
-        m_grid_shader->set_uniform_mat4("projection", m_projection);
+        grid_shader.bind();
+        grid_shader.set_uniform_mat4("model", model);
+        grid_shader.set_uniform_mat4("view", m_view);
+        grid_shader.set_uniform_mat4("projection", m_projection);
 
         glBindVertexArray(grid_vao);
         glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
-        m_grid_shader->unbind();
+        grid_shader.unbind();
     }
 
     void OpenGLDebugRenderer::RenderBaseAxes(float size)
@@ -513,16 +500,17 @@ namespace JAGE
         glm::vec3 up { m_view[0][1], m_view[1][1], m_view[2][1] };
 
         glm::vec3 view_pos {};
-        view_pos -= forward * 5.0f;
+        view_pos += forward * 5.0f;
 
         glm::mat4 orbited_view { glm::lookAtLH(view_pos, view_pos + forward, up) };
 
         float inv_size { 1.0f / size };
 
-        m_axes_shader->bind();
-        m_axes_shader->set_uniform_mat4("view", orbited_view);
-        m_axes_shader->set_uniform_mat4("projection",
-            glm::orthoLH(
+        axes_shader.bind();
+        axes_shader.set_uniform_mat4("view", orbited_view);
+        axes_shader.set_uniform_mat4("projection",
+            glm::orthoLH
+            (
                 -inv_size * m_window->aspect_ratio(),
                 inv_size * m_window->aspect_ratio(),
                 -inv_size, inv_size, 0.01f, 100.0f
@@ -531,6 +519,6 @@ namespace JAGE
         glBindVertexArray(axes_vao);
         glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
-        m_axes_shader->unbind();
+        axes_shader.unbind();
     }
 }

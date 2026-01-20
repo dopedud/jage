@@ -162,9 +162,39 @@ namespace JAGE
     unsigned ImageResource::width() const { return m_width; }
     unsigned ImageResource::height() const { return m_height; }
 
-    void print_metadata()
+    void print_metadata(const aiMetadata* metadata)
     {
+        JAGE_MSG_TRACE("Metadata information:");
 
+        for (unsigned i {}; i < metadata->mNumProperties; i++)
+        {
+            switch (metadata->mValues[i].mType)
+            {
+                case aiMetadataType::AI_BOOL:           JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<bool*>(metadata->mValues[i].mData)); break;
+                case aiMetadataType::AI_UINT32:         JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<ui32*>(metadata->mValues[i].mData)); break;
+                case aiMetadataType::AI_UINT64:         JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<ui64*>(metadata->mValues[i].mData)); break;
+                case aiMetadataType::AI_INT32:          JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<i32*>(metadata->mValues[i].mData)); break;
+                case aiMetadataType::AI_INT64:          JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<i64*>(metadata->mValues[i].mData)); break;
+                case aiMetadataType::AI_FLOAT:          JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<float*>(metadata->mValues[i].mData)); break;
+                case aiMetadataType::AI_DOUBLE:         JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<double*>(metadata->mValues[i].mData)); break;
+                case aiMetadataType::AI_AISTRING:       JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), static_cast<aiString*>(metadata->mValues[i].mData)->C_Str()); break;
+                
+                case aiMetadataType::AI_AIVECTOR3D:
+                {
+                    aiVector3D ai_vector { *static_cast<aiVector3D*>(metadata->mValues[i].mData) };
+                    glm::vec3 vector { ai_vector.x, ai_vector.y, ai_vector.z };
+                    JAGE_LOG_TRACE
+                    (
+                        "    {}: X: {}, Y: {}, Z: {}",
+                        metadata->mKeys[i].C_Str(),
+                        vector.x, vector.y, vector.z
+                    );
+                }
+                break;
+
+                default: JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), "metadata not recognized."); break;
+            }
+        }
     }
 
     MeshData process_mesh(aiMesh* ai_mesh, const aiScene* ai_scene)
@@ -291,26 +321,7 @@ namespace JAGE
             return;
         }
 
-        JAGE_MSG_TRACE("Metadata information:");
-
-        aiMetadata* metadata { impl->ai_scene->mMetaData };
-
-        for (unsigned i {}; i < metadata->mNumProperties; i++)
-        {
-            switch (metadata->mValues[i].mType)
-            {
-                case aiMetadataType::AI_BOOL:       JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<bool*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_UINT32:     JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<ui32*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_UINT64:     JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<ui64*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_INT32:      JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<i32*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_INT64:      JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<i64*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_FLOAT:      JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<float*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_DOUBLE:     JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<double*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_AISTRING:   JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), static_cast<aiString*>(metadata->mValues[i].mData)->C_Str()); break;
-
-                default: JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), "metadata not recognized."); break;
-            }
-        }
+        print_metadata(impl->ai_scene->mMetaData);
 
         meshes.reserve(impl->ai_scene->mNumMeshes);
 

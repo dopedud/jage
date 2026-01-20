@@ -68,6 +68,8 @@ namespace JAGE
         virtual void RenderGridLines(unsigned slices, float spacing) override;
         virtual void RenderBaseAxes(float size) override;
     private:
+        OpenGLShader grid_shader, axes_shader;
+
         unsigned grid_vao, grid_vbo, grid_ebo;
         unsigned axes_vao, axes_vbo, axes_ebo;
     };

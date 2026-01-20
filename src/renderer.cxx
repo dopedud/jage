@@ -7,57 +7,11 @@ namespace JAGE
 {
     GraphicsContext::GraphicsContext(Window* window) : m_window { window } {}
 
-    Shader::Shader(std::string_view vertex_str, std::string_view fragment_str)
-    : m_vertex_str { vertex_str }, m_fragment_str { fragment_str } {}
-
-    std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
-    {
-        return std::make_unique<OpenGLShader>(vertex_str, fragment_str);
-    }
-
-    unsigned Shader::datatype_size(Shader::DataType datatype)
-    {
-        switch (datatype)
-        {
-            case DataType::None:      return 0;
-            case DataType::Float:     return 4;
-            case DataType::Float2:    return 4 * 2;
-            case DataType::Float3:    return 4 * 3;
-            case DataType::Float4:    return 4 * 4;
-            case DataType::Int:       return 4;
-            case DataType::Int2:      return 4 * 2;
-            case DataType::Int3:      return 4 * 3;
-            case DataType::Int4:      return 4 * 4;
-            case DataType::Mat3:      return 4 * 3 * 3;
-            case DataType::Mat4:      return 4 * 4 * 4;
-            case DataType::Bool:      return 1;
-        }
-
-        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
-
-        return 0;
-    }
-
-    std::unique_ptr<Texture> Texture::Create(const ui8* data, unsigned width, unsigned height)
-    {
-        return std::make_unique<OpenGLTexture>(data, width, height);
-    }
-
-    Texture::Type Texture::type() const { return m_type; }
-    void Texture::set_type(Texture::Type type) { m_type = type; }
-
-    Mesh::Mesh(const MeshData* data) : m_data { data } {} 
-
-    std::unique_ptr<Mesh> Mesh::Create(const MeshData* data)
-    {
-        return std::make_unique<OpenGLMesh>(data);
-    }
-
     BufferElement::BufferElement(Shader::DataType shader_datatype, std::string_view name, bool normalized)
-    : shader_datatype     { shader_datatype }
-    , name                { name }
-    , size                  { Shader::datatype_size(shader_datatype) }
-    , normalized            { normalized } {}
+    : shader_datatype   { shader_datatype }
+    , name              { name }
+    , size              { Shader::datatype_size(shader_datatype) }
+    , normalized        { normalized } {}
 
     unsigned BufferElement::component_count() const
     {
@@ -98,6 +52,48 @@ namespace JAGE
     const std::vector<BufferElement>& BufferLayout::elements() const { return m_elements; };
     unsigned BufferLayout::stride() const { return m_stride; }
 
+    unsigned Shader::datatype_size(Shader::DataType datatype)
+    {
+        switch (datatype)
+        {
+            case DataType::None:      return 0;
+            case DataType::Float:     return 4;
+            case DataType::Float2:    return 4 * 2;
+            case DataType::Float3:    return 4 * 3;
+            case DataType::Float4:    return 4 * 4;
+            case DataType::Int:       return 4;
+            case DataType::Int2:      return 4 * 2;
+            case DataType::Int3:      return 4 * 3;
+            case DataType::Int4:      return 4 * 4;
+            case DataType::Mat3:      return 4 * 3 * 3;
+            case DataType::Mat4:      return 4 * 4 * 4;
+            case DataType::Bool:      return 1;
+        }
+
+        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
+
+        return 0;
+    }
+
+    std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
+    {
+        return std::make_unique<OpenGLShader>(vertex_str, fragment_str);
+    }
+
+    std::unique_ptr<Texture> Texture::Create(const ui8* data, unsigned width, unsigned height)
+    {
+        return std::make_unique<OpenGLTexture>(data, width, height);
+    }
+
+    Texture::Type Texture::type() const { return m_type; }
+
+    Mesh::Mesh(const MeshData* data) : m_data { data } {} 
+
+    std::unique_ptr<Mesh> Mesh::Create(const MeshData* data)
+    {
+        return std::make_unique<OpenGLMesh>(data);
+    }
+
     DebugRenderer::DebugRenderer(Window* window) : m_window { window } {}
 
     std::unique_ptr<DebugRenderer> DebugRenderer::Create(Window* window)
@@ -105,5 +101,6 @@ namespace JAGE
         return std::make_unique<OpenGLDebugRenderer>(window);
     }
 
-    void DebugRenderer::set_vp(glm::mat4 view, glm::mat4 projection) { m_view = view; m_projection = projection; }
+    void DebugRenderer::set_vp(glm::mat4 view, glm::mat4 projection)
+    { m_view = view; m_projection = projection; }
 }
