@@ -2,7 +2,7 @@
 
 in vec3 f_position;
 in vec3 f_normal;
-in vec3 f_uvcoord;
+in vec2 f_uvcoord;
 
 in vec4 f_color1;
 in vec4 f_color2;

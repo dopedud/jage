@@ -500,7 +500,7 @@ namespace JAGE
         glm::vec3 up { m_view[0][1], m_view[1][1], m_view[2][1] };
 
         glm::vec3 view_pos {};
-        view_pos += forward * 5.0f;
+        view_pos -= forward * 10.0f;
 
         glm::mat4 orbited_view { glm::lookAtLH(view_pos, view_pos + forward, up) };
 
