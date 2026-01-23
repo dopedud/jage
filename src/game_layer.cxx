@@ -26,8 +26,8 @@ namespace JAGE
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();
 
-        camera_component = camera.GetComponent<Camera>();
-        camera_component_fov = camera.GetComponentMutable<Camera>();
+        camera_component = &camera.GetComponent<Camera>();
+        camera_component_fov = &camera.GetComponentMutable<Camera>();
 
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
     }
@@ -46,8 +46,6 @@ namespace JAGE
     {
         world.progress(Time::DeltaTime());
 
-        shader->bind();
-
         glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 1.0f, 0.0f, 2.0f }) };
         glm::mat4 view { camera_component->view_matrix };
         glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(camera_component_fov->fov), window->aspect_ratio(), 0.01f) };
@@ -56,8 +54,6 @@ namespace JAGE
         shader->set_uniform_mat4("model", model);
         shader->set_uniform_mat4("view", view);
         shader->set_uniform_mat4("projection", projection);
-
-        shader->unbind();
 
         mesh->render(shader);
 

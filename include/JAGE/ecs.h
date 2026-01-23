@@ -11,16 +11,17 @@ namespace JAGE
     struct Transform
     {
         glm::vec3 position;
-        glm::quat orientation; // angles in degrees
+        glm::quat orientation;
         glm::vec3 scale;
 
-        glm::vec3 right() const;
-        glm::vec3 up() const;
-        glm::vec3 forward() const;
+        // each data below has to be modified via ECS system based on the 3 data above
 
-        glm::vec3 euler_angles() const;
+        glm::vec3 right;
+        glm::vec3 up;
+        glm::vec3 forward;
 
-        glm::mat4 transformation_matrix() const;
+        glm::vec3 euler_angles;
+        glm::mat4 transformation_matrix;
     };
 
     struct Camera
@@ -36,11 +37,11 @@ namespace JAGE
         float fov;
     };
 
-    JAGE_API void TransformSystem(ecs_iter_t* it);
-
     JAGE_API void CameraSystem_Initialise(ecs_iter_t* it);
-    JAGE_API void CameraSystem(ecs_iter_t* it);
     JAGE_API void RenderSystem_Initialise(ecs_iter_t* it);
+
+    JAGE_API void TransformSystem(ecs_iter_t* it);
+    JAGE_API void CameraSystem(ecs_iter_t* it);
     JAGE_API void RenderSystem(ecs_iter_t* it);
 
     class JAGE_API World
@@ -59,14 +60,14 @@ namespace JAGE
     class JAGE_API Entity
     {
     public:
-        Entity(World* world, std::string_view name = "");
+        Entity(const World& world, std::string_view name = "");
         ~Entity();
 
         template<typename T> void AddComponent();
         template<typename T> void AddComponent(const T* component);
 
-        template<typename T> const T* GetComponent();
-        template<typename T> T* GetComponentMutable();
+        template<typename T> const T& GetComponent();
+        template<typename T> T& GetComponentMutable();
 
         template<typename T> void RemoveComponent();
     private:

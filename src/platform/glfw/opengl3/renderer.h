@@ -25,8 +25,8 @@ namespace JAGE
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
         ~OpenGLShader();
 
-        virtual void bind() const override;
-        virtual void unbind() const override;
+        virtual void bind() override;
+        virtual void unbind() override;
 
         virtual void set_uniform_bool   (std::string_view name, bool value) override;
         virtual void set_uniform_int    (std::string_view name, int value) override;

@@ -185,6 +185,8 @@ target_compile_definitions(flecs PRIVATE
     FLECS_SYSTEM
     FLECS_PIPELINE
     FLECS_QUERY_DSL
+
+    FLECS_CPP_NO_AUTO_REGISTRATION
 )
 # END BUILD FLECS
 

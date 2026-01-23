@@ -23,8 +23,8 @@ namespace JAGE
         static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
         virtual ~Shader() = default;
 
-        virtual void bind() const = 0;
-        virtual void unbind() const = 0;
+        virtual void bind() = 0;
+        virtual void unbind() = 0;
 
         virtual void set_uniform_bool   (std::string_view name, bool value) = 0;
         virtual void set_uniform_int    (std::string_view name, int value) = 0;
@@ -47,6 +47,16 @@ namespace JAGE
         Type type() const;
     protected:
         Type m_type;
+    };
+
+    class JAGE_API Material
+    {
+    public:
+        static std::unique_ptr<Material> Create(const Shader* shader);
+        virtual ~Material() = default;
+    private:
+        const Shader* m_shader;
+        std::vector<Texture*> m_textures;
     };
 
     class JAGE_API Mesh

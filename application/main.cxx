@@ -6,9 +6,9 @@ using namespace JAGE;
 
 int main(int argc, char** argv)
 {
-    bool running { true };
-
     Init(argc, argv);
+
+    bool running { true };
 
     APP_MSG_TRACE("Creating a window.");
     WindowProperties window_properties {};

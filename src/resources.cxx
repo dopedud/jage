@@ -250,10 +250,16 @@ namespace JAGE
                 vertex.normal = glm::vec3{ aiv_normal.x, aiv_normal.y, aiv_normal.z };
             }
 
-            // number of iterations for this for loop should equal to whoever has the most allowed vertex color sets,
-            // either Assimp or JAGE's MeshData
-            int max_color_sets { vertex.colors.max_size() };
-            for (unsigned j {}; j < std::min(max_color_sets, AI_MAX_NUMBER_OF_COLOR_SETS); j++)
+            for (unsigned j {}; j < vertex.uvcoords.max_size(); j++)
+            {
+                if (ai_mesh->HasTextureCoords(j))
+                {
+                    aiVector3D aiv_uvcoord { ai_mesh->mTextureCoords[j][i] };
+                    vertex.uvcoords[j] = glm::vec3{ aiv_uvcoord.x, aiv_uvcoord.y, aiv_uvcoord.z };
+                }
+            }
+
+            for (unsigned j {}; j < vertex.colors.max_size(); j++)
             {
                 if (ai_mesh->HasVertexColors(j))
                 {

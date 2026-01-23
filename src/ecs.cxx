@@ -4,19 +4,18 @@
 
 namespace JAGE
 {
-    glm::vec3 Transform::right()    const { return glm::normalize(orientation * glm::vec3{1.0f, 0.0f, 0.0f}); }
-    glm::vec3 Transform::up()       const { return glm::normalize(orientation * glm::vec3{0.0f, 1.0f, 0.0f}); }
-    glm::vec3 Transform::forward()  const { return glm::normalize(orientation * glm::vec3{0.0f, 0.0f, 1.0f}); }
+    // glm::vec3 Transform::euler_angles() const { return glm::degrees(glm::eulerAngles(orientation)); }
 
-    glm::vec3 Transform::euler_angles() const { return glm::degrees(glm::eulerAngles(orientation)); }
+    // glm::mat4 Transform::transformation_matrix() const
+    // {
+    //     return
+    //         glm::translate(glm::mat4{ 1.0f }, position) *
+    //         glm::mat4_cast(orientation) *
+    //         glm::scale(glm::mat4{ 1.0f }, scale);
+    // }
 
-    glm::mat4 Transform::transformation_matrix() const
-    {
-        return
-            glm::translate(glm::mat4{ 1.0f }, position) *
-            glm::mat4_cast(orientation) *
-            glm::scale(glm::mat4{ 1.0f }, scale);
-    }
+    DISABLE_WARNING_PUSH
+    DISABLE_WARNING_GCC_CLANG("-Wmissing-field-initializers")
 
     ECS_COMPONENT_DECLARE(Transform);
     ECS_COMPONENT_DECLARE(Camera);
@@ -26,13 +25,15 @@ namespace JAGE
         ECS_COMPONENT_DEFINE(m_world, Transform);
         ECS_COMPONENT_DEFINE(m_world, Camera);
 
-        ECS_SYSTEM(m_world, TransformSystem, EcsOnUpdate, Transform);
-
         ECS_SYSTEM(m_world, CameraSystem_Initialise, EcsOnStart, Transform, Camera);
-        ECS_SYSTEM(m_world, CameraSystem, EcsOnUpdate, Transform, Camera);
         ECS_SYSTEM(m_world, RenderSystem_Initialise, EcsOnStart, Transform, Camera);
+
+        ECS_SYSTEM(m_world, TransformSystem, EcsOnUpdate, Transform);
+        ECS_SYSTEM(m_world, CameraSystem, EcsOnUpdate, Transform, Camera);
         ECS_SYSTEM(m_world, RenderSystem, EcsOnUpdate, Transform, Camera);
     }
+
+    DISABLE_WARNING_POP
 
     World::~World() { ecs_fini(m_world); }
 
@@ -40,9 +41,9 @@ namespace JAGE
 
     void World::progress(float deltatime) { ecs_progress(m_world, deltatime); }
 
-    Entity::Entity(World* world, std::string_view name)
+    Entity::Entity(const World& world, std::string_view name)
     : m_name { name }
-    , m_world { world->world() }
+    , m_world { world.world() }
     {
         ecs_entity_desc_t entity_desc {};
         entity_desc.name = m_name.c_str();
@@ -66,24 +67,17 @@ namespace JAGE
 
     template<> void                 Entity::AddComponent<Transform>()                               { ecs_add(m_world, m_entity, Transform); }
     template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_world, m_entity, Transform, component); }
-    template<> const Transform*     Entity::GetComponent<Transform>()                               { return ecs_get(m_world, m_entity, Transform); }
-    template<> Transform*           Entity::GetComponentMutable<Transform>()                        { return ecs_get_mut(m_world, m_entity, Transform); }
+    template<> const Transform&     Entity::GetComponent<Transform>()                               { return *ecs_get(m_world, m_entity, Transform); }
+    template<> Transform&           Entity::GetComponentMutable<Transform>()                        { return *ecs_get_mut(m_world, m_entity, Transform); }
     template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_world, m_entity, Transform); }
 
     template<> void             Entity::AddComponent<Camera>()                          { ecs_add(m_world, m_entity, Camera); }
     template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_world, m_entity, Camera, component); }
-    template<> const Camera*    Entity::GetComponent<Camera>()                          { return ecs_get(m_world, m_entity, Camera); }
-    template<> Camera*          Entity::GetComponentMutable<Camera>()                   { return ecs_get_mut(m_world, m_entity, Camera); }
+    template<> const Camera&    Entity::GetComponent<Camera>()                          { return *ecs_get(m_world, m_entity, Camera); }
+    template<> Camera&          Entity::GetComponentMutable<Camera>()                   { return *ecs_get_mut(m_world, m_entity, Camera); }
     template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_world, m_entity, Camera); }
 
     // END TEMPLATE INSTANTIATIONS
-
-    void TransformSystem(ecs_iter_t* it)
-    {
-        Transform* transform { ecs_field(it, Transform, 0) };
-        Transform& t { transform[0] };
-        glm::mat4 transformation_matrix { t.transformation_matrix() };
-    }
 
     void CameraSystem_Initialise(ecs_iter_t* it)
     {
@@ -111,6 +105,27 @@ namespace JAGE
         Camera* camera { ecs_field(it, Camera, 1) };
         Camera& c { camera[0] };
         c.view_matrix = glm::mat4{ 1.0f };
+    }
+
+    void TransformSystem(ecs_iter_t* it)
+    {
+        Transform* transform { ecs_field(it, Transform, 0) };
+
+        for (unsigned i {}; i < it->count; i++)
+        {
+            Transform& t { transform[i] };
+
+            t.right     = glm::normalize(t.orientation * glm::vec3{1.0f, 0.0f, 0.0f}); 
+            t.up        = glm::normalize(t.orientation * glm::vec3{0.0f, 1.0f, 0.0f}); 
+            t.forward   = glm::normalize(t.orientation * glm::vec3{0.0f, 0.0f, 1.0f}); 
+
+            t.euler_angles = glm::degrees(glm::eulerAngles(t.orientation));
+
+            t.transformation_matrix = 
+                glm::translate(glm::mat4{ 1.0f }, t.position) *
+                glm::mat4_cast(t.orientation) *
+                glm::scale(glm::mat4{ 1.0f }, t.scale);
+        }
     }
 
     void CameraSystem(ecs_iter_t* it)
@@ -147,6 +162,8 @@ namespace JAGE
         Transform* transform { ecs_field(it, Transform, 0) };
         Camera* camera { ecs_field(it, Camera, 1) };
 
+        float delta_time { it->delta_time };
+
         Transform& t { transform[0] };
         Camera& c { camera[0] };
 
@@ -156,15 +173,15 @@ namespace JAGE
 
         t.orientation = glm::quat{ glm::radians(glm::vec3{ c.pitch, c.yaw, 0.0f }) };
 
-        float scaled_delta { zoom * c.zoom_speed * zoom_multiplier * it->delta_time * std::pow(c.fov / 90.0f, 2.0f) };
+        float scaled_delta { zoom * c.zoom_speed * zoom_multiplier * delta_time * std::pow(c.fov / 90.0f, 2.0f) };
         c.fov = std::clamp(c.fov + scaled_delta, 1.0f, 150.0f);
 
         t.position +=
         (
-            t.right() * move_vector.x +
-            t.up() * move_vector.y +
-            t.forward() * move_vector.z
-        ) * c.move_speed * move_multiplier * it->delta_time;
+            t.right * move_vector.x +
+            t.up * move_vector.y +
+            t.forward * move_vector.z
+        ) * c.move_speed * move_multiplier * delta_time;
     }
 
     JAGE_API void RenderSystem(ecs_iter_t* it)
@@ -175,6 +192,6 @@ namespace JAGE
         Transform& t { transform[0] };
         Camera& c { camera[0] };
 
-        c.view_matrix = glm::lookAtLH(t.position, t.position + t.forward(), t.up());
+        c.view_matrix = glm::lookAtLH(t.position, t.position + t.forward, t.up);
     }
 }
