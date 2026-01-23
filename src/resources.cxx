@@ -43,6 +43,7 @@ namespace JAGE
         load<TextResource>("default.fs");
         load<ImageResource>("image.jpg");
         load<ModelResource>("ICOSPHERE.glb");
+        load<ModelResource>("cube.glb");
         load<ModelResource>("pipo.fbx");
     }
 
@@ -162,37 +163,50 @@ namespace JAGE
     unsigned ImageResource::width() const { return m_width; }
     unsigned ImageResource::height() const { return m_height; }
 
-    void print_metadata(const aiMetadata* metadata)
+    void print_metadata(const aiScene* ai_scene)
     {
+        JAGE_MSG_TRACE("Model information:");
+
+        std::string vertices_count {};
+
+        for (unsigned i {}; i < ai_scene->mNumMeshes; i++)
+        vertices_count += " " + std::to_string(ai_scene->mMeshes[i]->mNumVertices) + ",";
+
+        if (!vertices_count.empty()) vertices_count.back() = '.';
+
+        JAGE_LOG_TRACE("Model contains {} mesh(es), with number of vertices from each mesh by order:{}", ai_scene->mNumMeshes, vertices_count);
+
         JAGE_MSG_TRACE("Metadata information:");
 
-        for (unsigned i {}; i < metadata->mNumProperties; i++)
+        aiMetadata metadata { *ai_scene->mMetaData };
+
+        for (unsigned i {}; i < metadata.mNumProperties; i++)
         {
-            switch (metadata->mValues[i].mType)
+            switch (metadata.mValues[i].mType)
             {
-                case aiMetadataType::AI_BOOL:           JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<bool*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_UINT32:         JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<ui32*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_UINT64:         JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<ui64*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_INT32:          JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<i32*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_INT64:          JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<i64*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_FLOAT:          JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<float*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_DOUBLE:         JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), *static_cast<double*>(metadata->mValues[i].mData)); break;
-                case aiMetadataType::AI_AISTRING:       JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), static_cast<aiString*>(metadata->mValues[i].mData)->C_Str()); break;
+                case aiMetadataType::AI_BOOL:           JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<bool*>(metadata.mValues[i].mData)); break;
+                case aiMetadataType::AI_UINT32:         JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<ui32*>(metadata.mValues[i].mData)); break;
+                case aiMetadataType::AI_UINT64:         JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<ui64*>(metadata.mValues[i].mData)); break;
+                case aiMetadataType::AI_INT32:          JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<i32*>(metadata.mValues[i].mData)); break;
+                case aiMetadataType::AI_INT64:          JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<i64*>(metadata.mValues[i].mData)); break;
+                case aiMetadataType::AI_FLOAT:          JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<float*>(metadata.mValues[i].mData)); break;
+                case aiMetadataType::AI_DOUBLE:         JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<double*>(metadata.mValues[i].mData)); break;
+                case aiMetadataType::AI_AISTRING:       JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), static_cast<aiString*>(metadata.mValues[i].mData)->C_Str()); break;
                 
                 case aiMetadataType::AI_AIVECTOR3D:
                 {
-                    aiVector3D ai_vector { *static_cast<aiVector3D*>(metadata->mValues[i].mData) };
+                    aiVector3D ai_vector { *static_cast<aiVector3D*>(metadata.mValues[i].mData) };
                     glm::vec3 vector { ai_vector.x, ai_vector.y, ai_vector.z };
                     JAGE_LOG_TRACE
                     (
                         "    {}: X: {}, Y: {}, Z: {}",
-                        metadata->mKeys[i].C_Str(),
+                        metadata.mKeys[i].C_Str(),
                         vector.x, vector.y, vector.z
                     );
                 }
                 break;
 
-                default: JAGE_LOG_TRACE("    {}: {}", metadata->mKeys[i].C_Str(), "metadata not recognized."); break;
+                default: JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), "metadata not recognized."); break;
             }
         }
     }
@@ -271,11 +285,13 @@ namespace JAGE
             data.vertices.push_back(std::move(vertex));
         }
 
+        data.material_index = ai_mesh->mMaterialIndex;
+
         return data;
 
     }
 
-    std::unique_ptr<ModelNode> process_node(std::vector<MeshData>& meshes, ModelNode* parent, aiNode* ai_node, const aiScene* ai_scene)
+    std::unique_ptr<ModelNode> process_node(std::vector<MeshData>& meshes, ModelNode* parent, const aiScene* ai_scene, aiNode* ai_node)
     {
         std::unique_ptr<ModelNode> model_node { std::make_unique<ModelNode>() };
 
@@ -297,7 +313,7 @@ namespace JAGE
 
         for (unsigned i {}; i < ai_node->mNumChildren; i++)
         {
-            model_node->children.push_back(process_node(meshes, model_node.get(), ai_node->mChildren[i], ai_scene));
+            model_node->children.push_back(process_node(meshes, model_node.get(), ai_scene, ai_node->mChildren[i]));
         }
 
         model_node->parent = parent;
@@ -327,11 +343,11 @@ namespace JAGE
             return;
         }
 
-        print_metadata(impl->ai_scene->mMetaData);
+        print_metadata(impl->ai_scene);
 
         meshes.reserve(impl->ai_scene->mNumMeshes);
 
-        m_root = process_node(meshes, nullptr, impl->ai_scene->mRootNode, impl->ai_scene);
+        m_root = process_node(meshes, nullptr, impl->ai_scene, impl->ai_scene->mRootNode);
 
         JAGE_MSG_TRACE("ModelResource Loaded.");
     }
@@ -340,7 +356,7 @@ namespace JAGE
 
     const ModelNode* ModelResource::root() const { return m_root.get(); }
 
-    const MeshData* ModelResource::data(unsigned index) const
+    const MeshData* ModelResource::mesh_data(unsigned index) const
     {
         if (index >= impl->ai_scene->mNumMeshes) 
         {

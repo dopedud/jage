@@ -188,42 +188,32 @@ namespace JAGE
 
     void OpenGLShader::set_uniform_bool(std::string_view name, bool value)
     {
-        glUseProgram(shaderID);
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
         glUniform1i(loc, static_cast<int>(value));
-        glUseProgram(0);
     }
 
     void OpenGLShader::set_uniform_uint(std::string_view name, unsigned value)
     {
-        glUseProgram(shaderID);
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
         glUniform1i(loc, value);
-        glUseProgram(0);
     }
 
     void OpenGLShader::set_uniform_int(std::string_view name, int value)
     {
-        glUseProgram(shaderID);
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
         glUniform1i(loc, value);
-        glUseProgram(0);
     }
 
     void OpenGLShader::set_uniform_float(std::string_view name, float value)
     {
-        glUseProgram(shaderID);
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
         glUniform1i(loc, value);
-        glUseProgram(0);
     }
 
     void OpenGLShader::set_uniform_mat4(std::string_view name, const glm::mat4& value)
     {
-        glUseProgram(shaderID);
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
         glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
-        glUseProgram(0);
     }
 
     OpenGLTexture::OpenGLTexture(const ui8* data, unsigned width, unsigned height)
@@ -463,11 +453,11 @@ namespace JAGE
         glm::vec3 view_pos { glm::inverse(m_view)[3] };
         glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::floor(view_pos / m_spacing) * m_spacing) };
 
+        grid_shader.bind();
         grid_shader.set_uniform_mat4("model", model);
         grid_shader.set_uniform_mat4("view", m_view);
         grid_shader.set_uniform_mat4("projection", m_projection);
 
-        grid_shader.bind();
         glBindVertexArray(grid_vao);
         glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
@@ -522,6 +512,7 @@ namespace JAGE
 
         float inv_size { 1.0f / size };
 
+        axes_shader.bind();
         axes_shader.set_uniform_mat4("view", orbited_view);
         axes_shader.set_uniform_mat4("projection",
             glm::orthoLH
@@ -531,7 +522,6 @@ namespace JAGE
                 -inv_size, inv_size, 0.01f, 100.0f
             ));
 
-        axes_shader.bind();
         glBindVertexArray(axes_vao);
         glDrawElements(GL_LINES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);

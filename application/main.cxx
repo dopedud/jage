@@ -35,7 +35,7 @@ int main(int argc, char** argv)
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);
     });
 
-    Time::SetTargetFPS(240);
+    Time::SetTargetFPS(100);
 
     while (running)
     {

@@ -4,16 +4,6 @@
 
 namespace JAGE
 {
-    // glm::vec3 Transform::euler_angles() const { return glm::degrees(glm::eulerAngles(orientation)); }
-
-    // glm::mat4 Transform::transformation_matrix() const
-    // {
-    //     return
-    //         glm::translate(glm::mat4{ 1.0f }, position) *
-    //         glm::mat4_cast(orientation) *
-    //         glm::scale(glm::mat4{ 1.0f }, scale);
-    // }
-
     DISABLE_WARNING_PUSH
     DISABLE_WARNING_GCC_CLANG("-Wmissing-field-initializers")
 

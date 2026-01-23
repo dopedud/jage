@@ -116,6 +116,12 @@ namespace JAGE
         PrimitiveType ptype {};
         std::vector<Vertex> vertices {};
         std::vector<unsigned> indices {};
+        unsigned material_index {};
+    };
+
+    struct JAGE_API MaterialData
+    {
+
     };
 
     struct JAGE_API ModelNode
@@ -136,7 +142,8 @@ namespace JAGE
         ~ModelResource();
 
         const ModelNode* root() const;
-        const MeshData* data(unsigned index) const;
+        const MeshData* mesh_data(unsigned index) const;
+        const MaterialData* material_data(unsigned index) const;
     private:
         std::unique_ptr<ModelNode> m_root;
         std::vector<MeshData> meshes;

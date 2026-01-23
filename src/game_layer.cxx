@@ -17,11 +17,11 @@ namespace JAGE
         ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };
         ResourceHandle<TextResource> vertex_shader { ResourceManager::instance().get<TextResource>("default.vs") };
         ResourceHandle<TextResource> fragment_shader { ResourceManager::instance().get<TextResource>("default.fs") };
-        ResourceHandle<ModelResource> cube { ResourceManager::instance().get<ModelResource>("pipo.fbx") };
+        ResourceHandle<ModelResource> cube { ResourceManager::instance().get<ModelResource>("cube.glb") };
 
         texture = Texture::Create(image.resource()->data(), image.resource()->width(), image.resource()->height());
         shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());
-        mesh = Mesh::Create(cube.resource()->data(0));
+        mesh = Mesh::Create(cube.resource()->mesh_data(0));
 
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();
@@ -51,9 +51,11 @@ namespace JAGE
         glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(camera_component_fov->fov), window->aspect_ratio(), 0.01f) };
         // glm::mat4 projection { glm::orthoLH(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f) };
 
+        shader->bind();
         shader->set_uniform_mat4("model", model);
         shader->set_uniform_mat4("view", view);
         shader->set_uniform_mat4("projection", projection);
+        shader->unbind();
 
         mesh->render(shader);
 
