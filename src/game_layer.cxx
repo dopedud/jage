@@ -57,7 +57,11 @@ namespace JAGE
         shader->set_uniform_mat4("projection", projection);
         shader->unbind();
 
+        texture->bind();
+
         mesh->render(shader);
+
+        texture->unbind();
 
         debug_renderer->set_vp(view, projection);
         debug_renderer->RenderGridLines(5, 25.0f);

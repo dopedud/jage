@@ -222,13 +222,14 @@ namespace JAGE
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
+
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -247,7 +248,7 @@ namespace JAGE
         glBindVertexArray(vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, data->vertices.size() * sizeof(MeshData::Vertex), &data->vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, data->vertices.size() * sizeof(MeshData::VertexData), &data->vertices[0], GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, data->indices.size() * sizeof(unsigned), &data->indices[0], GL_STATIC_DRAW);
@@ -258,16 +259,16 @@ namespace JAGE
             { Shader::DataType::Float3, "v_normal" },
 
             // the number of vertex UV coordinates used should follow the size of the MeshData::Vertex::uvcoords array
+            { Shader::DataType::Float2, "v_uvcoord0" },
             { Shader::DataType::Float2, "v_uvcoord1" },
             { Shader::DataType::Float2, "v_uvcoord2" },
             { Shader::DataType::Float2, "v_uvcoord3" },
-            { Shader::DataType::Float2, "v_uvcoord4" },
 
             // the number of vertex colors used should follow the size of the MeshData::Vertex::colors array
+            { Shader::DataType::Float4, "v_color0" },
             { Shader::DataType::Float4, "v_color1" },
             { Shader::DataType::Float4, "v_color2" },
             { Shader::DataType::Float4, "v_color3" },
-            { Shader::DataType::Float4, "v_color4" },
         };
 
         const std::vector<BufferElement>& elements { layout.elements() };
@@ -279,7 +280,7 @@ namespace JAGE
                 elements[i].component_count(),
                 OpenGLShader::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
-                sizeof(MeshData::Vertex),
+                sizeof(MeshData::VertexData),
                 (void*)elements[i].offset
             );
         }

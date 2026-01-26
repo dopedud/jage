@@ -11,8 +11,8 @@ set(CORE_SRC
     window.cxx
     renderer.cxx
     resources.cxx
+    ecs_c.cxx
     math.cxx
-    ecs.cxx
     game_layer.cxx
 
     platform/glfw/input.cxx

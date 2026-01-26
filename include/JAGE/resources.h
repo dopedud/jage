@@ -82,13 +82,20 @@ namespace JAGE
         std::string m_content;
     };
 
+    struct JAGE_API ImageData
+    {
+        struct JAGE_API PixelData { ui8 r {}, g {}, b {}, a {}; };
+
+        std::vector<PixelData> pixels {};
+        unsigned width {}, height {};
+    };
+
     class JAGE_API ImageResource final : public Resource
     {
     public:
         static std::string_view dir_path();
 
         explicit ImageResource(ResourceManager::Key, std::string_view filename);
-        ~ImageResource();
 
         const ui8* data() const;
 
@@ -96,15 +103,14 @@ namespace JAGE
         unsigned width() const;
         unsigned height() const;
     private:
-        ui8* m_data;
-        unsigned m_size, m_width, m_height;
+        ImageData m_data;
     };
 
     struct JAGE_API MeshData
     {
         enum class PrimitiveType : ui8 { UNKNOWN = 0, POINT, LINE, TRIANGLE };
 
-        struct JAGE_API Vertex
+        struct JAGE_API VertexData
         {
             glm::vec3 position {};
             glm::vec3 normal {};
@@ -114,7 +120,7 @@ namespace JAGE
 
         std::string name {};
         PrimitiveType ptype {};
-        std::vector<Vertex> vertices {};
+        std::vector<VertexData> vertices {};
         std::vector<unsigned> indices {};
         unsigned material_index {};
     };

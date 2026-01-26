@@ -131,31 +131,26 @@ namespace JAGE
 
     ImageResource::ImageResource(ResourceManager::Key, std::string_view filename)
     : Resource{ std::string{ dir_path() } + std::string{ filename } }
-    , m_size {}, m_width {}, m_height {}
+    , m_data {}
     {
         int width {};
         int height {};
 
         stbi_set_flip_vertically_on_load(true);
-        m_data = stbi_load(m_path.c_str(), &width, &height, nullptr, 4);
+        ui8* loaded_data { stbi_load(m_path.c_str(), &width, &height, nullptr, STBI_rgb_alpha) };
 
-        if (!m_data)
+        if (!loaded_data)
         {
             JAGE_LOG_ERROR("JAGE I/O error: failed to load image at path - {}", m_path);
             JAGE_MSG_ERROR("Returning empty contents.");
             return;
         }
 
-        m_width = width;
-        m_height = height;
+        m_data.width = width;
+        m_data.height = height;
 
-        // literal 4 here indicates the number of channels the image has
-        // since desired channels was set to 4 upon loading the image via stbi_load, there is no need for variable
-        // number of channels
-        m_size = m_width * m_height * 4 * sizeof(ui8);
+        m_data.pixel
     }
-
-    ImageResource::~ImageResource() { stbi_image_free(m_data); }
 
     const ui8* ImageResource::data() const { return m_data; }
 
@@ -181,15 +176,36 @@ namespace JAGE
             vertices_count
         );
 
-        JAGE_LOG_TRACE("    texture count: {}", ai_scene->mMaterials[0]->GetTextureCount(aiTextureType::aiTextureType_DIFFUSE));
+        // JAGE_LOG_TRACE("    materials count: {}", ai_scene->mMaterials[0]->mNumProperties);
 
-        aiString ai_string {};
+        // for (unsigned i {}; i < ai_scene->mMaterials[0]->mNumProperties; i++)
+        // {
+        //     aiMaterialProperty matprop { *ai_scene->mMaterials[0]->mProperties[i] };
 
-        ai_scene->mMaterials[0]->GetTexture(aiTextureType::aiTextureType_DIFFUSE, 0, &ai_string);
-        JAGE_LOG_TRACE("    texture path: {}", ai_string.C_Str());
+        //     JAGE_LOG_TRACE("        matprop number {} name: {}", i, matprop.mKey.C_Str());
 
-        const aiTexture* ai_texture { ai_scene->GetEmbeddedTexture(ai_string.C_Str()) };
-        if(ai_texture) JAGE_LOG_TRACE("    texture name: {}", ai_texture->mFilename.C_Str());
+        //     switch (ai_scene->mMaterials[0]->mProperties[i]->mType)
+        //     {
+        //         case aiPropertyTypeInfo::aiPTI_Integer:     JAGE_LOG_TRACE("        matprop number {} type: {}", i, "integer");     break;
+        //         case aiPropertyTypeInfo::aiPTI_Float:       JAGE_LOG_TRACE("        matprop number {} type: {}", i, "float");       break;
+        //         case aiPropertyTypeInfo::aiPTI_Double:      JAGE_LOG_TRACE("        matprop number {} type: {}", i, "double");      break;
+        //         case aiPropertyTypeInfo::aiPTI_String:      JAGE_LOG_TRACE("        matprop number {} type: {}", i, "string");      break;
+        //         case aiPropertyTypeInfo::aiPTI_Buffer:      JAGE_LOG_TRACE("        matprop number {} type: {}", i, "buffer");      break;
+        //         default:      JAGE_LOG_TRACE("        matprop number {} type: {}", i, "unknown"); break;
+        //     }
+
+        //     JAGE_LOG_TRACE("        matprop number {} semantic: {}", i, matprop.mSemantic);
+        // }
+
+        // JAGE_LOG_TRACE("    texture count: {}", ai_scene->mMaterials[0]->GetTextureCount(aiTextureType::aiTextureType_DIFFUSE));
+
+        // aiString ai_string {};
+
+        // ai_scene->mMaterials[0]->GetTexture(aiTextureType::aiTextureType_DIFFUSE, 0, &ai_string);
+        // JAGE_LOG_TRACE("    texture path: {}", ai_string.C_Str());
+
+        // const aiTexture* ai_texture { ai_scene->GetEmbeddedTexture(ai_string.C_Str()) };
+        // if(ai_texture) JAGE_LOG_TRACE("    texture name: {}", ai_texture->mFilename.C_Str());
 
         JAGE_MSG_TRACE("Metadata information:");
 
@@ -260,7 +276,7 @@ namespace JAGE
         data.vertices.reserve(ai_mesh->mNumVertices);
         for (unsigned i {}; i < ai_mesh->mNumVertices; i++)
         {
-            MeshData::Vertex vertex;
+            MeshData::VertexData vertex;
 
             if (ai_mesh->HasPositions())
             {
