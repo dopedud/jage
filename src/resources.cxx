@@ -174,7 +174,22 @@ namespace JAGE
 
         if (!vertices_count.empty()) vertices_count.back() = '.';
 
-        JAGE_LOG_TRACE("Model contains {} mesh(es), with number of vertices from each mesh by order:{}", ai_scene->mNumMeshes, vertices_count);
+        JAGE_LOG_TRACE
+        (
+            "    Model contains {} mesh(es), with number of vertices from each mesh by order:{}",
+            ai_scene->mNumMeshes,
+            vertices_count
+        );
+
+        JAGE_LOG_TRACE("    texture count: {}", ai_scene->mMaterials[0]->GetTextureCount(aiTextureType::aiTextureType_DIFFUSE));
+
+        aiString ai_string {};
+
+        ai_scene->mMaterials[0]->GetTexture(aiTextureType::aiTextureType_DIFFUSE, 0, &ai_string);
+        JAGE_LOG_TRACE("    texture path: {}", ai_string.C_Str());
+
+        const aiTexture* ai_texture { ai_scene->GetEmbeddedTexture(ai_string.C_Str()) };
+        if(ai_texture) JAGE_LOG_TRACE("    texture name: {}", ai_texture->mFilename.C_Str());
 
         JAGE_MSG_TRACE("Metadata information:");
 

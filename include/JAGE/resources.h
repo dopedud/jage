@@ -147,6 +147,7 @@ namespace JAGE
     private:
         std::unique_ptr<ModelNode> m_root;
         std::vector<MeshData> meshes;
+        std::vector<MaterialData> materials;
 
         struct ModelResource_Impl;
         std::unique_ptr<ModelResource_Impl> impl;

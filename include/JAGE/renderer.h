@@ -49,16 +49,6 @@ namespace JAGE
         Type m_type;
     };
 
-    class JAGE_API Material
-    {
-    public:
-        static std::unique_ptr<Material> Create(const Shader* shader);
-        virtual ~Material() = default;
-    private:
-        const Shader* m_shader;
-        std::vector<Texture*> m_textures;
-    };
-
     class JAGE_API Mesh
     {
     public:
@@ -69,6 +59,16 @@ namespace JAGE
         virtual void render(const std::unique_ptr<Shader>& shader) = 0;
     protected:
         const MeshData* m_data;
+    };
+
+    class JAGE_API Material
+    {
+    public:
+        static std::unique_ptr<Material> Create(const Shader* shader);
+        virtual ~Material() = default;
+    private:
+        const Shader* m_shader;
+        std::vector<Texture*> m_textures;
     };
 
     class JAGE_API DebugRenderer
