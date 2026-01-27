@@ -86,7 +86,15 @@ namespace JAGE
     {
         struct JAGE_API PixelData { ui8 r {}, g {}, b {}, a {}; };
 
+        /**
+         * @var pixels
+         * 
+         * @brief A dynamic array to hold pixel data of an image.
+         * This array holds image data in contiguous memory because the renderer expects the image data to be
+         * laid out as such.
+         */
         std::vector<PixelData> pixels {};
+
         unsigned width {}, height {};
     };
 
@@ -97,11 +105,7 @@ namespace JAGE
 
         explicit ImageResource(ResourceManager::Key, std::string_view filename);
 
-        const ui8* data() const;
-
-        unsigned size() const;
-        unsigned width() const;
-        unsigned height() const;
+        const ImageData* data() const;
     private:
         ImageData m_data;
     };

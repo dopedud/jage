@@ -149,14 +149,20 @@ namespace JAGE
         m_data.width = width;
         m_data.height = height;
 
-        m_data.pixel
+        m_data.pixels.resize(width * height);
+
+        for (unsigned i {}; i < m_data.pixels.size(); i++)
+        {
+            m_data.pixels[i].r = loaded_data[i + 0];
+            m_data.pixels[i].g = loaded_data[i + 1];
+            m_data.pixels[i].b = loaded_data[i + 2];
+            m_data.pixels[i].a = loaded_data[i + 3];
+        }
+
+        stbi_image_free(loaded_data);
     }
 
-    const ui8* ImageResource::data() const { return m_data; }
-
-    unsigned ImageResource::size() const { return m_size; }
-    unsigned ImageResource::width() const { return m_width; }
-    unsigned ImageResource::height() const { return m_height; }
+    const ImageData* ImageResource::data() const { return &m_data; }
 
     void print_metadata(const aiScene* ai_scene)
     {

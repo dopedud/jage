@@ -264,7 +264,7 @@ namespace JAGE
          * @fn handle()
          * @brief A function to expose backend implementation of a window.
          * 
-         * This should be used only if you know what you're doing.
+         * @note This should be used only if you know what you're doing.
          */
         virtual void* handle() = 0;
 
@@ -275,9 +275,16 @@ namespace JAGE
         void PopLayer(Layer* layer);
         void PopOverlay(Layer* overlay);
 
-        // for use in for loops and search algorithms like std::find
+        /**
+         * @name layer iterators
+         * 
+         * For use in @c for loops and search algorithms like @c std::find .
+         * 
+         * @{
+         */
         std::vector<Layer*>::iterator layers_begin();
         std::vector<Layer*>::iterator layers_end();
+        /** @} */
     protected:
 
         /**

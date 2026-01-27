@@ -35,9 +35,9 @@ namespace JAGE
         return 0;
     }
 
-    std::unique_ptr<Texture> Texture::Create(const ui8* data, unsigned width, unsigned height)
+    std::unique_ptr<Texture> Texture::Create(const ImageData* data)
     {
-        return std::make_unique<OpenGLTexture>(data, width, height);
+        return std::make_unique<OpenGLTexture>(data);
     }
 
     Texture::Type Texture::type() const { return m_type; }

@@ -216,13 +216,14 @@ namespace JAGE
         glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
     }
 
-    OpenGLTexture::OpenGLTexture(const ui8* data, unsigned width, unsigned height)
+    OpenGLTexture::OpenGLTexture(const ImageData* data)
     {
         glGenTextures(1, &textureID);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->width, data->height,
+            0, GL_RGBA, GL_UNSIGNED_BYTE, &data->pixels.data()->r);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

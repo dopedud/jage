@@ -18,7 +18,7 @@ namespace JAGE
             Bool
         };
 
-        static unsigned JAGE_API datatype_size(DataType datatype);
+        static unsigned datatype_size(DataType datatype);
 
         static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
         virtual ~Shader() = default;
@@ -38,7 +38,7 @@ namespace JAGE
     public:
         enum class Type : ui8 { DIFFUSE = 0, SPECULAR };
 
-        static std::unique_ptr<Texture> Create(const ui8* data, unsigned width, unsigned height);
+        static std::unique_ptr<Texture> Create(const ImageData* data);
         virtual ~Texture() = default;
 
         virtual void bind() = 0;

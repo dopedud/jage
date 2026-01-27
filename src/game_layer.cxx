@@ -19,7 +19,7 @@ namespace JAGE
         ResourceHandle<TextResource> fragment_shader { ResourceManager::instance().get<TextResource>("default.fs") };
         ResourceHandle<ModelResource> cube { ResourceManager::instance().get<ModelResource>("cube.glb") };
 
-        texture = Texture::Create(image.resource()->data(), image.resource()->width(), image.resource()->height());
+        texture = Texture::Create(image.resource()->data());
         shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());
         mesh = Mesh::Create(cube.resource()->mesh_data(0));
 
