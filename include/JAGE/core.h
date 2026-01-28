@@ -76,15 +76,6 @@
 /**
  * 
  * 
- * MACRO FOR SHIFT-LEFT BIT OPERATION
- * 
- * 
- */
-#define BIT(x) (1 << x)
-
-/**
- * 
- * 
  * INITIALIZATION/DESTRUCTION DEFINITIONS
  * 
  * 
@@ -106,9 +97,9 @@ namespace JAGE
 {
     namespace Time
     {
-        constexpr ui64 SECONDS_TO_NANO { 1000000000 };
-        constexpr ui64 SECONDS_TO_MILLI { 1000 };
-        constexpr ui64 MILLI_TO_NANO { 1000000 };
+        constexpr u64 SECONDS_TO_NANO { 1000000000 };
+        constexpr u64 SECONDS_TO_MILLI { 1000 };
+        constexpr u64 MILLI_TO_NANO { 1000000 };
 
         void JAGE_API SetTargetFPS(unsigned fps);
 
@@ -369,7 +360,7 @@ namespace JAGE
 {
     namespace Input
     {
-        enum class KeyCode : ui16
+        enum class KeyCode : u16
         {
             UNKNOWN = 0,
 
@@ -400,25 +391,25 @@ namespace JAGE
             KP1, KP2, KP3, KP4, KP5, KP6, KP7, KP8, KP9, KP0
         };
 
-        enum class MouseButton : ui8
+        enum class MouseButton : u8
         {
             _1 = 0, _2, _3, _4, _5
         };
 
-        enum class Action : ui8
+        enum class Action : u8
         {
             PRESSED = 0, RELEASED, REPEATED
         };
 
-        enum class Modifier : ui8
+        enum class Modifier : u8
         {
             NONE        = 0,
-            SHIFT       = BIT(0),
-            CONTROL     = BIT(1),
-            ALT         = BIT(2),
+            SHIFT       = 1 << 0,
+            CONTROL     = 1 << 1,
+            ALT         = 1 << 2,
         };
 
-        enum class CursorMode : ui8 { NORMAL = 0, DISABLED, HIDDEN };
+        enum class CursorMode : u8 { NORMAL = 0, DISABLED, HIDDEN };
 
         JAGE_API int operator&(Modifier lhs, Modifier rhs);
         JAGE_API int operator|(Modifier lhs, Modifier rhs);
@@ -589,7 +580,7 @@ namespace JAGE
  */
 namespace JAGE
 {
-    enum class EventType : ui8
+    enum class EventType : u8
     {
         None = 0,
         WindowClose, WindowResize, WindowFocus, WindowMoved,
@@ -598,14 +589,14 @@ namespace JAGE
         MouseButton, MouseEnter, MouseMoved, MouseScrolled
     };
 
-    enum class EventCategory : ui8
+    enum class EventCategory : u8
     {
         None = 0,
-        Application     = BIT(0),
-        Input           = BIT(1),
-        Keyboard        = BIT(2),
-        Mouse           = BIT(3),
-        MouseButton     = BIT(4)
+        Application     = 1 << 0,
+        Input           = 1 << 1,
+        Keyboard        = 1 << 2,
+        Mouse           = 1 << 3,
+        MouseButton     = 1 << 4
     };
 
     JAGE_API int operator&(EventCategory lhs, EventCategory rhs);

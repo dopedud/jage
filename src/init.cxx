@@ -6,14 +6,17 @@
 
 namespace JAGE
 {
+    namespace fs = std::filesystem;
+
     void Init(int argc, char** argv)
     {
-        auto exe_dir { std::filesystem::path(argv[0]).parent_path() };
-        std::filesystem::current_path(exe_dir.parent_path());
+        fs::path exe_dir { fs::path{ argv[0] } };
+        fs::path root_dir { exe_dir.parent_path().parent_path() };
+        fs::current_path(root_dir);
 
         LogInit();
 
-        JAGE_LOG_INFO("Current working directory: {}", std::filesystem::current_path().string());
+        JAGE_LOG_INFO("Current working directory: {}", fs::current_path().string());
 
         ResourceManager::instance();
     }

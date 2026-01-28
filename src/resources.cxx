@@ -20,15 +20,15 @@ DISABLE_WARNING_POP
 
 namespace JAGE
 {
-    std::string_view Resource::dir_path() { return "./resources/"; }
-    std::string_view TextResource::dir_path() { return "shaders/"; }
-    std::string_view ImageResource::dir_path() { return "images/"; }
-    std::string_view ModelResource::dir_path() { return "models/"; }
+    fs::path Resource::dir_path() { return fs::current_path() / "resources"; }
+    fs::path TextResource::dir_path() { return "shaders/"; }
+    fs::path ImageResource::dir_path() { return "images/"; }
+    fs::path ModelResource::dir_path() { return "models/"; }
 
     Resource::Resource(std::string_view path)
-    : m_path { std::string{ dir_path() } + std::string{ path } } {}
+    : m_path { dir_path() / path } {}
 
-    std::string_view Resource::path() const { return m_path; }
+    std::string_view Resource::path() const { return m_path.string(); }
 
     template<typename T>
     ResourceHandle<T>::ResourceHandle(ResourceID id, T* resource)
@@ -129,6 +129,51 @@ namespace JAGE
 
     std::string_view TextResource::content() const { return m_content; }
 
+    void ImageData::set_pixel(unsigned row, unsigned column, unsigned channel, u8 value)
+    { pixels[(row * width + column) * 4 + channel] = value; }
+
+    ImageData ImageData::pink_black_checkerbox()
+    {
+        ImageData data;
+
+        unsigned width { 1024 };
+        unsigned height { 1024 };
+
+        data.width = width;
+        data.height = height;
+
+        data.pixels.resize(width * height * 4);
+
+        for (unsigned i {}; i < width; i++)
+        {
+            for (unsigned j {}; j < height; j++)
+            {
+                data.set_pixel(i, j, 3, U8_MAX);
+
+                if 
+                (
+                    (i < width / 2 && j < height / 2)
+                    ||
+                    (i > width / 2 && j > height / 2)
+                )
+                {
+                    data.set_pixel(i, j, 0, U8_MAX);
+                    data.set_pixel(i, j, 1, U8_MAX);
+                    data.set_pixel(i, j, 2, U8_MAX);
+                }
+
+                else
+                {
+                    data.set_pixel(i, j, 0, U8_MAX);
+                    data.set_pixel(i, j, 1, 0);
+                    data.set_pixel(i, j, 2, U8_MAX);
+                }
+            }
+        }
+
+        return data;
+    }
+
     ImageResource::ImageResource(ResourceManager::Key, std::string_view filename)
     : Resource{ std::string{ dir_path() } + std::string{ filename } }
     , m_data {}
@@ -137,27 +182,26 @@ namespace JAGE
         int height {};
 
         stbi_set_flip_vertically_on_load(true);
-        ui8* loaded_data { stbi_load(m_path.c_str(), &width, &height, nullptr, STBI_rgb_alpha) };
+        u8* loaded_data { stbi_load(m_path.c_str(), &width, &height, nullptr, STBI_rgb_alpha) };
 
         if (!loaded_data)
         {
             JAGE_LOG_ERROR("JAGE I/O error: failed to load image at path - {}", m_path);
-            JAGE_MSG_ERROR("Returning empty contents.");
+            JAGE_MSG_ERROR("Returning pink black checkerbox image.");
+
+            m_data = ImageData::pink_black_checkerbox();
             return;
         }
 
         m_data.width = width;
         m_data.height = height;
 
-        m_data.pixels.resize(width * height);
+        // literal 4 here indicates the number of channels the image has
+        // since desired channels was set to 4 upon loading the image via stbi_load, there is no need for variable
+        // number of channels
+        m_data.pixels.resize(width * height * 4);
 
-        for (unsigned i {}; i < m_data.pixels.size(); i++)
-        {
-            m_data.pixels[i].r = loaded_data[i + 0];
-            m_data.pixels[i].g = loaded_data[i + 1];
-            m_data.pixels[i].b = loaded_data[i + 2];
-            m_data.pixels[i].a = loaded_data[i + 3];
-        }
+        for (unsigned i {}; i < m_data.pixels.size(); i++) m_data.pixels[i] = loaded_data[i];
 
         stbi_image_free(loaded_data);
     }
@@ -182,37 +226,6 @@ namespace JAGE
             vertices_count
         );
 
-        // JAGE_LOG_TRACE("    materials count: {}", ai_scene->mMaterials[0]->mNumProperties);
-
-        // for (unsigned i {}; i < ai_scene->mMaterials[0]->mNumProperties; i++)
-        // {
-        //     aiMaterialProperty matprop { *ai_scene->mMaterials[0]->mProperties[i] };
-
-        //     JAGE_LOG_TRACE("        matprop number {} name: {}", i, matprop.mKey.C_Str());
-
-        //     switch (ai_scene->mMaterials[0]->mProperties[i]->mType)
-        //     {
-        //         case aiPropertyTypeInfo::aiPTI_Integer:     JAGE_LOG_TRACE("        matprop number {} type: {}", i, "integer");     break;
-        //         case aiPropertyTypeInfo::aiPTI_Float:       JAGE_LOG_TRACE("        matprop number {} type: {}", i, "float");       break;
-        //         case aiPropertyTypeInfo::aiPTI_Double:      JAGE_LOG_TRACE("        matprop number {} type: {}", i, "double");      break;
-        //         case aiPropertyTypeInfo::aiPTI_String:      JAGE_LOG_TRACE("        matprop number {} type: {}", i, "string");      break;
-        //         case aiPropertyTypeInfo::aiPTI_Buffer:      JAGE_LOG_TRACE("        matprop number {} type: {}", i, "buffer");      break;
-        //         default:      JAGE_LOG_TRACE("        matprop number {} type: {}", i, "unknown"); break;
-        //     }
-
-        //     JAGE_LOG_TRACE("        matprop number {} semantic: {}", i, matprop.mSemantic);
-        // }
-
-        // JAGE_LOG_TRACE("    texture count: {}", ai_scene->mMaterials[0]->GetTextureCount(aiTextureType::aiTextureType_DIFFUSE));
-
-        // aiString ai_string {};
-
-        // ai_scene->mMaterials[0]->GetTexture(aiTextureType::aiTextureType_DIFFUSE, 0, &ai_string);
-        // JAGE_LOG_TRACE("    texture path: {}", ai_string.C_Str());
-
-        // const aiTexture* ai_texture { ai_scene->GetEmbeddedTexture(ai_string.C_Str()) };
-        // if(ai_texture) JAGE_LOG_TRACE("    texture name: {}", ai_texture->mFilename.C_Str());
-
         JAGE_MSG_TRACE("Metadata information:");
 
         aiMetadata metadata { *ai_scene->mMetaData };
@@ -222,8 +235,8 @@ namespace JAGE
             switch (metadata.mValues[i].mType)
             {
                 case aiMetadataType::AI_BOOL:           JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<bool*>(metadata.mValues[i].mData)); break;
-                case aiMetadataType::AI_UINT32:         JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<ui32*>(metadata.mValues[i].mData)); break;
-                case aiMetadataType::AI_UINT64:         JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<ui64*>(metadata.mValues[i].mData)); break;
+                case aiMetadataType::AI_UINT32:         JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<u32*>(metadata.mValues[i].mData)); break;
+                case aiMetadataType::AI_UINT64:         JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<u64*>(metadata.mValues[i].mData)); break;
                 case aiMetadataType::AI_INT32:          JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<i32*>(metadata.mValues[i].mData)); break;
                 case aiMetadataType::AI_INT64:          JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<i64*>(metadata.mValues[i].mData)); break;
                 case aiMetadataType::AI_FLOAT:          JAGE_LOG_TRACE("    {}: {}", metadata.mKeys[i].C_Str(), *static_cast<float*>(metadata.mValues[i].mData)); break;
@@ -248,7 +261,62 @@ namespace JAGE
         }
     }
 
-    MeshData process_mesh(aiMesh* ai_mesh, const aiScene* ai_scene)
+    ImageData process_texture(const aiMaterial* ai_material, aiTextureType texture_type, const aiScene* ai_scene)
+    {
+        ImageData data;
+
+        if (ai_material->GetTextureCount(texture_type) > 0)
+        {
+            aiString texture_path {};
+            ai_material->GetTexture(texture_type, 0, &texture_path);
+
+            std::string filename { std::filesystem::path{ texture_path.C_Str() }.filename().string() };
+
+            const aiTexture* texture {};
+
+            // load textures externally
+            if (texture = ai_scene->GetEmbeddedTexture(filename.c_str()))
+            {
+
+            }
+
+            // load textures from memory (embedded)
+            else
+            {
+                // texture is compressed
+                if (texture->mHeight == 0)
+                {
+
+                }
+
+                // texture is uncompressed
+                else
+                {
+
+                }
+            }
+        }
+
+        return data;
+    }
+
+    MaterialData process_material(const aiMaterial* ai_material, const aiScene* ai_scene)
+    {
+        MaterialData data;
+
+        aiColor4D diffuse_color;
+        if (ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color) == aiReturn::aiReturn_SUCCESS)
+        {
+            data.diffuse_color.r = diffuse_color.r;
+            data.diffuse_color.g = diffuse_color.g;
+            data.diffuse_color.b = diffuse_color.b;
+            data.diffuse_color.a = diffuse_color.a;
+        }
+
+        return data;
+    }
+
+    MeshData process_mesh(const aiMesh* ai_mesh, const aiScene* ai_scene)
     {
         MeshData data;
 
@@ -306,7 +374,7 @@ namespace JAGE
                 if (ai_mesh->HasTextureCoords(j))
                 {
                     aiVector3D aiv_uvcoord { ai_mesh->mTextureCoords[j][i] };
-                    vertex.uvcoords[j] = glm::vec3{ aiv_uvcoord.x, aiv_uvcoord.y, aiv_uvcoord.z };
+                    vertex.uvcoords[j] = glm::vec2{ aiv_uvcoord.x, aiv_uvcoord.y };
                 }
             }
 
@@ -328,18 +396,14 @@ namespace JAGE
 
     }
 
-    std::unique_ptr<ModelNode> process_node(std::vector<MeshData>& meshes, ModelNode* parent, const aiScene* ai_scene, aiNode* ai_node)
+    std::unique_ptr<ModelNode> process_node(aiNode* ai_node, const aiScene* ai_scene, ModelNode* parent, std::vector<MeshData>& meshes)
     {
         std::unique_ptr<ModelNode> model_node { std::make_unique<ModelNode>() };
 
         model_node->name = ai_node->mName.C_Str();
 
-        glm::mat4 transformation_matrix { 1.0f };
-
         for (unsigned i {}; i < 4; i++) for (unsigned j {}; j < 4; j++)
-        transformation_matrix[i][j] = ai_node->mTransformation[j][i];
-
-        model_node->transformation_matrix = transformation_matrix;
+        model_node->transformation_matrix[i][j] = ai_node->mTransformation[j][i];
 
         for (unsigned i {}; i < ai_node->mNumMeshes; i++)
         {
@@ -349,9 +413,7 @@ namespace JAGE
         }
 
         for (unsigned i {}; i < ai_node->mNumChildren; i++)
-        {
-            model_node->children.push_back(process_node(meshes, model_node.get(), ai_scene, ai_node->mChildren[i]));
-        }
+        model_node->children.push_back(process_node(ai_node->mChildren[i], ai_scene, model_node.get(), meshes));
 
         model_node->parent = parent;
 
@@ -382,9 +444,10 @@ namespace JAGE
 
         print_metadata(impl->ai_scene);
 
-        meshes.reserve(impl->ai_scene->mNumMeshes);
+        m_root = process_node(impl->ai_scene->mRootNode, impl->ai_scene, nullptr, meshes);
 
-        m_root = process_node(meshes, nullptr, impl->ai_scene, impl->ai_scene->mRootNode);
+        for (unsigned i {}; i < impl->ai_scene->mNumMaterials; i++)
+        materials.push_back(process_material(impl->ai_scene->mMaterials[i], impl->ai_scene));
 
         JAGE_MSG_TRACE("ModelResource Loaded.");
     }
@@ -395,17 +458,33 @@ namespace JAGE
 
     const MeshData* ModelResource::mesh_data(unsigned index) const
     {
-        if (index >= impl->ai_scene->mNumMeshes) 
+        if (index >= impl->ai_scene->mNumMeshes)
         {
             JAGE_LOG_ERROR
             (
                 "JAGE resource error: index out of bounds "s +
-                "for number of meshes in ModelResource named {}"s, 
+                "for number of meshes in ModelResource named {}."s,
                 impl->ai_scene->mName.C_Str()
             );
             return nullptr;
         }
 
         return &meshes[index];
+    }
+
+    const MaterialData* ModelResource::material_data(unsigned index) const
+    {
+        if (index >= impl->ai_scene->mNumMaterials)
+        {
+            JAGE_LOG_ERROR
+            (
+                "JAGE resource error: index out of bounds "s +
+                "for number of materials in ModelResource named {}."s,
+                impl->ai_scene->mName.C_Str()
+            );
+            return nullptr;
+        }
+
+        return &materials[index];
     }
 }

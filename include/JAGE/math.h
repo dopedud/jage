@@ -19,20 +19,20 @@ namespace JAGE
         public:
             SHA1();
 
-            void update(const ui8* data, size_t len);
-            void final(ui8 out[20]);
+            void update(const u8* data, size_t len);
+            void final(u8 out[20]);
         private:
-            ui32 h0, h1, h2, h3, h4;
-            ui8 buffer[64];
+            u32 h0, h1, h2, h3, h4;
+            u8 buffer[64];
             size_t buffer_len;
-            ui64 bit_len;
+            u64 bit_len;
 
-            ui32 rotate_left(ui32 x, ui32 n);
+            u32 rotate_left(u32 x, u32 n);
 
-            ui32 read_be(const ui8* src);
-            void write_be(ui8* dst, ui32 val);
+            u32 read_be(const u8* src);
+            void write_be(u8* dst, u32 val);
 
-            void process_block(const ui8 block[64]);
+            void process_block(const u8 block[64]);
         };
 
     }

@@ -9,7 +9,7 @@ namespace JAGE
     class JAGE_API Shader
     {
     public:
-        enum class DataType : ui8
+        enum class DataType : u8
         {
             None = 0,
             Float, Float2, Float3, Float4,
@@ -36,7 +36,7 @@ namespace JAGE
     class JAGE_API Texture
     {
     public:
-        enum class Type : ui8 { DIFFUSE = 0, SPECULAR };
+        enum class Type : u8 { DIFFUSE = 0, SPECULAR };
 
         static std::unique_ptr<Texture> Create(const ImageData* data);
         virtual ~Texture() = default;
@@ -64,11 +64,13 @@ namespace JAGE
     class JAGE_API Material
     {
     public:
-        static std::unique_ptr<Material> Create(const Shader* shader);
+        static std::unique_ptr<Material> Create(const MaterialData* shader);
         virtual ~Material() = default;
+
+        void set_shader(const Shader* shader);
     private:
         const Shader* m_shader;
-        std::vector<Texture*> m_textures;
+        const MaterialData* m_materialdata;
     };
 
     class JAGE_API DebugRenderer

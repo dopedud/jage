@@ -52,7 +52,7 @@ namespace JAGE
         // glm::mat4 projection { glm::orthoLH(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f) };
 
         shader->bind();
-        shader->set_uniform_mat4("model", model);
+        shader->set_uniform_mat4("model", glm::mat4{ 1.0f });
         shader->set_uniform_mat4("view", view);
         shader->set_uniform_mat4("projection", projection);
         shader->unbind();

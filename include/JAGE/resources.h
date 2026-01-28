@@ -5,7 +5,8 @@
 
 namespace JAGE
 {
-    using ResourceID = ui64;
+    namespace fs = std::filesystem;
+    using ResourceID = u64;
 
     // NOTE: Resources could technically be instantiated directly from classes derived from Resource, but this should
     // be avoided and only get resources from ResourceManager. Proper compile-time restrictions has been programmed in
@@ -14,14 +15,14 @@ namespace JAGE
     class JAGE_API Resource
     {
     public:
-        static std::string_view dir_path();
+        static fs::path dir_path();
 
         Resource(std::string_view path);
         virtual ~Resource() = default;
 
         std::string_view path() const;
     protected:
-        std::string m_path;
+        fs::path m_path;
     };
 
     template<typename T>
@@ -52,7 +53,7 @@ namespace JAGE
         ~ResourceManager() = default;
 
         /**
-         * @c ResourceManager is a singleton, cannot be copied
+         * `ResourceManager` is a singleton, cannot be copied
          */
         ResourceManager(const ResourceManager&) = delete;
         ResourceManager &operator=(const ResourceManager&) = delete;
@@ -72,7 +73,7 @@ namespace JAGE
     class JAGE_API TextResource final : public Resource
     {
     public:
-        static std::string_view dir_path();
+        static fs::path dir_path();
 
         explicit TextResource(ResourceManager::Key, std::string_view filename);
         ~TextResource() = default;
@@ -84,24 +85,41 @@ namespace JAGE
 
     struct JAGE_API ImageData
     {
-        struct JAGE_API PixelData { ui8 r {}, g {}, b {}, a {}; };
-
         /**
          * @var pixels
          * 
          * @brief A dynamic array to hold pixel data of an image.
+         * 
          * This array holds image data in contiguous memory because the renderer expects the image data to be
          * laid out as such.
+         * 
+         * @note The size of this array must be `width * height * 4`, with the literal 4 here being the number of
+         * channels each pixel occupy. The modern format is RGBA8888 for each pixel.
          */
-        std::vector<PixelData> pixels {};
+        std::vector<u8> pixels {};
 
         unsigned width {}, height {};
+
+        /**
+         * @fn ImageData::set_pixel
+         * 
+         * @brief Setter function to set a pixel value of an image.
+         * 
+         * @param row The row of the pixel to set.
+         * @param collumn The column of the pixel to set.
+         * @param channel The color channel of the pixel to set. Set 0, 1, 2, or 3 for red, green, blue, or alpha
+         * channel respectively.
+         * @param value The value to set the pixel value. Must be between 0 to 255 (maximum value for an unsigned integer).
+         */
+        void set_pixel(unsigned row, unsigned column, unsigned channel, u8 value);
+
+        static ImageData pink_black_checkerbox();
     };
 
     class JAGE_API ImageResource final : public Resource
     {
     public:
-        static std::string_view dir_path();
+        static fs::path dir_path();
 
         explicit ImageResource(ResourceManager::Key, std::string_view filename);
 
@@ -112,7 +130,7 @@ namespace JAGE
 
     struct JAGE_API MeshData
     {
-        enum class PrimitiveType : ui8 { UNKNOWN = 0, POINT, LINE, TRIANGLE };
+        enum class PrimitiveType : u8 { UNKNOWN = 0, POINT, LINE, TRIANGLE };
 
         struct JAGE_API VertexData
         {
@@ -131,7 +149,8 @@ namespace JAGE
 
     struct JAGE_API MaterialData
     {
-
+        glm::vec4 diffuse_color { 1.0f };
+        ImageData diffuse_map {};
     };
 
     struct JAGE_API ModelNode
@@ -139,14 +158,14 @@ namespace JAGE
         std::string name {};
         ModelNode* parent {};
         std::vector<std::unique_ptr<ModelNode>> children {};
-        glm::mat4 transformation_matrix {};
+        glm::mat4 transformation_matrix { 1.0f };
         std::vector<unsigned> meshes_index {};
     };
 
     class JAGE_API ModelResource final : public Resource
     {
     public:
-        static std::string_view dir_path();
+        static fs::path dir_path();
 
         explicit ModelResource(ResourceManager::Key, std::string_view filename);
         ~ModelResource();

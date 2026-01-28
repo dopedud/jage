@@ -222,10 +222,9 @@ namespace JAGE
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->width, data->height,
-            0, GL_RGBA, GL_UNSIGNED_BYTE, &data->pixels.data()->r);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->width, data->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data->pixels.data());
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -430,7 +429,7 @@ namespace JAGE
                     vertices.push_back(static_cast<float>(slice_index) * m_spacing);
                     vertices.push_back(static_cast<float>(slices_int) * m_spacing);
 
-                    ui64 index { indices.size() };
+                    u64 index { indices.size() };
 
                     indices.push_back(index + 0); indices.push_back(index + 1);
                     indices.push_back(index + 2); indices.push_back(index + 3);

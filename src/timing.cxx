@@ -12,8 +12,8 @@ namespace JAGE
 
         static time_point<high_resolution_clock> current {};
         static time_point<high_resolution_clock> previous {};
-        static duration<ui64, std::nano> deltatime {};
-        static duration<ui64, std::nano> target_deltatime {};
+        static duration<u64, std::nano> deltatime {};
+        static duration<u64, std::nano> target_deltatime {};
         static bool target_fps_set {};
 
         void FrameLap()
@@ -23,7 +23,7 @@ namespace JAGE
 
             if (target_fps_set && deltatime < target_deltatime)
             {
-                duration<ui64, std::nano> remaining_deltatime { target_deltatime - deltatime };
+                duration<u64, std::nano> remaining_deltatime { target_deltatime - deltatime };
                 deltatime = target_deltatime;
                 // std::this_thread::sleep_for(remaining_deltatime);
 
@@ -35,7 +35,7 @@ namespace JAGE
 
         void SetTargetFPS(unsigned fps)
         {
-            target_deltatime = duration<ui64, std::nano>{ SECONDS_TO_NANO / fps };
+            target_deltatime = duration<u64, std::nano>{ SECONDS_TO_NANO / fps };
             target_fps_set = true;
             JAGE_LOG_INFO("frame rate capped to {} FPS", fps);
         }
@@ -45,7 +45,7 @@ namespace JAGE
         float ElapsedTime()
         {
             time_point<high_resolution_clock> current { high_resolution_clock::now() };
-            duration<ui64, std::nano> diff { current - start };
+            duration<u64, std::nano> diff { current - start };
 
             return static_cast<float>(diff.count()) / static_cast<float>(MILLI_TO_NANO);
         }
