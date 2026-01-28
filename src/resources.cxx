@@ -21,14 +21,14 @@ DISABLE_WARNING_POP
 namespace JAGE
 {
     fs::path Resource::dir_path() { return fs::current_path() / "resources"; }
-    fs::path TextResource::dir_path() { return "shaders/"; }
-    fs::path ImageResource::dir_path() { return "images/"; }
-    fs::path ModelResource::dir_path() { return "models/"; }
+    fs::path TextResource::dir_path() { return Resource::dir_path() / "shaders"; }
+    fs::path ImageResource::dir_path() { return Resource::dir_path() / "images"; }
+    fs::path ModelResource::dir_path() { return Resource::dir_path() / "models"; }
 
-    Resource::Resource(std::string_view path)
-    : m_path { dir_path() / path } {}
+    Resource::Resource(fs::path path)
+    : m_path { path } {}
 
-    std::string_view Resource::path() const { return m_path.string(); }
+    fs::path Resource::path() const { return m_path; }
 
     template<typename T>
     ResourceHandle<T>::ResourceHandle(ResourceID id, T* resource)
@@ -61,7 +61,8 @@ namespace JAGE
         m_instance.reset();
     }
 
-    ResourceID ResourceManager::path_to_ID(std::string_view str) { return XXH3_64bits(str.data(), str.size()); }
+    ResourceID ResourceManager::path_to_ID(fs::path path)
+    { return XXH3_64bits(path.string().c_str(), path.string().size()); }
 
     template<typename T>
     void ResourceManager::load(std::string_view filename) 
@@ -74,7 +75,7 @@ namespace JAGE
     template<typename T>
     ResourceHandle<T> ResourceManager::get(std::string_view filename)
     {
-        std::string path { std::string{ Resource::dir_path() } + std::string{ T::dir_path() } + std::string{ filename } };
+        std::string path {};
         ResourceID id_hash { path_to_ID(path) };
 
         if (resources.find(id_hash) == resources.end())
@@ -100,7 +101,7 @@ namespace JAGE
     template ResourceHandle<ModelResource>  ResourceManager::get<ModelResource>(std::string_view filename);
 
     TextResource::TextResource(ResourceManager::Key, std::string_view filename)
-    : Resource{ std::string{ dir_path() } + std::string{ filename } }
+    : Resource{ dir_path() / fs::path{ filename } }
     {
         std::ifstream file {};
 
@@ -175,14 +176,14 @@ namespace JAGE
     }
 
     ImageResource::ImageResource(ResourceManager::Key, std::string_view filename)
-    : Resource{ std::string{ dir_path() } + std::string{ filename } }
+    : Resource{ dir_path() / fs::path{ filename } }
     , m_data {}
     {
         int width {};
         int height {};
 
         stbi_set_flip_vertically_on_load(true);
-        u8* loaded_data { stbi_load(m_path.c_str(), &width, &height, nullptr, STBI_rgb_alpha) };
+        u8* loaded_data { stbi_load(m_path.string().c_str(), &width, &height, nullptr, STBI_rgb_alpha) };
 
         if (!loaded_data)
         {
@@ -427,13 +428,13 @@ namespace JAGE
     };
 
     ModelResource::ModelResource(ResourceManager::Key, std::string_view filename)
-    : Resource{ std::string{ dir_path() } + std::string{ filename } }
+    : Resource{ dir_path() / fs::path{ filename } }
     , meshes {}
     , impl { std::make_unique<ModelResource_Impl>() }
     {
         JAGE_MSG_TRACE("Loading ModelResource.");
 
-        impl->ai_scene = impl->importer.ReadFile(m_path, aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded);
+        impl->ai_scene = impl->importer.ReadFile(m_path.string(), aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded);
 
         if (!impl->ai_scene || impl->ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !impl->ai_scene->mRootNode)
         {

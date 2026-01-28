@@ -17,10 +17,10 @@ namespace JAGE
     public:
         static fs::path dir_path();
 
-        Resource(std::string_view path);
+        Resource(fs::path path);
         virtual ~Resource() = default;
 
-        std::string_view path() const;
+        fs::path path() const;
     protected:
         fs::path m_path;
     };
@@ -58,7 +58,7 @@ namespace JAGE
         ResourceManager(const ResourceManager&) = delete;
         ResourceManager &operator=(const ResourceManager&) = delete;
 
-        ResourceID path_to_ID(std::string_view str);
+        ResourceID path_to_ID(fs::path path);
 
         template<typename T> void               load(std::string_view filename);
         template<typename T> ResourceHandle<T>  get(std::string_view filename);

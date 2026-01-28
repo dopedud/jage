@@ -10,7 +10,7 @@ namespace JAGE
 
     void Init(int argc, char** argv)
     {
-        fs::path exe_dir { fs::path{ argv[0] } };
+        fs::path exe_dir { fs::canonical(fs::path{ argv[0] }) };
         fs::path root_dir { exe_dir.parent_path().parent_path() };
         fs::current_path(root_dir);
 

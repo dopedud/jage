@@ -32,8 +32,11 @@ docs/html/index.html
 
 - **Programming Languages:** C, C++
 - **Build System:** CMake
+- **Logging:** spdlog
+- **Windowing/Input Management:** GLFW
 - **Rendering:** OpenGL
-- **Game GUI:** TBA
+- **Asset Management:** Assimp, stb_image, xxhash
+- **Game GUI:** TBD
 - **Editor GUI:** Dear ImGui
 - **Code Documentation:** Doxygen
 
