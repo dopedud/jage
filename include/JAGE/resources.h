@@ -151,6 +151,8 @@ namespace JAGE
     {
         glm::vec4 diffuse_color { 1.0f };
         ImageData diffuse_map {};
+        glm::vec4 specular_color {};
+        ImageData specular_map {};
     };
 
     struct JAGE_API ModelNode

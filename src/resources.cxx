@@ -75,7 +75,7 @@ namespace JAGE
     template<typename T>
     ResourceHandle<T> ResourceManager::get(std::string_view filename)
     {
-        std::string path {};
+        fs::path path { T::dir_path() / fs::path{ filename } };
         ResourceID id_hash { path_to_ID(path) };
 
         if (resources.find(id_hash) == resources.end())
@@ -179,15 +179,14 @@ namespace JAGE
     : Resource{ dir_path() / fs::path{ filename } }
     , m_data {}
     {
-        int width {};
-        int height {};
+        int width {}, height {};
 
         stbi_set_flip_vertically_on_load(true);
         u8* loaded_data { stbi_load(m_path.string().c_str(), &width, &height, nullptr, STBI_rgb_alpha) };
 
         if (!loaded_data)
         {
-            JAGE_LOG_ERROR("JAGE I/O error: failed to load image at path - {}", m_path);
+            JAGE_LOG_ERROR("JAGE I/O error: failed to load image at path - {}", m_path.string());
             JAGE_MSG_ERROR("Returning pink black checkerbox image.");
 
             m_data = ImageData::pink_black_checkerbox();
@@ -262,40 +261,106 @@ namespace JAGE
         }
     }
 
-    ImageData process_texture(const aiMaterial* ai_material, aiTextureType texture_type, const aiScene* ai_scene)
+    // function to process textures in a material, stored embedded or externally
+    // for now process only a texture for a texture type, might need to rewrite to support process multiple textures
+    // for a texture type in the future
+    ImageData process_texture(const aiMaterial* ai_material, aiTextureType ai_texture_type, const aiScene* ai_scene)
     {
         ImageData data;
 
-        if (ai_material->GetTextureCount(texture_type) > 0)
+        if (ai_material->GetTextureCount(ai_texture_type) > 0)
         {
-            aiString texture_path {};
-            ai_material->GetTexture(texture_type, 0, &texture_path);
+            aiString ai_texture_path_str {};
+            ai_material->GetTexture(ai_texture_type, 0, &ai_texture_path_str);
 
-            std::string filename { std::filesystem::path{ texture_path.C_Str() }.filename().string() };
+            fs::path texture_path { ImageResource::dir_path() / fs::path{ ai_texture_path_str.C_Str() }.filename() };
+            std::string filename { texture_path.filename().string() };
 
-            const aiTexture* texture {};
+            stbi_set_flip_vertically_on_load(true);
 
-            // load textures externally
-            if (texture = ai_scene->GetEmbeddedTexture(filename.c_str()))
-            {
-
-            }
+            const aiTexture* ai_texture {};
 
             // load textures from memory (embedded)
-            else
+            if (ai_texture = ai_scene->GetEmbeddedTexture(filename.c_str()))
             {
                 // texture is compressed
-                if (texture->mHeight == 0)
+                if (ai_texture->mHeight == 0)
                 {
+                    int width {}, height {};
 
+                    u8* loaded_data { stbi_load_from_memory((u8*)ai_texture->pcData, ai_texture->mWidth, &width, &height, nullptr, STBI_rgb_alpha) };
+
+                    if (!loaded_data)
+                    {
+                        JAGE_LOG_ERROR("JAGE I/O error: failed to load embedded material texture named {}.", ai_texture->mFilename.C_Str());
+                        JAGE_MSG_ERROR("Returning pink black checkerbox image.");
+
+                        data = ImageData::pink_black_checkerbox();
+                    }
+
+                    else
+                    {
+                        data.width = width;
+                        data.height = height;
+
+                        data.pixels.resize(width * height * 4);
+
+                        for (unsigned i {}; i < data.pixels.size(); i++) data.pixels[i] = loaded_data[i];
+                    }
                 }
 
                 // texture is uncompressed
                 else
                 {
+                    data.width = ai_texture->mWidth;
+                    data.height = ai_texture->mHeight;
 
+                    data.pixels.resize(ai_texture->mWidth * ai_texture->mHeight * 4);
+
+                    aiTexel* ai_texels { ai_texture->pcData };
+
+                    for (unsigned i {}; i < ai_texture->mWidth * ai_texture->mHeight; i++)
+                    {
+                        data.pixels[i * 4 + 0] = ai_texels[i].r;
+                        data.pixels[i * 4 + 1] = ai_texels[i].g;
+                        data.pixels[i * 4 + 2] = ai_texels[i].b;
+                        data.pixels[i * 4 + 3] = ai_texels[i].a;
+                    }
                 }
             }
+
+            // load textures externally
+            else
+            {
+                int width {}, height {};
+
+                u8* loaded_data { stbi_load(texture_path.string().c_str(), &width, &height, nullptr, STBI_rgb_alpha) };
+
+                if (!loaded_data)
+                {
+                    JAGE_LOG_ERROR("JAGE I/O error: failed to load material texture at path - {}", texture_path.string());
+                    JAGE_MSG_ERROR("Returning pink black checkerbox image.");
+
+                    data = ImageData::pink_black_checkerbox();
+                }
+
+                else
+                {
+                    data.width = width;
+                    data.height = height;
+
+                    data.pixels.resize(width * height * 4);
+
+                    for (unsigned i {}; i < data.pixels.size(); i++) data.pixels[i] = loaded_data[i];
+                }
+            }
+        }
+
+        else
+        {
+            JAGE_LOG_WARN("JAGE asset error: texture type {} for material named {} does not exist.", 
+                aiTextureTypeToString(ai_texture_type), ai_material->GetName().C_Str());
+            JAGE_MSG_WARN("Returning black (empty) image.");
         }
 
         return data;
@@ -313,6 +378,19 @@ namespace JAGE
             data.diffuse_color.b = diffuse_color.b;
             data.diffuse_color.a = diffuse_color.a;
         }
+
+        data.diffuse_map = process_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene);
+
+        aiColor4D specular_color;
+        if (ai_material->Get(AI_MATKEY_COLOR_SPECULAR, specular_color) == aiReturn::aiReturn_SUCCESS)
+        {
+            data.specular_color.r = specular_color.r;
+            data.specular_color.g = specular_color.g;
+            data.specular_color.b = specular_color.b;
+            data.specular_color.a = specular_color.a;
+        }
+
+        data.specular_map = process_texture(ai_material, aiTextureType::aiTextureType_SPECULAR, ai_scene);
 
         return data;
     }
@@ -432,7 +510,7 @@ namespace JAGE
     , meshes {}
     , impl { std::make_unique<ModelResource_Impl>() }
     {
-        JAGE_MSG_TRACE("Loading ModelResource.");
+        JAGE_LOG_TRACE("Loading ModelResource named {}", filename);
 
         impl->ai_scene = impl->importer.ReadFile(m_path.string(), aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded);
 
@@ -450,7 +528,7 @@ namespace JAGE
         for (unsigned i {}; i < impl->ai_scene->mNumMaterials; i++)
         materials.push_back(process_material(impl->ai_scene->mMaterials[i], impl->ai_scene));
 
-        JAGE_MSG_TRACE("ModelResource Loaded.");
+        JAGE_LOG_TRACE("ModelResource {} loaded.", filename);
     }
 
     ModelResource::~ModelResource() = default;

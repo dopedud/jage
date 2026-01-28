@@ -64,7 +64,7 @@ namespace JAGE
     class JAGE_API Material
     {
     public:
-        static std::unique_ptr<Material> Create(const MaterialData* shader);
+        static std::unique_ptr<Material> Create(const MaterialData* materialdata);
         virtual ~Material() = default;
 
         void set_shader(const Shader* shader);
