@@ -208,7 +208,7 @@ namespace JAGE
 
     const ImageData* ImageResource::data() const { return &m_data; }
 
-    void print_metadata(const aiScene* ai_scene)
+    static void print_metadata(const aiScene* ai_scene)
     {
         JAGE_MSG_TRACE("Model information:");
 
@@ -264,7 +264,7 @@ namespace JAGE
     // function to process textures in a material, stored embedded or externally
     // for now process only a texture for a texture type, might need to rewrite to support process multiple textures
     // for a texture type in the future
-    ImageData process_texture(const aiMaterial* ai_material, aiTextureType ai_texture_type, const aiScene* ai_scene)
+    static ImageData process_texture(const aiMaterial* ai_material, aiTextureType ai_texture_type, const aiScene* ai_scene)
     {
         ImageData data;
 
@@ -288,7 +288,7 @@ namespace JAGE
                 {
                     int width {}, height {};
 
-                    u8* loaded_data { stbi_load_from_memory((u8*)ai_texture->pcData, ai_texture->mWidth, &width, &height, nullptr, STBI_rgb_alpha) };
+                    u8* loaded_data { stbi_load_from_memory(reinterpret_cast<u8*>(ai_texture->pcData), ai_texture->mWidth, &width, &height, nullptr, STBI_rgb_alpha) };
 
                     if (!loaded_data)
                     {
@@ -358,7 +358,7 @@ namespace JAGE
 
         else
         {
-            JAGE_LOG_WARN("JAGE asset error: texture type {} for material named {} does not exist.", 
+            JAGE_LOG_WARN("JAGE asset error: texture type {} for material named \"{}\" does not exist.", 
                 aiTextureTypeToString(ai_texture_type), ai_material->GetName().C_Str());
             JAGE_MSG_WARN("Returning black (empty) image.");
         }
@@ -366,20 +366,20 @@ namespace JAGE
         return data;
     }
 
-    MaterialData process_material(const aiMaterial* ai_material, const aiScene* ai_scene)
+    static MaterialData process_material(const aiMaterial* ai_material, const aiScene* ai_scene)
     {
         MaterialData data;
 
         aiColor4D diffuse_color;
         if (ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color) == aiReturn::aiReturn_SUCCESS)
         {
-            data.diffuse_color.r = diffuse_color.r;
-            data.diffuse_color.g = diffuse_color.g;
-            data.diffuse_color.b = diffuse_color.b;
-            data.diffuse_color.a = diffuse_color.a;
+            data.albedo_color.r = diffuse_color.r;
+            data.albedo_color.g = diffuse_color.g;
+            data.albedo_color.b = diffuse_color.b;
+            data.albedo_color.a = diffuse_color.a;
         }
 
-        data.diffuse_map = process_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene);
+        data.albedo_map = process_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene);
 
         aiColor4D specular_color;
         if (ai_material->Get(AI_MATKEY_COLOR_SPECULAR, specular_color) == aiReturn::aiReturn_SUCCESS)
@@ -395,7 +395,7 @@ namespace JAGE
         return data;
     }
 
-    MeshData process_mesh(const aiMesh* ai_mesh, const aiScene* ai_scene)
+    static MeshData process_mesh(const aiMesh* ai_mesh, const aiScene* ai_scene)
     {
         MeshData data;
 
@@ -475,7 +475,7 @@ namespace JAGE
 
     }
 
-    std::unique_ptr<ModelNode> process_node(aiNode* ai_node, const aiScene* ai_scene, ModelNode* parent, std::vector<MeshData>& meshes)
+    static std::unique_ptr<ModelNode> process_node(aiNode* ai_node, const aiScene* ai_scene, ModelNode* parent, std::vector<MeshData>& meshes)
     {
         std::unique_ptr<ModelNode> model_node { std::make_unique<ModelNode>() };
 

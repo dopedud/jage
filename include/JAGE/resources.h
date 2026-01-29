@@ -149,8 +149,8 @@ namespace JAGE
 
     struct JAGE_API MaterialData
     {
-        glm::vec4 diffuse_color { 1.0f };
-        ImageData diffuse_map {};
+        glm::vec4 albedo_color { 1.0f };
+        ImageData albedo_map {};
         glm::vec4 specular_color {};
         ImageData specular_map {};
     };

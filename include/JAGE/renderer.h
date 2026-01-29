@@ -38,7 +38,7 @@ namespace JAGE
     public:
         enum class Type : u8 { DIFFUSE = 0, SPECULAR };
 
-        static std::unique_ptr<Texture> Create(const ImageData* data);
+        static std::unique_ptr<Texture> Create(const ImageData* imagedata);
         virtual ~Texture() = default;
 
         virtual void bind() = 0;
@@ -52,22 +52,22 @@ namespace JAGE
     class JAGE_API Mesh
     {
     public:
-        static std::unique_ptr<Mesh> Create(const MeshData* data);
-        Mesh(const MeshData* data);
+        static std::unique_ptr<Mesh> Create(const MeshData* meshdata);
+        Mesh(const MeshData* meshdata);
         virtual ~Mesh() = default;
 
         virtual void render(const std::unique_ptr<Shader>& shader) = 0;
     protected:
-        const MeshData* m_data;
+        const MeshData* m_meshdata;
     };
 
     class JAGE_API Material
     {
     public:
-        static std::unique_ptr<Material> Create(const MaterialData* materialdata);
-        virtual ~Material() = default;
+        Material(const Shader* shader, const MaterialData* materialdata);
 
-        void set_shader(const Shader* shader);
+        const Shader* shader() const;
+        const MaterialData* materialdata() const;
     private:
         const Shader* m_shader;
         const MaterialData* m_materialdata;

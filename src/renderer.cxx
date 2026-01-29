@@ -35,19 +35,25 @@ namespace JAGE
         return 0;
     }
 
-    std::unique_ptr<Texture> Texture::Create(const ImageData* data)
+    std::unique_ptr<Texture> Texture::Create(const ImageData* imagedata)
     {
-        return std::make_unique<OpenGLTexture>(data);
+        return std::make_unique<OpenGLTexture>(imagedata);
     }
 
     Texture::Type Texture::type() const { return m_type; }
 
-    Mesh::Mesh(const MeshData* data) : m_data { data } {} 
+    Mesh::Mesh(const MeshData* meshdata) : m_meshdata { meshdata } {} 
 
-    std::unique_ptr<Mesh> Mesh::Create(const MeshData* data)
+    std::unique_ptr<Mesh> Mesh::Create(const MeshData* meshdata)
     {
-        return std::make_unique<OpenGLMesh>(data);
+        return std::make_unique<OpenGLMesh>(meshdata);
     }
+
+    Material::Material(const Shader* shader, const MaterialData* materialdata)
+    : m_shader { shader }, m_materialdata { materialdata } {}
+
+    const Shader* Material::shader() const { return m_shader; }
+    const MaterialData* Material::materialdata() const { return m_materialdata; }
 
     BufferElement::BufferElement(Shader::DataType shader_datatype, std::string_view name, bool normalized)
     : shader_datatype   { shader_datatype }

@@ -216,13 +216,14 @@ namespace JAGE
         glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
     }
 
-    OpenGLTexture::OpenGLTexture(const ImageData* data)
+    OpenGLTexture::OpenGLTexture(const ImageData* imagedata)
     {
         glGenTextures(1, &textureID);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data->width, data->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data->pixels.data());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imagedata->width, imagedata->height,
+            0, GL_RGBA, GL_UNSIGNED_BYTE, imagedata->pixels.data());
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -238,8 +239,8 @@ namespace JAGE
     void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
     void OpenGLTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
 
-    OpenGLMesh::OpenGLMesh(const MeshData* data)
-    : Mesh{ data }
+    OpenGLMesh::OpenGLMesh(const MeshData* meshdata)
+    : Mesh{ meshdata }
     {
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
@@ -248,10 +249,10 @@ namespace JAGE
         glBindVertexArray(vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, data->vertices.size() * sizeof(MeshData::VertexData), &data->vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshdata->vertices.size() * sizeof(MeshData::VertexData), &meshdata->vertices[0], GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data->indices.size() * sizeof(unsigned), &data->indices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshdata->indices.size() * sizeof(unsigned), &meshdata->indices[0], GL_STATIC_DRAW);
 
         BufferLayout layout
         {
