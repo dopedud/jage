@@ -22,8 +22,8 @@ namespace JAGE
         std::unique_ptr<Texture> texture;
         std::unique_ptr<Mesh> mesh;
 
-        World world {};
-        Entity camera { world, "MainCamera" };
+        World world;
+        Entity camera;
         const Camera* camera_component;
         Camera* camera_component_fov;
     };

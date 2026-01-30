@@ -293,7 +293,7 @@ namespace JAGE
     {
         shader->bind();
         glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, m_data->indices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, m_meshdata->indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
         shader->unbind();
     }

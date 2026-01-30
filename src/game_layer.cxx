@@ -12,7 +12,7 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Attaching Game layer to layer stack.");
 
-        debug_renderer = DebugRenderer::Create(window);
+        debug_renderer = DebugRenderer::Create(m_window);
 
         ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };
         ResourceHandle<TextResource> vertex_shader { ResourceManager::instance().get<TextResource>("default.vs") };
@@ -22,6 +22,10 @@ namespace JAGE
         texture = Texture::Create(image.resource()->data());
         shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());
         mesh = Mesh::Create(cube.resource()->mesh_data(0));
+
+        // TODO: fix issue where temporary object calls ecs_fini(world) when world is still being kept alive
+        world = World{ ApplicationContext{ m_window } };
+        camera = Entity{ world, "FreeCamera" };
 
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();
@@ -48,8 +52,7 @@ namespace JAGE
 
         glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 1.0f, 0.0f, 2.0f }) };
         glm::mat4 view { camera_component->view_matrix };
-        glm::mat4 projection { glm::infinitePerspectiveLH(glm::radians(camera_component_fov->fov), window->aspect_ratio(), 0.01f) };
-        // glm::mat4 projection { glm::orthoLH(-10.0f, 10.0f, -10.0f, 10.0f, 0.01f, 1000.0f) };
+        glm::mat4 projection { camera_component->projection_matrix };
 
         shader->bind();
         shader->set_uniform_mat4("model", glm::mat4{ 1.0f });
@@ -63,9 +66,9 @@ namespace JAGE
 
         texture->unbind();
 
-        debug_renderer->set_vp(view, projection);
-        debug_renderer->RenderGridLines(5, 25.0f);
-        debug_renderer->RenderBaseAxes(0.1f);
+        // debug_renderer->set_vp(view, projection);
+        // debug_renderer->RenderGridLines(5, 25.0f);
+        // debug_renderer->RenderBaseAxes(0.1f);
     }
 
     void GameLayer::OnEvent(const Event& e)

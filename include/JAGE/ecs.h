@@ -27,6 +27,7 @@ namespace JAGE
     struct Camera
     { 
         glm::mat4 view_matrix;
+        glm::mat4 projection_matrix;
 
         float move_speed;
         float zoom_speed;
@@ -37,6 +38,12 @@ namespace JAGE
         float fov;
     };
 
+    struct MeshRenderer
+    {
+        Mesh* mesh;
+        Material* material;
+    };
+
     JAGE_API void CameraSystem_Initialise(ecs_iter_t* it);
     JAGE_API void RenderSystem_Initialise(ecs_iter_t* it);
 
@@ -44,9 +51,18 @@ namespace JAGE
     JAGE_API void CameraSystem(ecs_iter_t* it);
     JAGE_API void RenderSystem(ecs_iter_t* it);
 
+    struct JAGE_API ApplicationContext
+    {
+        Window* window;
+
+        ApplicationContext(Window* window);
+        ApplicationContext();
+    };
+
     class JAGE_API World
     {
     public:
+        World(ApplicationContext app_ctx);
         World();
         ~World();
 
@@ -54,13 +70,25 @@ namespace JAGE
 
         void progress(float deltatime);
     private:
-        ecs_world_t* m_world; 
+        /**
+         * @var m_world
+         * 
+         * @brief The internal data structure for an ECS world.
+         * 
+         * This variable is a raw pointer to the underlying data structure of an ECS world instead of a
+         * `std::unique_ptr<ecs_world_t>` to easily interface with the C functions that mutate the ECS world
+         * (otherwise every function call has `m_world.get()`).
+         */
+        ecs_world_t* m_world;
+
+        ApplicationContext m_app_ctx;
     };
 
     class JAGE_API Entity
     {
     public:
         Entity(const World& world, std::string_view name = "");
+        Entity();
         ~Entity();
 
         template<typename T> void AddComponent();
@@ -72,7 +100,8 @@ namespace JAGE
         template<typename T> void RemoveComponent();
     private:
         std::string m_name;
-        ecs_world_t* m_world;
+        World m_world;
+        ecs_world_t* m_ecs_world;
         ecs_entity_t m_entity;
     };
 }

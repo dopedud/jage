@@ -4,14 +4,23 @@
 
 namespace JAGE
 {
+    ApplicationContext::ApplicationContext(Window* window) : window { window } {}
+    ApplicationContext::ApplicationContext() : window {} {}
+
     DISABLE_WARNING_PUSH
     DISABLE_WARNING_GCC_CLANG("-Wmissing-field-initializers")
 
     ECS_COMPONENT_DECLARE(Transform);
     ECS_COMPONENT_DECLARE(Camera);
 
-    World::World() : m_world { ecs_init() }
+    World::World() : m_world {}, m_app_ctx {} {}
+
+    World::World(ApplicationContext app_ctx)
+    : m_world { ecs_init() }
+    , m_app_ctx { app_ctx }
     {
+        ecs_set_ctx(m_world, &m_app_ctx, nullptr);
+
         ECS_COMPONENT_DEFINE(m_world, Transform);
         ECS_COMPONENT_DEFINE(m_world, Camera);
 
@@ -31,17 +40,20 @@ namespace JAGE
 
     void World::progress(float deltatime) { ecs_progress(m_world, deltatime); }
 
+    Entity::Entity() : m_name {}, m_world {}, m_ecs_world {} {}
+
     Entity::Entity(const World& world, std::string_view name)
     : m_name { name }
-    , m_world { world.world() }
+    , m_world { world }
+    , m_ecs_world { world.world() }
     {
         ecs_entity_desc_t entity_desc {};
         entity_desc.name = m_name.c_str();
 
-        m_entity = ecs_entity_init(m_world, &entity_desc);
+        m_entity = ecs_entity_init(m_ecs_world, &entity_desc);
     }
 
-    Entity::~Entity() { ecs_delete(m_world, m_entity); }
+    Entity::~Entity() { JAGE_MSG_DEBUG("GOT INTO THE DESTRUCTOR"); ecs_delete(m_ecs_world, m_entity); }
 
     // TEMPLATE INSTANTIATIONS
 
@@ -55,17 +67,17 @@ namespace JAGE
     // template<typename T> T*         Entity::GetComponentMutable() { return ecs_get_mut(m_world, m_entity, T); }
     // template<typename T> void       Entity::RemoveComponent() { ecs_remove(m_world, m_entity, T); }
 
-    template<> void                 Entity::AddComponent<Transform>()                               { ecs_add(m_world, m_entity, Transform); }
-    template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_world, m_entity, Transform, component); }
-    template<> const Transform&     Entity::GetComponent<Transform>()                               { return *ecs_get(m_world, m_entity, Transform); }
-    template<> Transform&           Entity::GetComponentMutable<Transform>()                        { return *ecs_get_mut(m_world, m_entity, Transform); }
-    template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_world, m_entity, Transform); }
+    template<> void                 Entity::AddComponent<Transform>()                               { ecs_add(m_ecs_world, m_entity, Transform); }
+    template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_ecs_world, m_entity, Transform, component); }
+    template<> const Transform&     Entity::GetComponent<Transform>()                               { return *ecs_get(m_ecs_world, m_entity, Transform); }
+    template<> Transform&           Entity::GetComponentMutable<Transform>()                        { return *ecs_get_mut(m_ecs_world, m_entity, Transform); }
+    template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_ecs_world, m_entity, Transform); }
 
-    template<> void             Entity::AddComponent<Camera>()                          { ecs_add(m_world, m_entity, Camera); }
-    template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_world, m_entity, Camera, component); }
-    template<> const Camera&    Entity::GetComponent<Camera>()                          { return *ecs_get(m_world, m_entity, Camera); }
-    template<> Camera&          Entity::GetComponentMutable<Camera>()                   { return *ecs_get_mut(m_world, m_entity, Camera); }
-    template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_world, m_entity, Camera); }
+    template<> void             Entity::AddComponent<Camera>()                          { ecs_add(m_ecs_world, m_entity, Camera); }
+    template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_ecs_world, m_entity, Camera, component); }
+    template<> const Camera&    Entity::GetComponent<Camera>()                          { return *ecs_get(m_ecs_world, m_entity, Camera); }
+    template<> Camera&          Entity::GetComponentMutable<Camera>()                   { return *ecs_get_mut(m_ecs_world, m_entity, Camera); }
+    template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_ecs_world, m_entity, Camera); }
 
     // END TEMPLATE INSTANTIATIONS
 
@@ -182,6 +194,9 @@ namespace JAGE
         Transform& t { transform[0] };
         Camera& c { camera[0] };
 
+        ApplicationContext* app_ctx { static_cast<ApplicationContext*>(ecs_get_ctx(it->world)) };
+
         c.view_matrix = glm::lookAtLH(t.position, t.position + t.forward, t.up);
+        c.projection_matrix = glm::infinitePerspectiveLH(glm::radians(c.fov), app_ctx->window->aspect_ratio(), 0.01f);
     }
 }

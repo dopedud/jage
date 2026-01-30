@@ -211,7 +211,7 @@ namespace JAGE
 
     /**
      * @struct WindowProperties
-     * @brief The @c WindowProperties structure that holds data for properties of a window.
+     * @brief The `WindowProperties` structure that holds data for properties of a window.
      * 
      * The data was defined as a seperate structure to allow callbacks from the window manager.
      */
@@ -322,7 +322,7 @@ namespace JAGE
 
         std::string name() const { return m_name; }
     protected:
-        Window* window;
+        Window* m_window;
         const std::string m_name;
     };
 }
