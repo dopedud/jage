@@ -14,9 +14,9 @@ namespace JAGE
 
     World::World(ApplicationContext app_ctx)
     : m_world { ecs_init() }
-    , m_app_ctx { app_ctx }
+    , m_app_ctx { std::make_unique<ApplicationContext>(app_ctx) }
     {
-        ecs_set_ctx(m_world, &m_app_ctx, nullptr);
+        ecs_set_ctx(m_world, m_app_ctx.get(), nullptr);
 
         ECS_COMPONENT_DEFINE(m_world, Transform);
         ECS_COMPONENT_DEFINE(m_world, Camera);
@@ -35,10 +35,9 @@ namespace JAGE
 
     World::World(World&& other) noexcept
     : m_world { other.m_world }
-    , m_app_ctx { other.m_app_ctx }
+    , m_app_ctx { std::move(other.m_app_ctx) }
     {
         other.m_world = nullptr;
-        other.m_app_ctx.window = nullptr;
     }
 
     World& World::operator=(World&& other) noexcept
@@ -48,21 +47,15 @@ namespace JAGE
             release();
 
             m_world = other.m_world;
-            m_app_ctx = other.m_app_ctx;
+            m_app_ctx = std::move(other.m_app_ctx);
 
             other.m_world = nullptr;
-            other.m_app_ctx.window = nullptr;
         }
 
         return *this;
     }
 
-    Entity World::entity()
-    {
-        Entity entity;
-        entity.m_ecs_world = m_world;
-        
-    }
+    ecs_world_t* World::world() const { return m_world; }
 
     void World::progress(float deltatime) { ecs_progress(m_world, deltatime); }
 
@@ -86,27 +79,60 @@ namespace JAGE
             }
 
             m_world = nullptr;
+            m_app_ctx.release();
         }        
     }
 
-    Entity::Entity() : m_ecs_world {}, m_name {}, m_entity {} {}
+    Entity::Entity() : m_world {}, m_name {}, m_entity {} {}
 
     Entity::Entity(const World& world, std::string_view name)
-    : m_ecs_world { world.world() }
+    : m_world { world.world() }
     , m_name { name }
     , m_entity {}
     {
         ecs_entity_desc_t entity_desc {};
         entity_desc.name = m_name.c_str();
 
-        JAGE_LOG_DEBUG("{}", m_entity);
-        m_entity = ecs_entity_init(m_ecs_world, &entity_desc);
-        JAGE_LOG_DEBUG("{}", m_entity);
-        JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(m_ecs_world));
-        JAGE_LOG_DEBUG("{}", ecs_is_alive(m_ecs_world, m_entity));
+        m_entity = ecs_entity_init(m_world, &entity_desc);
     }
 
-    Entity::~Entity() { ecs_delete(m_ecs_world, m_entity); }
+    Entity::~Entity() { release(); }
+
+    Entity::Entity(Entity&& other) noexcept
+    : m_world { other.m_world }
+    , m_name { other.m_name }
+    , m_entity { other.m_entity }
+    {
+        other.m_world = nullptr;
+        other.m_name = "";
+        other.m_entity = 0;
+    }
+
+    Entity& Entity::operator=(Entity&& other) noexcept
+    {
+        if (this != &other)
+        {
+            release();
+
+            m_world = other.m_world;
+            m_name = other.m_name;
+            m_entity = other.m_entity;
+
+            other.m_world = nullptr;
+            other.m_name = "";
+            other.m_entity = 0;
+        }
+
+        return *this;
+    }
+
+    void Entity::release()
+    {
+        if (m_world && m_entity && ecs_is_valid(m_world, m_entity))
+        {
+            ecs_delete(m_world, m_entity);
+        }
+    }
 
     // TEMPLATE INSTANTIATIONS
 
@@ -120,17 +146,17 @@ namespace JAGE
     // template<typename T> T*         Entity::GetComponentMutable()                { return ecs_get_mut(m_world, m_entity, T); }
     // template<typename T> void       Entity::RemoveComponent()                    { ecs_remove(m_world, m_entity, T); }
 
-    template<> void                 Entity::AddComponent<Transform>()                               { ecs_add(m_ecs_world, m_entity, Transform); }
-    template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_ecs_world, m_entity, Transform, component); }
-    template<> const Transform&     Entity::GetComponent<Transform>()                               { return *ecs_get(m_ecs_world, m_entity, Transform); }
-    template<> Transform&           Entity::GetComponentMutable<Transform>()                        { return *ecs_get_mut(m_ecs_world, m_entity, Transform); }
-    template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_ecs_world, m_entity, Transform); }
+    template<> void                 Entity::AddComponent<Transform>()                               { ecs_add(m_world, m_entity, Transform); }
+    template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_world, m_entity, Transform, component); }
+    template<> const Transform&     Entity::GetComponent<Transform>()                               { return *ecs_get(m_world, m_entity, Transform); }
+    template<> Transform&           Entity::GetComponentMutable<Transform>()                        { return *ecs_get_mut(m_world, m_entity, Transform); }
+    template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_world, m_entity, Transform); }
 
-    template<> void             Entity::AddComponent<Camera>()                          { ecs_add(m_ecs_world, m_entity, Camera); }
-    template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_ecs_world, m_entity, Camera, component); }
-    template<> const Camera&    Entity::GetComponent<Camera>()                          { return *ecs_get(m_ecs_world, m_entity, Camera); }
-    template<> Camera&          Entity::GetComponentMutable<Camera>()                   { return *ecs_get_mut(m_ecs_world, m_entity, Camera); }
-    template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_ecs_world, m_entity, Camera); }
+    template<> void             Entity::AddComponent<Camera>()                          { ecs_add(m_world, m_entity, Camera); }
+    template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_world, m_entity, Camera, component); }
+    template<> const Camera&    Entity::GetComponent<Camera>()                          { return *ecs_get(m_world, m_entity, Camera); }
+    template<> Camera&          Entity::GetComponentMutable<Camera>()                   { return *ecs_get_mut(m_world, m_entity, Camera); }
+    template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_world, m_entity, Camera); }
 
     // END TEMPLATE INSTANTIATIONS
 

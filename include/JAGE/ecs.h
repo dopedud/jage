@@ -57,26 +57,6 @@ namespace JAGE
         unsigned value;
     };
 
-    class JAGE_API Entity
-    {
-    public:
-        Entity(const World& world, std::string_view name = "");
-        Entity();
-        ~Entity();
-
-        template<typename T> void AddComponent();
-        template<typename T> void AddComponent(const T* component);
-
-        template<typename T> const T& GetComponent();
-        template<typename T> T& GetComponentMutable();
-
-        template<typename T> void RemoveComponent();
-    private:
-        ecs_world_t* m_ecs_world;
-        std::string m_name;
-        ecs_entity_t m_entity;
-    };
-
     class JAGE_API World
     {
     public:
@@ -86,14 +66,16 @@ namespace JAGE
 
         /**
          * ECS worlds are not meant to be copied, only moved from one another.
+         * 
+         * Cloning will be implemented in the future for duplicating ECS worlds.
          */
 
         World(const World& other) = delete;
         World& operator=(const World& other) = delete;
         World(World&& other) noexcept;
         World& operator=(World&& other) noexcept;
-
-        Entity entity();
+        
+        ecs_world_t* world() const;
 
         void progress(float deltatime);
     private:
@@ -108,7 +90,40 @@ namespace JAGE
          */
         ecs_world_t* m_world;
 
-        ApplicationContext m_app_ctx;
+        std::unique_ptr<ApplicationContext> m_app_ctx;
+
+        void release();
+    };
+
+    class JAGE_API Entity
+    {
+    public:
+        Entity(const World& world, std::string_view name);
+        Entity();
+        ~Entity();
+
+        /**
+         * ECS entities are not meant to be copied, only moved from one another.
+         * 
+         * Cloning will be implemented in the future for duplicating ECS entities.
+         */
+
+        Entity(const Entity& other) = delete;
+        Entity& operator=(const Entity& other) = delete;
+        Entity(Entity&& other) noexcept;
+        Entity& operator=(Entity&& other) noexcept;
+
+        template<typename T> void AddComponent();
+        template<typename T> void AddComponent(const T* component);
+
+        template<typename T> const T& GetComponent();
+        template<typename T> T& GetComponentMutable();
+
+        template<typename T> void RemoveComponent();
+    public:
+        ecs_world_t* m_world;
+        std::string m_name;
+        ecs_entity_t m_entity;
 
         void release();
     };

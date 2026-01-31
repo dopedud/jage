@@ -30,11 +30,6 @@ namespace JAGE
         world = World{ app_ctx };
         camera = Entity{ world, "FreeCamera" };
 
-        JAGE_LOG_DEBUG("{}", camera.m_entity);
-        JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(world.world()));
-        JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(camera.m_ecs_world));
-        JAGE_LOG_DEBUG("{}", ecs_is_alive(camera.m_ecs_world, camera.m_entity));
-
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();
 
