@@ -24,8 +24,16 @@ namespace JAGE
         mesh = Mesh::Create(cube.resource()->mesh_data(0));
 
         // TODO: fix issue where temporary object calls ecs_fini(world) when world is still being kept alive
-        world = World{ ApplicationContext{ m_window } };
+        ApplicationContext app_ctx;
+        app_ctx.window = m_window;
+        app_ctx.value = 12808;
+        world = World{ app_ctx };
         camera = Entity{ world, "FreeCamera" };
+
+        JAGE_LOG_DEBUG("{}", camera.m_entity);
+        JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(world.world()));
+        JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(camera.m_ecs_world));
+        JAGE_LOG_DEBUG("{}", ecs_is_alive(camera.m_ecs_world, camera.m_entity));
 
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();

@@ -4,9 +4,6 @@
 
 namespace JAGE
 {
-    ApplicationContext::ApplicationContext(Window* window) : window { window } {}
-    ApplicationContext::ApplicationContext() : window {} {}
-
     DISABLE_WARNING_PUSH
     DISABLE_WARNING_GCC_CLANG("-Wmissing-field-initializers")
 
@@ -34,26 +31,82 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
-    World::~World() { ecs_fini(m_world); }
+    World::~World() { release(); }
 
-    ecs_world_t* World::world() const { return m_world; }
+    World::World(World&& other) noexcept
+    : m_world { other.m_world }
+    , m_app_ctx { other.m_app_ctx }
+    {
+        other.m_world = nullptr;
+        other.m_app_ctx.window = nullptr;
+    }
+
+    World& World::operator=(World&& other) noexcept
+    {
+        if (this != &other)
+        {
+            release();
+
+            m_world = other.m_world;
+            m_app_ctx = other.m_app_ctx;
+
+            other.m_world = nullptr;
+            other.m_app_ctx.window = nullptr;
+        }
+
+        return *this;
+    }
+
+    Entity World::entity()
+    {
+        Entity entity;
+        entity.m_ecs_world = m_world;
+        
+    }
 
     void World::progress(float deltatime) { ecs_progress(m_world, deltatime); }
 
-    Entity::Entity() : m_name {}, m_world {}, m_ecs_world {} {}
+    // copied from flecs's source code
+    void World::release()
+    {
+        if (m_world)
+        {
+            if (!flecs_poly_release(m_world))
+            {
+                if (ecs_stage_get_id(m_world) == -1) ecs_stage_free(m_world);
+                
+                else
+                {
+                    // before we call ecs_fini(), we increment the reference count back to 1
+                    // otherwise, copies of this object created during ecs_fini (e.g. a component on_remove hook)
+                    // would call again this destructor and ecs_fini().
+                    flecs_poly_claim(m_world);
+                    ecs_fini(m_world);
+                }
+            }
+
+            m_world = nullptr;
+        }        
+    }
+
+    Entity::Entity() : m_ecs_world {}, m_name {}, m_entity {} {}
 
     Entity::Entity(const World& world, std::string_view name)
-    : m_name { name }
-    , m_world { world }
-    , m_ecs_world { world.world() }
+    : m_ecs_world { world.world() }
+    , m_name { name }
+    , m_entity {}
     {
         ecs_entity_desc_t entity_desc {};
         entity_desc.name = m_name.c_str();
 
+        JAGE_LOG_DEBUG("{}", m_entity);
         m_entity = ecs_entity_init(m_ecs_world, &entity_desc);
+        JAGE_LOG_DEBUG("{}", m_entity);
+        JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(m_ecs_world));
+        JAGE_LOG_DEBUG("{}", ecs_is_alive(m_ecs_world, m_entity));
     }
 
-    Entity::~Entity() { JAGE_MSG_DEBUG("GOT INTO THE DESTRUCTOR"); ecs_delete(m_ecs_world, m_entity); }
+    Entity::~Entity() { ecs_delete(m_ecs_world, m_entity); }
 
     // TEMPLATE INSTANTIATIONS
 
@@ -61,11 +114,11 @@ namespace JAGE
     // using macros to implement generic programming patterns. The template definitions are still provided for
     // reference.
 
-    // template<typename T> void       Entity::AddComponent() { ecs_add(m_world, m_entity, T); }
-    // template<typename T> void       Entity::AddComponent(const T* component) { ecs_set_ptr(m_world, m_entity, T, component); }
-    // template<typename T> const T*   Entity::GetComponent() { return ecs_get(m_world, m_entity, T); }
-    // template<typename T> T*         Entity::GetComponentMutable() { return ecs_get_mut(m_world, m_entity, T); }
-    // template<typename T> void       Entity::RemoveComponent() { ecs_remove(m_world, m_entity, T); }
+    // template<typename T> void       Entity::AddComponent()                       { ecs_add(m_world, m_entity, T); }
+    // template<typename T> void       Entity::AddComponent(const T* component)     { ecs_set_ptr(m_world, m_entity, T, component); }
+    // template<typename T> const T*   Entity::GetComponent()                       { return ecs_get(m_world, m_entity, T); }
+    // template<typename T> T*         Entity::GetComponentMutable()                { return ecs_get_mut(m_world, m_entity, T); }
+    // template<typename T> void       Entity::RemoveComponent()                    { ecs_remove(m_world, m_entity, T); }
 
     template<> void                 Entity::AddComponent<Transform>()                               { ecs_add(m_ecs_world, m_entity, Transform); }
     template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_ecs_world, m_entity, Transform, component); }
@@ -102,7 +155,7 @@ namespace JAGE
         c.fov = 90.0f;
     }
 
-    JAGE_API void RenderSystem_Initialise(ecs_iter_t* it)
+    void RenderSystem_Initialise(ecs_iter_t* it)
     {
         Camera* camera { ecs_field(it, Camera, 1) };
         Camera& c { camera[0] };
@@ -186,7 +239,7 @@ namespace JAGE
         ) * c.move_speed * move_multiplier * delta_time;
     }
 
-    JAGE_API void RenderSystem(ecs_iter_t* it)
+    void RenderSystem(ecs_iter_t* it)
     {
         Transform* transform { ecs_field(it, Transform, 0) };
         Camera* camera { ecs_field(it, Camera, 1) };

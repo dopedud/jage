@@ -8,7 +8,7 @@
 
 namespace JAGE
 {
-    struct Transform
+    struct JAGE_API Transform
     {
         glm::vec3 position;
         glm::quat orientation;
@@ -24,7 +24,7 @@ namespace JAGE
         glm::mat4 transformation_matrix;
     };
 
-    struct Camera
+    struct JAGE_API Camera
     { 
         glm::mat4 view_matrix;
         glm::mat4 projection_matrix;
@@ -38,7 +38,7 @@ namespace JAGE
         float fov;
     };
 
-    struct MeshRenderer
+    struct JAGE_API MeshRenderer
     {
         Mesh* mesh;
         Material* material;
@@ -54,34 +54,7 @@ namespace JAGE
     struct JAGE_API ApplicationContext
     {
         Window* window;
-
-        ApplicationContext(Window* window);
-        ApplicationContext();
-    };
-
-    class JAGE_API World
-    {
-    public:
-        World(ApplicationContext app_ctx);
-        World();
-        ~World();
-
-        ecs_world_t* world() const;
-
-        void progress(float deltatime);
-    private:
-        /**
-         * @var m_world
-         * 
-         * @brief The internal data structure for an ECS world.
-         * 
-         * This variable is a raw pointer to the underlying data structure of an ECS world instead of a
-         * `std::unique_ptr<ecs_world_t>` to easily interface with the C functions that mutate the ECS world
-         * (otherwise every function call has `m_world.get()`).
-         */
-        ecs_world_t* m_world;
-
-        ApplicationContext m_app_ctx;
+        unsigned value;
     };
 
     class JAGE_API Entity
@@ -99,9 +72,44 @@ namespace JAGE
 
         template<typename T> void RemoveComponent();
     private:
-        std::string m_name;
-        World m_world;
         ecs_world_t* m_ecs_world;
+        std::string m_name;
         ecs_entity_t m_entity;
+    };
+
+    class JAGE_API World
+    {
+    public:
+        World(ApplicationContext app_ctx);
+        World();
+        ~World();
+
+        /**
+         * ECS worlds are not meant to be copied, only moved from one another.
+         */
+
+        World(const World& other) = delete;
+        World& operator=(const World& other) = delete;
+        World(World&& other) noexcept;
+        World& operator=(World&& other) noexcept;
+
+        Entity entity();
+
+        void progress(float deltatime);
+    private:
+        /**
+         * @var m_world
+         * 
+         * @brief The internal data structure for an ECS world.
+         * 
+         * This variable is a raw pointer to the underlying data structure of an ECS world instead of a
+         * `std::unique_ptr<ecs_world_t>` to easily interface with the C functions that mutate the ECS world
+         * (otherwise every function call has `m_world.get()`).
+         */
+        ecs_world_t* m_world;
+
+        ApplicationContext m_app_ctx;
+
+        void release();
     };
 }
