@@ -11,7 +11,7 @@ set(CORE_SRC
     window.cxx
     renderer.cxx
     resources.cxx
-    ecs_c.cxx
+    ecs.cxx
     math.cxx
     game_layer.cxx
 
