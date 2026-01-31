@@ -26,7 +26,7 @@ namespace JAGE
         // TODO: fix issue where temporary object calls ecs_fini(world) when world is still being kept alive
         ApplicationContext app_ctx;
         app_ctx.window = m_window;
-        app_ctx.value = 12808;
+        app_ctx.value = 12808; // random value for testing
         world = World{ app_ctx };
         camera = Entity{ world, "FreeCamera" };
 

@@ -10,6 +10,8 @@ namespace JAGE
     ECS_COMPONENT_DECLARE(Transform);
     ECS_COMPONENT_DECLARE(Camera);
 
+    ECS_COMPONENT_DECLARE(MouseScrolledEvent);
+
     World::World() : m_world {}, m_app_ctx {} {}
 
     World::World(ApplicationContext app_ctx)
@@ -20,6 +22,8 @@ namespace JAGE
 
         ECS_COMPONENT_DEFINE(m_world, Transform);
         ECS_COMPONENT_DEFINE(m_world, Camera);
+
+        ECS_COMPONENT_DEFINE(m_world, MouseScrolledEvent);
 
         ECS_SYSTEM(m_world, CameraSystem_Initialise, EcsOnStart, Transform, Camera);
         ECS_SYSTEM(m_world, RenderSystem_Initialise, EcsOnStart, Transform, Camera);

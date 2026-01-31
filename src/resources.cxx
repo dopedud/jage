@@ -358,7 +358,7 @@ namespace JAGE
 
         else
         {
-            JAGE_LOG_WARN("JAGE asset error: texture type {} for material named \"{}\" does not exist.", 
+            JAGE_LOG_WARN("JAGE asset warning: texture type {} for material named \"{}\" does not exist.", 
                 aiTextureTypeToString(ai_texture_type), ai_material->GetName().C_Str());
             JAGE_MSG_WARN("Returning black (empty) image.");
         }
