@@ -37,6 +37,7 @@ int main(int argc, char** argv)
 
     // Time::SetTargetFPS(100);
 
+    APP_MSG_INFO("Running the game loop.");
     while (running)
     {
         window->OnRender();

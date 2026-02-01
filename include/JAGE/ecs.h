@@ -44,22 +44,24 @@ namespace JAGE
         Material* material;
     };
 
-    JAGE_API void CameraSystem_Initialise(ecs_iter_t* it);
-    JAGE_API void RenderSystem_Initialise(ecs_iter_t* it);
+    void CameraSystem_Initialise(ecs_iter_t* it);
+    void RenderSystem_Initialise(ecs_iter_t* it);
 
-    JAGE_API void TransformSystem(ecs_iter_t* it);
-    JAGE_API void CameraSystem(ecs_iter_t* it);
-    JAGE_API void RenderSystem(ecs_iter_t* it);
+    void TransformSystem(ecs_iter_t* it);
+    void CameraSystem(ecs_iter_t* it);
+    void RenderSystem(ecs_iter_t* it);
 
-    struct JAGE_API ApplicationContext
-    {
-        Window* window;
-        unsigned value;
-    };
+    void Test_Observer(ecs_iter_t* it);
 
     class JAGE_API World
     {
     public:
+        struct JAGE_API ApplicationContext
+        {
+            Window* window;
+            unsigned value;
+        };
+
         World(ApplicationContext app_ctx);
         World();
         ~World();
@@ -78,6 +80,30 @@ namespace JAGE
         ecs_world_t* world() const;
 
         void progress(float deltatime);
+
+        /**
+         * @fn emit_event
+         * 
+         * @brief Function to emit ECS events.
+         * 
+         * @tparam TEventData The event data type.
+         * @param event The ECS event. Must be used by any one of the event accessors from this world.
+         * @param event_data The event data to supply when emitting the ECS event.
+         */
+        template<typename TEventData>
+        void emit_event(ecs_entity_t event, const TEventData& event_data);
+
+        /**
+         * @brief List of custom ECS events.
+         * 
+         * @note Any of these accessors must be used as the `event` parameter for `emit_event()`.
+         * 
+         * @{
+         */
+
+        ecs_entity_t OnMouseScrolled() const;
+
+        /** @} */
     private:
         /**
          * @var m_world
@@ -91,6 +117,10 @@ namespace JAGE
         ecs_world_t* m_world;
 
         std::unique_ptr<ApplicationContext> m_app_ctx;
+
+        ecs_entity_t OnMouseScrolled_ECSEvent;
+
+        void initialise_ecs_events();
 
         void release();
     };

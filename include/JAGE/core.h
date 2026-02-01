@@ -657,10 +657,10 @@ namespace JAGE
 
 /**
  * @def EVENT_CLASS_TYPE
- * @brief A macro to override virtual functions from @c Event at derived classes.
+ * @brief A macro to override virtual functions from `Event` at derived classes.
  *
- * The EVENT_CLASS_TYPE macro will expand to override virtual functions from @c Event at classes that derive @c Event.
- * It also includes expanding the static function @c static_type() which returns the event type for the event class it
+ * The EVENT_CLASS_TYPE macro will expand to override virtual functions from `Event` at classes that derive `Event`.
+ * It also includes expanding the static function `static_type()` which returns the event type for the event class it
  * is in.
  */
 #define EVENT_CLASS_TYPE(type) \

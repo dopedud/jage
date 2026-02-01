@@ -31,6 +31,10 @@ namespace JAGE
         ECS_SYSTEM(m_world, TransformSystem, EcsOnUpdate, Transform);
         ECS_SYSTEM(m_world, CameraSystem, EcsOnUpdate, Transform, Camera);
         ECS_SYSTEM(m_world, RenderSystem, EcsOnUpdate, Transform, Camera);
+
+        initialise_ecs_events();
+
+        ECS_OBSERVER(m_world, Test_Observer, OnMouseScrolled_ECSEvent, Transform, Camera);
     }
 
     DISABLE_WARNING_POP
@@ -62,6 +66,16 @@ namespace JAGE
     ecs_world_t* World::world() const { return m_world; }
 
     void World::progress(float deltatime) { ecs_progress(m_world, deltatime); }
+
+    ecs_entity_t World::OnMouseScrolled() const { return OnMouseScrolled_ECSEvent; }
+
+    void World::initialise_ecs_events()
+    {
+        ecs_entity_desc_t entity_desc {};
+        entity_desc.name = "OnMouseScrolled";
+
+        OnMouseScrolled_ECSEvent = ecs_entity_init(m_world, &entity_desc);
+    }
 
     // copied from flecs's source code
     void World::release()
@@ -139,6 +153,24 @@ namespace JAGE
     }
 
     // TEMPLATE INSTANTIATIONS
+
+    template<> void World::emit_event<MouseScrolledEvent>(ecs_entity_t event, const MouseScrolledEvent& event_data)
+    {
+        JAGE_MSG_DEBUG("MOUSE SCROLL EVENT IS RUNNING");
+
+        ecs_entity_t payload { ecs_new(m_world) };
+        ecs_set_ptr(m_world, payload, MouseScrolledEvent, &event_data);
+
+        ecs_type_t componentIDs {};
+
+        ecs_event_desc_t event_desc {};
+        event_desc.event = event;
+        event_desc.entity = payload;
+
+        ecs_emit(m_world, &event_desc);
+
+        ecs_delete(m_world, payload);
+    }
 
     // NOTE: Template specializations are used here (instead of template instantiations) due to Flecs fundamentally
     // using macros to implement generic programming patterns. The template definitions are still provided for
@@ -277,9 +309,22 @@ namespace JAGE
         Transform& t { transform[0] };
         Camera& c { camera[0] };
 
-        ApplicationContext* app_ctx { static_cast<ApplicationContext*>(ecs_get_ctx(it->world)) };
+        World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
 
         c.view_matrix = glm::lookAtLH(t.position, t.position + t.forward, t.up);
         c.projection_matrix = glm::infinitePerspectiveLH(glm::radians(c.fov), app_ctx->window->aspect_ratio(), 0.01f);
+    }
+
+    void Test_Observer(ecs_iter_t* it)
+    {
+        JAGE_MSG_DEBUG("TEST OBSERVER IS RUNNING");
+
+        MouseScrolledEvent* event { ecs_field(it, MouseScrolledEvent, 0) };
+        Transform* transform { ecs_field(it, Transform, 0) };
+        Transform* transform2 { ecs_field(it, Transform, 1) };
+
+        JAGE_LOG_DEBUG("EVENT INVALID?: {}", event == nullptr);
+        JAGE_LOG_DEBUG("TRANSFORM INVALID?: {}", transform == nullptr);
+        JAGE_LOG_DEBUG("TRANSFORM2 INVALID?: {}", transform2 == nullptr);
     }
 }

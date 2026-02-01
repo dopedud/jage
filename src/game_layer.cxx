@@ -23,8 +23,7 @@ namespace JAGE
         shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());
         mesh = Mesh::Create(cube.resource()->mesh_data(0));
 
-        // TODO: fix issue where temporary object calls ecs_fini(world) when world is still being kept alive
-        ApplicationContext app_ctx;
+        World::ApplicationContext app_ctx;
         app_ctx.window = m_window;
         app_ctx.value = 12808; // random value for testing
         world = World{ app_ctx };
@@ -92,8 +91,10 @@ namespace JAGE
 
         dispatcher.dispatch<MouseScrolledEvent>([this](const MouseScrolledEvent& e) -> bool
         {
-            float scaled_delta { -e.offsetY() * 10.0f * std::pow(camera_component_fov->fov / 90.0f, 2.0f) };
-            camera_component_fov->fov = std::clamp(camera_component_fov->fov + scaled_delta, 1.0f, 150.0f);
+            // float scaled_delta { -e.offsetY() * 10.0f * std::pow(camera_component_fov->fov / 90.0f, 2.0f) };
+            // camera_component_fov->fov = std::clamp(camera_component_fov->fov + scaled_delta, 1.0f, 150.0f);
+
+            world.emit_event(world.OnMouseScrolled(), e);
 
             return true;
         });
