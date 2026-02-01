@@ -183,8 +183,8 @@ namespace JAGE
 
     OpenGLShader::~OpenGLShader() { glDeleteProgram(shaderID); }
 
-    void OpenGLShader::bind() { glUseProgram(shaderID); }
-    void OpenGLShader::unbind() { glUseProgram(0); }
+    void OpenGLShader::bind() const { glUseProgram(shaderID); }
+    void OpenGLShader::unbind() const { glUseProgram(0); }
 
     void OpenGLShader::set_uniform_bool(std::string_view name, bool value)
     {
@@ -289,7 +289,7 @@ namespace JAGE
         glBindVertexArray(0);
     }
 
-    void OpenGLMesh::render(const std::unique_ptr<Shader>& shader)
+    void OpenGLMesh::render(const Shader* shader)
     {
         shader->bind();
         glBindVertexArray(vao);

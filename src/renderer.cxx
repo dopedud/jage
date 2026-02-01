@@ -49,11 +49,23 @@ namespace JAGE
         return std::make_unique<OpenGLMesh>(meshdata);
     }
 
+    Material::Material() : m_shader {}, m_materialdata {} {}
+
     Material::Material(const Shader* shader, const MaterialData* materialdata)
     : m_shader { shader }, m_materialdata { materialdata } {}
 
     const Shader* Material::shader() const { return m_shader; }
     const MaterialData* Material::materialdata() const { return m_materialdata; }
+
+    DebugRenderer::DebugRenderer(Window* window) : m_window { window } {}
+
+    std::unique_ptr<DebugRenderer> DebugRenderer::Create(Window* window)
+    {
+        return std::make_unique<OpenGLDebugRenderer>(window);
+    }
+
+    void DebugRenderer::set_vp(glm::mat4 view, glm::mat4 projection)
+    { m_view = view; m_projection = projection; }
 
     BufferElement::BufferElement(Shader::DataType shader_datatype, std::string_view name, bool normalized)
     : shader_datatype   { shader_datatype }
@@ -99,14 +111,4 @@ namespace JAGE
 
     const std::vector<BufferElement>& BufferLayout::elements() const { return m_elements; };
     unsigned BufferLayout::stride() const { return m_stride; }
-
-    DebugRenderer::DebugRenderer(Window* window) : m_window { window } {}
-
-    std::unique_ptr<DebugRenderer> DebugRenderer::Create(Window* window)
-    {
-        return std::make_unique<OpenGLDebugRenderer>(window);
-    }
-
-    void DebugRenderer::set_vp(glm::mat4 view, glm::mat4 projection)
-    { m_view = view; m_projection = projection; }
 }

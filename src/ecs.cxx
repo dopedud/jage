@@ -8,9 +8,10 @@ namespace JAGE
     DISABLE_WARNING_GCC_CLANG("-Wmissing-field-initializers")
 
     ECS_COMPONENT_DECLARE(Transform);
+    ECS_COMPONENT_DECLARE(MeshRenderer);
     ECS_COMPONENT_DECLARE(Camera);
 
-    ECS_COMPONENT_DECLARE(MouseScrolledEvent);
+    ECS_SYSTEM_DECLARE(CameraSystem_OnMouseScrolled);
 
     World::World() : m_world {}, m_app_ctx {} {}
 
@@ -21,9 +22,10 @@ namespace JAGE
         ecs_set_ctx(m_world, m_app_ctx.get(), nullptr);
 
         ECS_COMPONENT_DEFINE(m_world, Transform);
+        ECS_COMPONENT_DEFINE(m_world, MeshRenderer);
         ECS_COMPONENT_DEFINE(m_world, Camera);
 
-        ECS_COMPONENT_DEFINE(m_world, MouseScrolledEvent);
+        ECS_SYSTEM_DEFINE(m_world, CameraSystem_OnMouseScrolled, 0, Transform, Camera);
 
         ECS_SYSTEM(m_world, CameraSystem_Initialise, EcsOnStart, Transform, Camera);
         ECS_SYSTEM(m_world, RenderSystem_Initialise, EcsOnStart, Transform, Camera);
@@ -31,10 +33,7 @@ namespace JAGE
         ECS_SYSTEM(m_world, TransformSystem, EcsOnUpdate, Transform);
         ECS_SYSTEM(m_world, CameraSystem, EcsOnUpdate, Transform, Camera);
         ECS_SYSTEM(m_world, RenderSystem, EcsOnUpdate, Transform, Camera);
-
-        initialise_ecs_events();
-
-        ECS_OBSERVER(m_world, Test_Observer, OnMouseScrolled_ECSEvent, Transform, Camera);
+        ECS_SYSTEM(m_world, MeshRenderSystem, EcsOnUpdate, Transform, MeshRenderer);
     }
 
     DISABLE_WARNING_POP
@@ -66,16 +65,6 @@ namespace JAGE
     ecs_world_t* World::world() const { return m_world; }
 
     void World::progress(float deltatime) { ecs_progress(m_world, deltatime); }
-
-    ecs_entity_t World::OnMouseScrolled() const { return OnMouseScrolled_ECSEvent; }
-
-    void World::initialise_ecs_events()
-    {
-        ecs_entity_desc_t entity_desc {};
-        entity_desc.name = "OnMouseScrolled";
-
-        OnMouseScrolled_ECSEvent = ecs_entity_init(m_world, &entity_desc);
-    }
 
     // copied from flecs's source code
     void World::release()
@@ -154,22 +143,9 @@ namespace JAGE
 
     // TEMPLATE INSTANTIATIONS
 
-    template<> void World::emit_event<MouseScrolledEvent>(ecs_entity_t event, const MouseScrolledEvent& event_data)
+    template<> void World::emit_event<MouseScrolledEvent>(const MouseScrolledEvent& e)
     {
-        JAGE_MSG_DEBUG("MOUSE SCROLL EVENT IS RUNNING");
-
-        ecs_entity_t payload { ecs_new(m_world) };
-        ecs_set_ptr(m_world, payload, MouseScrolledEvent, &event_data);
-
-        ecs_type_t componentIDs {};
-
-        ecs_event_desc_t event_desc {};
-        event_desc.event = event;
-        event_desc.entity = payload;
-
-        ecs_emit(m_world, &event_desc);
-
-        ecs_delete(m_world, payload);
+        ecs_run(m_world, ecs_id(CameraSystem_OnMouseScrolled), 0.0f, &const_cast<MouseScrolledEvent&>(e));
     }
 
     // NOTE: Template specializations are used here (instead of template instantiations) due to Flecs fundamentally
@@ -184,17 +160,34 @@ namespace JAGE
 
     template<> void                 Entity::AddComponent<Transform>()                               { ecs_add(m_world, m_entity, Transform); }
     template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_world, m_entity, Transform, component); }
-    template<> const Transform&     Entity::GetComponent<Transform>()                               { return *ecs_get(m_world, m_entity, Transform); }
-    template<> Transform&           Entity::GetComponentMutable<Transform>()                        { return *ecs_get_mut(m_world, m_entity, Transform); }
+    template<> const Transform*     Entity::GetComponent<Transform>()                               { return ecs_get(m_world, m_entity, Transform); }
     template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_world, m_entity, Transform); }
 
     template<> void             Entity::AddComponent<Camera>()                          { ecs_add(m_world, m_entity, Camera); }
     template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_world, m_entity, Camera, component); }
-    template<> const Camera&    Entity::GetComponent<Camera>()                          { return *ecs_get(m_world, m_entity, Camera); }
-    template<> Camera&          Entity::GetComponentMutable<Camera>()                   { return *ecs_get_mut(m_world, m_entity, Camera); }
+    template<> const Camera*    Entity::GetComponent<Camera>()                          { return ecs_get(m_world, m_entity, Camera); }
     template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_world, m_entity, Camera); }
 
+    template<> void                 Entity::AddComponent<MeshRenderer>()                                { ecs_add(m_world, m_entity, MeshRenderer); }
+    template<> void                 Entity::AddComponent<MeshRenderer>(const MeshRenderer* component)   { ecs_set_ptr(m_world, m_entity, MeshRenderer, component); }
+    template<> const MeshRenderer*  Entity::GetComponent<MeshRenderer>()                                { return ecs_get(m_world, m_entity, MeshRenderer); }
+    template<> void                 Entity::RemoveComponent<MeshRenderer>()                             { ecs_remove(m_world, m_entity, MeshRenderer); }
+
     // END TEMPLATE INSTANTIATIONS
+
+    void CameraSystem_OnMouseScrolled(ecs_iter_t* it)
+    {
+        Transform* transform { ecs_field(it, Transform, 0) };
+        Camera* camera { ecs_field(it, Camera, 1) };
+
+        Transform& t { transform[0] };
+        Camera& c { camera[0] };
+
+        MouseScrolledEvent* e { static_cast<MouseScrolledEvent*>(it->param) };
+
+        float scaled_delta { -e->offsetY() *10.0f * std::pow(c.fov / 90.0f, 2.0f) };
+        c.fov = std::clamp(c.fov + scaled_delta, 1.0f, 150.0f);
+    }
 
     void CameraSystem_Initialise(ecs_iter_t* it)
     {
@@ -315,16 +308,17 @@ namespace JAGE
         c.projection_matrix = glm::infinitePerspectiveLH(glm::radians(c.fov), app_ctx->window->aspect_ratio(), 0.01f);
     }
 
-    void Test_Observer(ecs_iter_t* it)
+    void MeshRenderSystem(ecs_iter_t* it)
     {
-        JAGE_MSG_DEBUG("TEST OBSERVER IS RUNNING");
-
-        MouseScrolledEvent* event { ecs_field(it, MouseScrolledEvent, 0) };
         Transform* transform { ecs_field(it, Transform, 0) };
-        Transform* transform2 { ecs_field(it, Transform, 1) };
+        MeshRenderer* mesh_renderer { ecs_field(it, MeshRenderer, 1) };
 
-        JAGE_LOG_DEBUG("EVENT INVALID?: {}", event == nullptr);
-        JAGE_LOG_DEBUG("TRANSFORM INVALID?: {}", transform == nullptr);
-        JAGE_LOG_DEBUG("TRANSFORM2 INVALID?: {}", transform2 == nullptr);
+        for (unsigned i {}; i < it->count; i++)
+        {
+            Transform& t { transform[i] };
+            MeshRenderer& mr { mesh_renderer[i] };
+
+            mr.mesh->render(mr.material->shader());
+        }
     }
 }

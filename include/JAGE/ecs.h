@@ -44,14 +44,15 @@ namespace JAGE
         Material* material;
     };
 
+    void CameraSystem_OnMouseScrolled(ecs_iter_t* it);
+
     void CameraSystem_Initialise(ecs_iter_t* it);
     void RenderSystem_Initialise(ecs_iter_t* it);
 
     void TransformSystem(ecs_iter_t* it);
     void CameraSystem(ecs_iter_t* it);
     void RenderSystem(ecs_iter_t* it);
-
-    void Test_Observer(ecs_iter_t* it);
+    void MeshRenderSystem(ecs_iter_t* it);
 
     class JAGE_API World
     {
@@ -70,12 +71,16 @@ namespace JAGE
          * ECS worlds are not meant to be copied, only moved from one another.
          * 
          * Cloning will be implemented in the future for duplicating ECS worlds.
+         * 
+         * @{
          */
 
         World(const World& other) = delete;
         World& operator=(const World& other) = delete;
         World(World&& other) noexcept;
         World& operator=(World&& other) noexcept;
+
+        /** @} */
         
         ecs_world_t* world() const;
 
@@ -91,19 +96,7 @@ namespace JAGE
          * @param event_data The event data to supply when emitting the ECS event.
          */
         template<typename TEventData>
-        void emit_event(ecs_entity_t event, const TEventData& event_data);
-
-        /**
-         * @brief List of custom ECS events.
-         * 
-         * @note Any of these accessors must be used as the `event` parameter for `emit_event()`.
-         * 
-         * @{
-         */
-
-        ecs_entity_t OnMouseScrolled() const;
-
-        /** @} */
+        void emit_event(const TEventData& event_data);
     private:
         /**
          * @var m_world
@@ -117,10 +110,6 @@ namespace JAGE
         ecs_world_t* m_world;
 
         std::unique_ptr<ApplicationContext> m_app_ctx;
-
-        ecs_entity_t OnMouseScrolled_ECSEvent;
-
-        void initialise_ecs_events();
 
         void release();
     };
@@ -146,8 +135,7 @@ namespace JAGE
         template<typename T> void AddComponent();
         template<typename T> void AddComponent(const T* component);
 
-        template<typename T> const T& GetComponent();
-        template<typename T> T& GetComponentMutable();
+        template<typename T> const T* GetComponent();
 
         template<typename T> void RemoveComponent();
     public:

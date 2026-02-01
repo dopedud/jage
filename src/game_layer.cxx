@@ -22,18 +22,25 @@ namespace JAGE
         texture = Texture::Create(image.resource()->data());
         shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());
         mesh = Mesh::Create(cube.resource()->mesh_data(0));
+        material = std::make_unique<Material>(shader.get(), cube.resource()->material_data(0));
 
         World::ApplicationContext app_ctx;
         app_ctx.window = m_window;
         app_ctx.value = 12808; // random value for testing
         world = World{ app_ctx };
         camera = Entity{ world, "FreeCamera" };
+        object = Entity{ world, "Object" };
 
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();
 
-        camera_component = &camera.GetComponent<Camera>();
-        camera_component_fov = &camera.GetComponentMutable<Camera>();
+        object.AddComponent<Transform>();
+        MeshRenderer mesh_renderer {};
+        mesh_renderer.mesh = mesh.get();
+        mesh_renderer.material = material.get();
+        object.AddComponent<MeshRenderer>(&mesh_renderer);
+
+        camera_component = camera.GetComponent<Camera>();
 
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
     }
@@ -64,7 +71,7 @@ namespace JAGE
 
         texture->bind();
 
-        mesh->render(shader);
+        mesh->render(shader.get());
 
         texture->unbind();
 
@@ -91,10 +98,7 @@ namespace JAGE
 
         dispatcher.dispatch<MouseScrolledEvent>([this](const MouseScrolledEvent& e) -> bool
         {
-            // float scaled_delta { -e.offsetY() * 10.0f * std::pow(camera_component_fov->fov / 90.0f, 2.0f) };
-            // camera_component_fov->fov = std::clamp(camera_component_fov->fov + scaled_delta, 1.0f, 150.0f);
-
-            world.emit_event(world.OnMouseScrolled(), e);
+            world.emit_event<MouseScrolledEvent>(e);
 
             return true;
         });

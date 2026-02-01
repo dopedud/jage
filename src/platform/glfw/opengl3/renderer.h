@@ -25,8 +25,8 @@ namespace JAGE
         OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
         ~OpenGLShader();
 
-        virtual void bind() override;
-        virtual void unbind() override;
+        virtual void bind() const override;
+        virtual void unbind() const override;
 
         virtual void set_uniform_bool   (std::string_view name, bool value) override;
         virtual void set_uniform_int    (std::string_view name, int value) override;
@@ -54,7 +54,7 @@ namespace JAGE
     public:
         OpenGLMesh(const MeshData* meshdata);
 
-        virtual void render(const std::unique_ptr<Shader>& shader) override;
+        virtual void render(const Shader* shader) override;
     private:
         unsigned vao, vbo, ebo;
     };
