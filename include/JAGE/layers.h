@@ -12,10 +12,11 @@ namespace JAGE
         void OnAttach() override;
         void OnDetach() override;
 
-        void OnRender() override;
+        void OnUpdate() override;
 
         void OnEvent(const Event& e) override;
     private:
+        std::unique_ptr<Renderer> renderer;
         std::unique_ptr<DebugRenderer> debug_renderer;
 
         std::unique_ptr<Shader> shader;
@@ -37,7 +38,7 @@ namespace JAGE
         void OnAttach() override;
         void OnDetach() override;
 
-        void OnRender() override;
+        void OnUpdate() override;
 
         void OnEvent(const Event& e) override;
     private:

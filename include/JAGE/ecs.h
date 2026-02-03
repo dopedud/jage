@@ -44,14 +44,15 @@ namespace JAGE
         Material* material;
     };
 
-    void CameraSystem_OnMouseScrolled(ecs_iter_t* it);
+    void TransformSystem_Initialise(ecs_iter_t* it);
+    void CameraMovementSystem_Initialise(ecs_iter_t* it);
+    void CameraRenderSystem_Initialise(ecs_iter_t* it);
 
-    void CameraSystem_Initialise(ecs_iter_t* it);
-    void RenderSystem_Initialise(ecs_iter_t* it);
+    void CameraMovementSystem_OnMouseScrolled(ecs_iter_t* it);
 
     void TransformSystem(ecs_iter_t* it);
-    void CameraSystem(ecs_iter_t* it);
-    void RenderSystem(ecs_iter_t* it);
+    void CameraMovementSystem(ecs_iter_t* it);
+    void CameraRenderSystem(ecs_iter_t* it);
     void MeshRenderSystem(ecs_iter_t* it);
 
     class JAGE_API World
@@ -60,7 +61,7 @@ namespace JAGE
         struct JAGE_API ApplicationContext
         {
             Window* window;
-            unsigned value;
+            Renderer* renderer;
         };
 
         World(ApplicationContext app_ctx);

@@ -37,10 +37,10 @@ int main(int argc, char** argv)
 
     // Time::SetTargetFPS(100);
 
-    APP_MSG_INFO("Running the game loop.");
+    APP_MSG_TRACE("Running the game loop.");
     while (running)
     {
-        window->OnRender();
+        window->OnUpdate();
     }
 
     APP_MSG_INFO("Exiting application.");

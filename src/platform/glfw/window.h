@@ -12,7 +12,7 @@ namespace JAGE
 
         void set_vsync(bool enabled) override;
 
-        void OnRender() override;
+        void OnUpdate() override;
 
         void* handle() override { return m_handle; }
     private:

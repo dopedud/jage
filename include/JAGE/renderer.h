@@ -49,6 +49,19 @@ namespace JAGE
         Type m_type;
     };
 
+    class JAGE_API Material
+    {
+    public:
+        Material(Shader* shader, const MaterialData* materialdata);
+        Material();
+
+        Shader* shader() const;
+        const MaterialData* materialdata() const;
+    private:
+        Shader* m_shader;
+        const MaterialData* m_materialdata;
+    };
+
     class JAGE_API Mesh
     {
     public:
@@ -56,22 +69,26 @@ namespace JAGE
         Mesh(const MeshData* meshdata);
         virtual ~Mesh() = default;
 
-        virtual void render(const Shader* shader) = 0;
+        virtual void render(const Material* material) = 0;
     protected:
         const MeshData* m_meshdata;
     };
 
-    class JAGE_API Material
+    class JAGE_API Renderer
     {
     public:
-        Material(const Shader* shader, const MaterialData* materialdata);
-        Material();
+        static std::unique_ptr<Renderer> Create(Window* window);
+        Renderer(Window* window);
+        virtual ~Renderer() = default;
 
-        const Shader* shader() const;
-        const MaterialData* materialdata() const;
-    private:
-        const Shader* m_shader;
-        const MaterialData* m_materialdata;
+        void set_vp(const glm::mat4& view, const glm::mat4& projection);
+
+        const glm::mat4& view() const;
+        const glm::mat4& projection() const;
+    protected:
+        Window* m_window;
+
+        glm::mat4 m_view, m_projection;
     };
 
     class JAGE_API DebugRenderer

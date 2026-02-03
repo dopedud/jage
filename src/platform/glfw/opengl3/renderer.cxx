@@ -289,14 +289,17 @@ namespace JAGE
         glBindVertexArray(0);
     }
 
-    void OpenGLMesh::render(const Shader* shader)
+    void OpenGLMesh::render(const Material* material)
     {
-        shader->bind();
+        material->shader()->bind();
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, m_meshdata->indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
-        shader->unbind();
+        material->shader()->unbind();
     }
+
+    OpenGLRenderer::OpenGLRenderer(Window* window) : Renderer{ window } {}
+    OpenGLRenderer::~OpenGLRenderer() {}
 
     OpenGLDebugRenderer::OpenGLDebugRenderer(Window* window)
     : DebugRenderer{ window }

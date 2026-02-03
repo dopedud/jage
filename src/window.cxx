@@ -26,9 +26,7 @@ namespace JAGE
     }
 
     std::unique_ptr<Window> Window::Create(const WindowProperties& properties)
-    {
-        return std::make_unique<GLFWWindow>(properties);
-    }
+    { return std::make_unique<GLFWWindow>(properties); }
 
     unsigned Window::width() const { return data.properties.width; }
     unsigned Window::height() const { return data.properties.height; }
@@ -38,9 +36,7 @@ namespace JAGE
     void Window::set_eventcallback(const EventCallbackFn& callback) { data.callback = callback; }
 
     float Window::aspect_ratio() const
-    {
-        return static_cast<float>(data.properties.width) / static_cast<float>(data.properties.height);
-    }
+    { return static_cast<float>(data.properties.width) / static_cast<float>(data.properties.height); }
 
     void Window::OnEvent(const Event& e)
     {
@@ -106,7 +102,5 @@ namespace JAGE
     std::vector<Layer*>::iterator Window::layers_end() { return layers.end(); }
 
     Layer::Layer(Window* window, std::string_view name) : m_window { window }, m_name { name }
-    {
-        JAGE_MSG_TRACE("Initialised a layer with name: " + m_name);
-    }
+    { JAGE_MSG_TRACE("Initialised a layer with name: " + m_name); }
 }

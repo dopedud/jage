@@ -46,7 +46,7 @@ namespace JAGE
         JAGE_MSG_TRACE("Detached IMGUI layer from layer stack.");
     }
 
-    void ImguiLayer::OnRender()
+    void ImguiLayer::OnUpdate()
     {
         ImGui_ImplGlfw_NewFrame();
         ImGui_ImplOpenGL3_NewFrame();

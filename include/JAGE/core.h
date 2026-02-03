@@ -249,7 +249,7 @@ namespace JAGE
 
         void set_eventcallback(const EventCallbackFn& callback);
 
-        virtual void OnRender() = 0;
+        virtual void OnUpdate() = 0;
 
         /**
          * @fn handle()
@@ -316,7 +316,7 @@ namespace JAGE
         virtual void OnAttach() = 0;
         virtual void OnDetach() = 0;
 
-        virtual void OnRender() = 0;
+        virtual void OnUpdate() = 0;
 
         virtual void OnEvent(const Event& e) = 0;
 

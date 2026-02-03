@@ -54,9 +54,16 @@ namespace JAGE
     public:
         OpenGLMesh(const MeshData* meshdata);
 
-        virtual void render(const Shader* shader) override;
+        virtual void render(const Material* material) override;
     private:
         unsigned vao, vbo, ebo;
+    };
+
+    class OpenGLRenderer final : public Renderer
+    {
+    public:
+        OpenGLRenderer(Window* window);
+        ~OpenGLRenderer();
     };
 
     class OpenGLDebugRenderer final : public DebugRenderer

@@ -11,7 +11,7 @@ namespace JAGE
     ECS_COMPONENT_DECLARE(MeshRenderer);
     ECS_COMPONENT_DECLARE(Camera);
 
-    ECS_SYSTEM_DECLARE(CameraSystem_OnMouseScrolled);
+    ECS_SYSTEM_DECLARE(CameraMovementSystem_OnMouseScrolled);
 
     World::World() : m_world {}, m_app_ctx {} {}
 
@@ -25,14 +25,15 @@ namespace JAGE
         ECS_COMPONENT_DEFINE(m_world, MeshRenderer);
         ECS_COMPONENT_DEFINE(m_world, Camera);
 
-        ECS_SYSTEM_DEFINE(m_world, CameraSystem_OnMouseScrolled, 0, Transform, Camera);
+        ECS_SYSTEM(m_world, TransformSystem_Initialise, EcsOnStart, Transform);
+        ECS_SYSTEM(m_world, CameraMovementSystem_Initialise, EcsOnStart, Camera);
+        ECS_SYSTEM(m_world, CameraRenderSystem_Initialise, EcsOnStart, Camera);
 
-        ECS_SYSTEM(m_world, CameraSystem_Initialise, EcsOnStart, Transform, Camera);
-        ECS_SYSTEM(m_world, RenderSystem_Initialise, EcsOnStart, Transform, Camera);
+        ECS_SYSTEM_DEFINE(m_world, CameraMovementSystem_OnMouseScrolled, 0, Camera);
 
         ECS_SYSTEM(m_world, TransformSystem, EcsOnUpdate, Transform);
-        ECS_SYSTEM(m_world, CameraSystem, EcsOnUpdate, Transform, Camera);
-        ECS_SYSTEM(m_world, RenderSystem, EcsOnUpdate, Transform, Camera);
+        ECS_SYSTEM(m_world, CameraMovementSystem, EcsOnUpdate, Transform, Camera);
+        ECS_SYSTEM(m_world, CameraRenderSystem, EcsOnUpdate, Transform, Camera);
         ECS_SYSTEM(m_world, MeshRenderSystem, EcsOnUpdate, Transform, MeshRenderer);
     }
 
@@ -145,7 +146,7 @@ namespace JAGE
 
     template<> void World::emit_event<MouseScrolledEvent>(const MouseScrolledEvent& e)
     {
-        ecs_run(m_world, ecs_id(CameraSystem_OnMouseScrolled), 0.0f, &const_cast<MouseScrolledEvent&>(e));
+        ecs_run(m_world, ecs_id(CameraMovementSystem_OnMouseScrolled), 0.0f, &const_cast<MouseScrolledEvent&>(e));
     }
 
     // NOTE: Template specializations are used here (instead of template instantiations) due to Flecs fundamentally
@@ -175,31 +176,33 @@ namespace JAGE
 
     // END TEMPLATE INSTANTIATIONS
 
-    void CameraSystem_OnMouseScrolled(ecs_iter_t* it)
+    void TransformSystem_Initialise(ecs_iter_t* it)
     {
         Transform* transform { ecs_field(it, Transform, 0) };
-        Camera* camera { ecs_field(it, Camera, 1) };
 
-        Transform& t { transform[0] };
-        Camera& c { camera[0] };
+        for (unsigned i {}; i < it->count; i++)
+        {
+            Transform& t { transform[i] };
 
-        MouseScrolledEvent* e { static_cast<MouseScrolledEvent*>(it->param) };
+            t.position = glm::vec3{};
+            t.orientation = glm::quat{ 1.0f, 0.0f, 0.0f, 0.0f };
+            t.scale = glm::vec3{ 1.0f };
 
-        float scaled_delta { -e->offsetY() *10.0f * std::pow(c.fov / 90.0f, 2.0f) };
-        c.fov = std::clamp(c.fov + scaled_delta, 1.0f, 150.0f);
+            t.right     = glm::normalize(t.orientation * glm::vec3{1.0f, 0.0f, 0.0f}); 
+            t.up        = glm::normalize(t.orientation * glm::vec3{0.0f, 1.0f, 0.0f}); 
+            t.forward   = glm::normalize(t.orientation * glm::vec3{0.0f, 0.0f, 1.0f}); 
+
+            t.euler_angles = glm::vec3{};
+
+            t.transformation_matrix = glm::mat4{ 1.0f };
+        }
     }
 
-    void CameraSystem_Initialise(ecs_iter_t* it)
+    void CameraMovementSystem_Initialise(ecs_iter_t* it)
     {
-        Transform* transform { ecs_field(it, Transform, 0) };
-        Camera* camera { ecs_field(it, Camera, 1) };
+        Camera* camera { ecs_field(it, Camera, 0) };
 
-        Transform& t { transform[0] };
         Camera& c { camera[0] };
-
-        t.position = glm::vec3{};
-        t.orientation = glm::quat{ 1.0f, 0.0f, 0.0f, 0.0f };
-        t.scale = glm::vec3{ 1.0f };
 
         c.move_speed = 0.01f;
         c.zoom_speed = 0.1f;
@@ -210,11 +213,12 @@ namespace JAGE
         c.fov = 90.0f;
     }
 
-    void RenderSystem_Initialise(ecs_iter_t* it)
+    void CameraRenderSystem_Initialise(ecs_iter_t* it)
     {
-        Camera* camera { ecs_field(it, Camera, 1) };
+        Camera* camera { ecs_field(it, Camera, 0) };
         Camera& c { camera[0] };
         c.view_matrix = glm::mat4{ 1.0f };
+        c.projection_matrix = glm::mat4{ 1.0f };
     }
 
     void TransformSystem(ecs_iter_t* it)
@@ -238,7 +242,19 @@ namespace JAGE
         }
     }
 
-    void CameraSystem(ecs_iter_t* it)
+    void CameraMovementSystem_OnMouseScrolled(ecs_iter_t* it)
+    {
+        Camera* camera { ecs_field(it, Camera, 0) };
+
+        Camera& c { camera[0] };
+
+        MouseScrolledEvent* e { static_cast<MouseScrolledEvent*>(it->param) };
+
+        float scaled_delta { -e->offsetY() *10.0f * std::pow(c.fov / 90.0f, 2.0f) };
+        c.fov = std::clamp(c.fov + scaled_delta, 1.0f, 150.0f);
+    }
+
+    void CameraMovementSystem(ecs_iter_t* it)
     {
         if (Input::GetCursorMode() == JAGE_CURSOR_MODE_NORMAL) return;
 
@@ -294,22 +310,29 @@ namespace JAGE
         ) * c.move_speed * move_multiplier * delta_time;
     }
 
-    void RenderSystem(ecs_iter_t* it)
+    void CameraRenderSystem(ecs_iter_t* it)
     {
+        World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
+        Window* window { app_ctx->window };
+        Renderer* renderer { app_ctx->renderer };
+
         Transform* transform { ecs_field(it, Transform, 0) };
         Camera* camera { ecs_field(it, Camera, 1) };
 
         Transform& t { transform[0] };
         Camera& c { camera[0] };
 
-        World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
-
         c.view_matrix = glm::lookAtLH(t.position, t.position + t.forward, t.up);
-        c.projection_matrix = glm::infinitePerspectiveLH(glm::radians(c.fov), app_ctx->window->aspect_ratio(), 0.01f);
-    }
+        c.projection_matrix = glm::infinitePerspectiveLH(glm::radians(c.fov), window->aspect_ratio(), 0.01f);
+
+        renderer->set_vp(c.view_matrix, c.projection_matrix);
+   }
 
     void MeshRenderSystem(ecs_iter_t* it)
     {
+        World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
+        Renderer* renderer { app_ctx->renderer };
+
         Transform* transform { ecs_field(it, Transform, 0) };
         MeshRenderer* mesh_renderer { ecs_field(it, MeshRenderer, 1) };
 
@@ -318,7 +341,13 @@ namespace JAGE
             Transform& t { transform[i] };
             MeshRenderer& mr { mesh_renderer[i] };
 
-            mr.mesh->render(mr.material->shader());
+            mr.material->shader()->bind();
+            mr.material->shader()->set_uniform_mat4("model", t.transformation_matrix);
+            mr.material->shader()->set_uniform_mat4("view", renderer->view());
+            mr.material->shader()->set_uniform_mat4("projection", renderer->projection());
+            mr.material->shader()->unbind();
+
+            mr.mesh->render(mr.material);
         }
     }
 }

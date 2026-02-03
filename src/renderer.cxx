@@ -8,9 +8,7 @@ namespace JAGE
     GraphicsContext::GraphicsContext(Window* window) : m_window { window } {}
 
     std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
-    {
-        return std::make_unique<OpenGLShader>(vertex_str, fragment_str);
-    }
+    { return std::make_unique<OpenGLShader>(vertex_str, fragment_str); }
 
     unsigned Shader::datatype_size(Shader::DataType datatype)
     {
@@ -36,33 +34,38 @@ namespace JAGE
     }
 
     std::unique_ptr<Texture> Texture::Create(const ImageData* imagedata)
-    {
-        return std::make_unique<OpenGLTexture>(imagedata);
-    }
+    { return std::make_unique<OpenGLTexture>(imagedata); }
 
     Texture::Type Texture::type() const { return m_type; }
+
+    Material::Material() : m_shader {}, m_materialdata {} {}
+
+    Material::Material(Shader* shader, const MaterialData* materialdata)
+    : m_shader { shader }, m_materialdata { materialdata } {}
+
+    Shader* Material::shader() const { return m_shader; }
+    const MaterialData* Material::materialdata() const { return m_materialdata; }
 
     Mesh::Mesh(const MeshData* meshdata) : m_meshdata { meshdata } {} 
 
     std::unique_ptr<Mesh> Mesh::Create(const MeshData* meshdata)
-    {
-        return std::make_unique<OpenGLMesh>(meshdata);
-    }
+    { return std::make_unique<OpenGLMesh>(meshdata); }
 
-    Material::Material() : m_shader {}, m_materialdata {} {}
+    Renderer::Renderer(Window* window) : m_window { window } {}
 
-    Material::Material(const Shader* shader, const MaterialData* materialdata)
-    : m_shader { shader }, m_materialdata { materialdata } {}
+    std::unique_ptr<Renderer> Renderer::Create(Window* window)
+    { return std::make_unique<OpenGLRenderer>(window); }
 
-    const Shader* Material::shader() const { return m_shader; }
-    const MaterialData* Material::materialdata() const { return m_materialdata; }
+    void Renderer::set_vp(const glm::mat4& view, const glm::mat4& projection)
+    { m_view = view; m_projection = projection; }
+
+    const glm::mat4& Renderer::view() const { return m_view; }
+    const glm::mat4& Renderer::projection() const { return m_projection; }
 
     DebugRenderer::DebugRenderer(Window* window) : m_window { window } {}
 
     std::unique_ptr<DebugRenderer> DebugRenderer::Create(Window* window)
-    {
-        return std::make_unique<OpenGLDebugRenderer>(window);
-    }
+    { return std::make_unique<OpenGLDebugRenderer>(window); }
 
     void DebugRenderer::set_vp(glm::mat4 view, glm::mat4 projection)
     { m_view = view; m_projection = projection; }

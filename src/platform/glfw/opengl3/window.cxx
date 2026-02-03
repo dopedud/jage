@@ -154,12 +154,12 @@ namespace JAGE
         glfwTerminate();
     }
 
-    void GLFWWindow::OnRender()
+    void GLFWWindow::OnUpdate()
     {
         graphics_context->Clear();
 
         Input::UpdateMousePosition();
-        for (Layer* layer : layers) layer->OnRender();
+        for (Layer* layer : layers) layer->OnUpdate();
 
         graphics_context->SwapBuffers();
 

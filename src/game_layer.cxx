@@ -12,6 +12,7 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Attaching Game layer to layer stack.");
 
+        renderer = Renderer::Create(m_window);
         debug_renderer = DebugRenderer::Create(m_window);
 
         ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };
@@ -26,7 +27,7 @@ namespace JAGE
 
         World::ApplicationContext app_ctx;
         app_ctx.window = m_window;
-        app_ctx.value = 12808; // random value for testing
+        app_ctx.renderer = renderer.get();
         world = World{ app_ctx };
         camera = Entity{ world, "FreeCamera" };
         object = Entity{ world, "Object" };
@@ -55,25 +56,25 @@ namespace JAGE
         JAGE_MSG_TRACE("Detached Game layer from layer stack.");
     }
 
-    void GameLayer::OnRender()
+    void GameLayer::OnUpdate()
     {
         world.progress(Time::DeltaTime());
 
-        glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 1.0f, 0.0f, 2.0f }) };
-        glm::mat4 view { camera_component->view_matrix };
-        glm::mat4 projection { camera_component->projection_matrix };
+        // glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 1.0f, 0.0f, 2.0f }) };
+        // glm::mat4 view { camera_component->view_matrix };
+        // glm::mat4 projection { camera_component->projection_matrix };
 
-        shader->bind();
-        shader->set_uniform_mat4("model", glm::mat4{ 1.0f });
-        shader->set_uniform_mat4("view", view);
-        shader->set_uniform_mat4("projection", projection);
-        shader->unbind();
+        // shader->bind();
+        // shader->set_uniform_mat4("model", glm::mat4{ 1.0f });
+        // shader->set_uniform_mat4("view", view);
+        // shader->set_uniform_mat4("projection", projection);
+        // shader->unbind();
 
-        texture->bind();
+        // texture->bind();
 
-        mesh->render(shader.get());
+        // mesh->render(shader.get());
 
-        texture->unbind();
+        // texture->unbind();
 
         // debug_renderer->set_vp(view, projection);
         // debug_renderer->RenderGridLines(5, 25.0f);
