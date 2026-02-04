@@ -25,10 +25,6 @@ namespace JAGE
         ECS_COMPONENT_DEFINE(m_world, MeshRenderer);
         ECS_COMPONENT_DEFINE(m_world, Camera);
 
-        ECS_SYSTEM(m_world, TransformSystem_Initialise, EcsOnStart, Transform);
-        ECS_SYSTEM(m_world, CameraMovementSystem_Initialise, EcsOnStart, Camera);
-        ECS_SYSTEM(m_world, CameraRenderSystem_Initialise, EcsOnStart, Camera);
-
         ECS_SYSTEM_DEFINE(m_world, CameraMovementSystem_OnMouseScrolled, 0, Camera);
 
         ECS_SYSTEM(m_world, TransformSystem, EcsOnUpdate, Transform);
@@ -159,66 +155,33 @@ namespace JAGE
     // template<typename T> T*         Entity::GetComponentMutable()                { return ecs_get_mut(m_world, m_entity, T); }
     // template<typename T> void       Entity::RemoveComponent()                    { ecs_remove(m_world, m_entity, T); }
 
-    template<> void                 Entity::AddComponent<Transform>()                               { ecs_add(m_world, m_entity, Transform); }
+    template<> void                 Entity::AddComponent<Transform>() { Transform c {}; ecs_set_ptr(m_world, m_entity, Transform, &c); }
     template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_world, m_entity, Transform, component); }
     template<> const Transform*     Entity::GetComponent<Transform>()                               { return ecs_get(m_world, m_entity, Transform); }
     template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_world, m_entity, Transform); }
 
-    template<> void             Entity::AddComponent<Camera>()                          { ecs_add(m_world, m_entity, Camera); }
+    template<> void             Entity::AddComponent<Camera>() { Camera c {}; ecs_set_ptr(m_world, m_entity, Camera, &c); }
     template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_world, m_entity, Camera, component); }
     template<> const Camera*    Entity::GetComponent<Camera>()                          { return ecs_get(m_world, m_entity, Camera); }
     template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_world, m_entity, Camera); }
 
-    template<> void                 Entity::AddComponent<MeshRenderer>()                                { ecs_add(m_world, m_entity, MeshRenderer); }
+    template<> void                 Entity::AddComponent<MeshRenderer>() { MeshRenderer c {}; ecs_set_ptr(m_world, m_entity, MeshRenderer, &c); }
     template<> void                 Entity::AddComponent<MeshRenderer>(const MeshRenderer* component)   { ecs_set_ptr(m_world, m_entity, MeshRenderer, component); }
     template<> const MeshRenderer*  Entity::GetComponent<MeshRenderer>()                                { return ecs_get(m_world, m_entity, MeshRenderer); }
     template<> void                 Entity::RemoveComponent<MeshRenderer>()                             { ecs_remove(m_world, m_entity, MeshRenderer); }
 
     // END TEMPLATE INSTANTIATIONS
 
-    void TransformSystem_Initialise(ecs_iter_t* it)
-    {
-        Transform* transform { ecs_field(it, Transform, 0) };
-
-        for (unsigned i {}; i < it->count; i++)
-        {
-            Transform& t { transform[i] };
-
-            t.position = glm::vec3{};
-            t.orientation = glm::quat{ 1.0f, 0.0f, 0.0f, 0.0f };
-            t.scale = glm::vec3{ 1.0f };
-
-            t.right     = glm::normalize(t.orientation * glm::vec3{1.0f, 0.0f, 0.0f}); 
-            t.up        = glm::normalize(t.orientation * glm::vec3{0.0f, 1.0f, 0.0f}); 
-            t.forward   = glm::normalize(t.orientation * glm::vec3{0.0f, 0.0f, 1.0f}); 
-
-            t.euler_angles = glm::vec3{};
-
-            t.transformation_matrix = glm::mat4{ 1.0f };
-        }
-    }
-
-    void CameraMovementSystem_Initialise(ecs_iter_t* it)
+    void CameraMovementSystem_OnMouseScrolled(ecs_iter_t* it)
     {
         Camera* camera { ecs_field(it, Camera, 0) };
 
         Camera& c { camera[0] };
 
-        c.move_speed = 0.01f;
-        c.zoom_speed = 0.1f;
-        c.sensitivity = 8.5f * 0.01f;
+        MouseScrolledEvent* e { static_cast<MouseScrolledEvent*>(it->param) };
 
-        c.pitch = 0.0f;
-        c.yaw = 0.0f;
-        c.fov = 90.0f;
-    }
-
-    void CameraRenderSystem_Initialise(ecs_iter_t* it)
-    {
-        Camera* camera { ecs_field(it, Camera, 0) };
-        Camera& c { camera[0] };
-        c.view_matrix = glm::mat4{ 1.0f };
-        c.projection_matrix = glm::mat4{ 1.0f };
+        float scaled_delta { -e->offsetY() *10.0f * std::pow(c.fov / 90.0f, 2.0f) };
+        c.fov = std::clamp(c.fov + scaled_delta, 1.0f, 150.0f);
     }
 
     void TransformSystem(ecs_iter_t* it)
@@ -240,18 +203,6 @@ namespace JAGE
                 glm::mat4_cast(t.orientation) *
                 glm::scale(glm::mat4{ 1.0f }, t.scale);
         }
-    }
-
-    void CameraMovementSystem_OnMouseScrolled(ecs_iter_t* it)
-    {
-        Camera* camera { ecs_field(it, Camera, 0) };
-
-        Camera& c { camera[0] };
-
-        MouseScrolledEvent* e { static_cast<MouseScrolledEvent*>(it->param) };
-
-        float scaled_delta { -e->offsetY() *10.0f * std::pow(c.fov / 90.0f, 2.0f) };
-        c.fov = std::clamp(c.fov + scaled_delta, 1.0f, 150.0f);
     }
 
     void CameraMovementSystem(ecs_iter_t* it)

@@ -269,7 +269,7 @@ namespace JAGE
         /**
          * @name layer iterators
          * 
-         * For use in @c for loops and search algorithms like @c std::find .
+         * For use in `for` loops and search algorithms like `std::find`.
          * 
          * @{
          */
@@ -604,7 +604,7 @@ namespace JAGE
 
     /**
      * @class Event
-     * @brief The @c Event base class used to communicate events happening between the engine and the application.
+     * @brief The `Event` base class used to communicate events happening between the engine and the application.
      */
     class JAGE_API Event
     {
@@ -626,7 +626,7 @@ namespace JAGE
 
     /**
      * @class EventDispatcher
-     * @brief The @c EventDispatcher class used to dispatch events based on their event type.
+     * @brief The `EventDispatcher` class used to dispatch events based on their event type.
      */
     class JAGE_API EventDispatcher
     {

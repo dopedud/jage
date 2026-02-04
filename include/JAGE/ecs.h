@@ -10,43 +10,39 @@ namespace JAGE
 {
     struct JAGE_API Transform
     {
-        glm::vec3 position;
-        glm::quat orientation;
-        glm::vec3 scale;
+        glm::vec3 position {};
+        glm::quat orientation { 1.0f, 0.0f, 0.0f, 0.0f };
+        glm::vec3 scale { 1.0f };
 
         // each data below has to be modified via ECS system based on the 3 data above
 
-        glm::vec3 right;
-        glm::vec3 up;
-        glm::vec3 forward;
+        glm::vec3 right     { glm::normalize(orientation * glm::vec3{ 1.0f, 0.0f, 0.0f }) };
+        glm::vec3 up        { glm::normalize(orientation * glm::vec3{ 0.0f, 1.0f, 0.0f }) };
+        glm::vec3 forward   { glm::normalize(orientation * glm::vec3{ 0.0f, 0.0f, 1.0f }) };
 
-        glm::vec3 euler_angles;
-        glm::mat4 transformation_matrix;
+        glm::vec3 euler_angles {};
+        glm::mat4 transformation_matrix { 1.0f };
     };
 
     struct JAGE_API Camera
     { 
-        glm::mat4 view_matrix;
-        glm::mat4 projection_matrix;
+        glm::mat4 view_matrix { 1.0f };
+        glm::mat4 projection_matrix { 1.0f };
 
-        float move_speed;
-        float zoom_speed;
-        float sensitivity;
+        float move_speed { 0.01f };
+        float zoom_speed { 0.1f };
+        float sensitivity { 8.5f * 0.01f };
 
-        float pitch;
-        float yaw;
-        float fov;
+        float pitch {};
+        float yaw {};
+        float fov { 90.0f };
     };
 
     struct JAGE_API MeshRenderer
     {
-        Mesh* mesh;
-        Material* material;
+        Mesh* mesh {};
+        Material* material {};
     };
-
-    void TransformSystem_Initialise(ecs_iter_t* it);
-    void CameraMovementSystem_Initialise(ecs_iter_t* it);
-    void CameraRenderSystem_Initialise(ecs_iter_t* it);
 
     void CameraMovementSystem_OnMouseScrolled(ecs_iter_t* it);
 
@@ -90,11 +86,10 @@ namespace JAGE
         /**
          * @fn emit_event
          * 
-         * @brief Function to emit ECS events.
+         * @brief Function to emit events for ECS entities to react.
          * 
          * @tparam TEventData The event data type.
-         * @param event The ECS event. Must be used by any one of the event accessors from this world.
-         * @param event_data The event data to supply when emitting the ECS event.
+         * @param event_data The event data to supply when emitting the event.
          */
         template<typename TEventData>
         void emit_event(const TEventData& event_data);

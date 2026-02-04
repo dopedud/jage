@@ -35,7 +35,7 @@ int main(int argc, char** argv)
         dispatcher.dispatch<WindowCloseEvent>(OnWindowClose);
     });
 
-    // Time::SetTargetFPS(100);
+    Time::SetTargetFPS(60);
 
     APP_MSG_TRACE("Running the game loop.");
     while (running)

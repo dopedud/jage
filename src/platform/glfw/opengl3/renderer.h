@@ -28,11 +28,14 @@ namespace JAGE
         virtual void bind() const override;
         virtual void unbind() const override;
 
-        virtual void set_uniform_bool   (std::string_view name, bool value) override;
-        virtual void set_uniform_int    (std::string_view name, int value) override;
-        virtual void set_uniform_uint   (std::string_view name, unsigned value) override;
-        virtual void set_uniform_float  (std::string_view name, float value) override;
-        virtual void set_uniform_mat4   (std::string_view name, const glm::mat4& value) override;
+        virtual void set_uniform_bool       (std::string_view name, bool value) override;
+        virtual void set_uniform_uint       (std::string_view name, unsigned value) override;
+        virtual void set_uniform_int        (std::string_view name, int value) override;
+        virtual void set_uniform_float      (std::string_view name, float value) override;
+        virtual void set_uniform_float2     (std::string_view name, const glm::vec2& value) override;
+        virtual void set_uniform_float3     (std::string_view name, const glm::vec3& value) override;
+        virtual void set_uniform_float4     (std::string_view name, const glm::vec4& value) override;
+        virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value) override;
     private:
         unsigned shaderID;
     };

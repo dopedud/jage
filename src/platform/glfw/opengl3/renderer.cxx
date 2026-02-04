@@ -207,13 +207,31 @@ namespace JAGE
     void OpenGLShader::set_uniform_float(std::string_view name, float value)
     {
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
-        glUniform1i(loc, value);
+        glUniform1f(loc, value);
+    }
+
+    void OpenGLShader::set_uniform_float2(std::string_view name, const glm::vec2& value)
+    {
+        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        glUniform2f(loc, value.x, value.y);
+    }
+
+    void OpenGLShader::set_uniform_float3(std::string_view name, const glm::vec3& value)
+    {
+        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        glUniform3f(loc, value.x, value.y, value.z);
+    }
+
+    void OpenGLShader::set_uniform_float4(std::string_view name, const glm::vec4& value)
+    {
+        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        glUniform4f(loc, value.x, value.y, value.z, value.w);
     }
 
     void OpenGLShader::set_uniform_mat4(std::string_view name, const glm::mat4& value)
     {
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
-        glUniformMatrix4fv(loc, 1, GL_FALSE, &value[0][0]);
+        glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
     }
 
     OpenGLTexture::OpenGLTexture(const ImageData* imagedata)
