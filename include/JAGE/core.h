@@ -121,7 +121,7 @@ namespace JAGE
 {
     /**
      * @class AppLogger
-     * @brief The @c AppLogger class used to log game operations.
+     * @brief The `AppLogger` class used to log game operations.
      *
      * Both JAGE and the game use @c spdlog as its logging backend. This means that the game won't really rely on JAGE
      * to provide logging utilities, but instead rely directly from @c spdlog . Ideally, the opposite should happen

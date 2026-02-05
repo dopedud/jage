@@ -51,6 +51,8 @@ namespace JAGE
     void CameraRenderSystem(ecs_iter_t* it);
     void MeshRenderSystem(ecs_iter_t* it);
 
+    void DebugRenderSystem(ecs_iter_t* it);
+
     class JAGE_API World
     {
     public:
@@ -58,6 +60,7 @@ namespace JAGE
         {
             Window* window;
             Renderer* renderer;
+            DebugRenderer* debug_renderer;
         };
 
         World(ApplicationContext app_ctx);
@@ -72,8 +75,8 @@ namespace JAGE
          * @{
          */
 
-        World(const World& other) = delete;
-        World& operator=(const World& other) = delete;
+        World(const World&) = delete;
+        World& operator=(const World&) = delete;
         World(World&& other) noexcept;
         World& operator=(World&& other) noexcept;
 
@@ -121,15 +124,20 @@ namespace JAGE
          * ECS entities are not meant to be copied, only moved from one another.
          * 
          * Cloning will be implemented in the future for duplicating ECS entities.
+         * 
+         * @{
          */
 
-        Entity(const Entity& other) = delete;
-        Entity& operator=(const Entity& other) = delete;
+        Entity(const Entity&) = delete;
+        Entity& operator=(const Entity&) = delete;
         Entity(Entity&& other) noexcept;
         Entity& operator=(Entity&& other) noexcept;
 
+        /** @} */
+
         template<typename T> void AddComponent();
         template<typename T> void AddComponent(const T* component);
+        template<typename T> void AddComponent(const T& component);
 
         template<typename T> const T* GetComponent();
 

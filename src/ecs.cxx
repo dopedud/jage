@@ -31,6 +31,8 @@ namespace JAGE
         ECS_SYSTEM(m_world, CameraMovementSystem, EcsOnUpdate, Transform, Camera);
         ECS_SYSTEM(m_world, CameraRenderSystem, EcsOnUpdate, Transform, Camera);
         ECS_SYSTEM(m_world, MeshRenderSystem, EcsOnUpdate, Transform, MeshRenderer);
+
+        ECS_SYSTEM(m_world, DebugRenderSystem, EcsOnUpdate, 0);
     }
 
     DISABLE_WARNING_POP
@@ -157,16 +159,19 @@ namespace JAGE
 
     template<> void                 Entity::AddComponent<Transform>() { Transform c {}; ecs_set_ptr(m_world, m_entity, Transform, &c); }
     template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_world, m_entity, Transform, component); }
+    template<> void                 Entity::AddComponent<Transform>(const Transform& component)     { ecs_set_ptr(m_world, m_entity, Transform, &component); }
     template<> const Transform*     Entity::GetComponent<Transform>()                               { return ecs_get(m_world, m_entity, Transform); }
     template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_world, m_entity, Transform); }
 
     template<> void             Entity::AddComponent<Camera>() { Camera c {}; ecs_set_ptr(m_world, m_entity, Camera, &c); }
     template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_world, m_entity, Camera, component); }
+    template<> void             Entity::AddComponent<Camera>(const Camera& component)   { ecs_set_ptr(m_world, m_entity, Camera, &component); }
     template<> const Camera*    Entity::GetComponent<Camera>()                          { return ecs_get(m_world, m_entity, Camera); }
     template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_world, m_entity, Camera); }
 
     template<> void                 Entity::AddComponent<MeshRenderer>() { MeshRenderer c {}; ecs_set_ptr(m_world, m_entity, MeshRenderer, &c); }
     template<> void                 Entity::AddComponent<MeshRenderer>(const MeshRenderer* component)   { ecs_set_ptr(m_world, m_entity, MeshRenderer, component); }
+    template<> void                 Entity::AddComponent<MeshRenderer>(const MeshRenderer& component)   { ecs_set_ptr(m_world, m_entity, MeshRenderer, &component); }
     template<> const MeshRenderer*  Entity::GetComponent<MeshRenderer>()                                { return ecs_get(m_world, m_entity, MeshRenderer); }
     template<> void                 Entity::RemoveComponent<MeshRenderer>()                             { ecs_remove(m_world, m_entity, MeshRenderer); }
 
@@ -266,6 +271,7 @@ namespace JAGE
         World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
         Window* window { app_ctx->window };
         Renderer* renderer { app_ctx->renderer };
+        DebugRenderer* debug_renderer { app_ctx->debug_renderer };
 
         Transform* transform { ecs_field(it, Transform, 0) };
         Camera* camera { ecs_field(it, Camera, 1) };
@@ -277,6 +283,7 @@ namespace JAGE
         c.projection_matrix = glm::infinitePerspectiveLH(glm::radians(c.fov), window->aspect_ratio(), 0.01f);
 
         renderer->set_vp(c.view_matrix, c.projection_matrix);
+        debug_renderer->set_vp(c.view_matrix, c.projection_matrix);
    }
 
     void MeshRenderSystem(ecs_iter_t* it)
@@ -300,5 +307,14 @@ namespace JAGE
 
             mr.mesh->render(mr.material);
         }
+    }
+
+    void DebugRenderSystem(ecs_iter_t* it)
+    {
+        World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
+        DebugRenderer* debug_renderer { app_ctx->debug_renderer };
+
+        debug_renderer->RenderBaseAxes();
+        debug_renderer->RenderGridLines();
     }
 }

@@ -21,8 +21,10 @@ namespace JAGE
         virtual ~Resource() = default;
 
         fs::path path() const;
+        bool is_valid() const;
     protected:
         fs::path m_path;
+        bool m_is_valid;
     };
 
     template<typename T>
@@ -32,7 +34,7 @@ namespace JAGE
         ResourceHandle(ResourceID id, T* resource);
 
         ResourceID id() const;
-        T* resource() const;
+        const T* resource() const;
     private:
         ResourceID m_id;
         T* m_resource;
@@ -43,7 +45,7 @@ namespace JAGE
     public:
         class Key
         {
-            private: Key() = default;
+            Key() = default;
             friend class ResourceManager;
         };
 
@@ -53,10 +55,15 @@ namespace JAGE
         ~ResourceManager() = default;
 
         /**
-         * `ResourceManager` is a singleton, cannot be copied
+         * `ResourceManager` is a singleton, which means it cannot be copied.
+         * 
+         * @{
          */
+
         ResourceManager(const ResourceManager&) = delete;
         ResourceManager &operator=(const ResourceManager&) = delete;
+
+        /** @} */
 
         ResourceID path_to_ID(fs::path path);
 
@@ -88,7 +95,7 @@ namespace JAGE
         /**
          * @var pixels
          * 
-         * @brief A dynamic array to hold pixel data of an image.
+         * @brief A dynamic array to hold the pixel data of an image.
          * 
          * This array holds image data in contiguous memory because the renderer expects the image data to be
          * laid out as such.
@@ -109,11 +116,12 @@ namespace JAGE
          * @param collumn The column of the pixel to set.
          * @param channel The color channel of the pixel to set. Set 0, 1, 2, or 3 for red, green, blue, or alpha
          * channel respectively.
-         * @param value The value to set the pixel value. Must be between 0 to 255 (maximum value for an unsigned integer).
+         * @param value The value to set the pixel value. Must be between 0 to 255 (255 is the maximum value for an
+         * unsigned 1-byte integer).
          */
         void set_pixel(unsigned row, unsigned column, unsigned channel, u8 value);
 
-        static ImageData pink_black_checkerbox();
+        static const ImageData* pink_black_checkerbox();
     };
 
     class JAGE_API ImageResource final : public Resource
@@ -136,8 +144,18 @@ namespace JAGE
         {
             glm::vec3 position {};
             glm::vec3 normal {};
+
+            /**
+             * The number of UV channel and vertex color set in a vertex should be determined since shaders do not
+             * support variable number of them. For now, JAGE supports up to 4 UV channel set and 4 vertex color set.
+             * 
+             * @{
+             */
+
             std::array<glm::vec2, 4> uvcoords {};
             std::array<glm::vec4, 4> colors {};
+
+            /** @} */
         };
 
         std::string name {};
@@ -149,10 +167,11 @@ namespace JAGE
 
     struct JAGE_API MaterialData
     {
+        std::string name {};
         glm::vec4 albedo_color { 1.0f };
-        ImageData albedo_map {};
+        const ImageData* albedo_map {};
         glm::vec4 specular_color {};
-        ImageData specular_map {};
+        const ImageData* specular_map {};
     };
 
     struct JAGE_API ModelNode
@@ -178,9 +197,7 @@ namespace JAGE
     private:
         std::unique_ptr<ModelNode> m_root;
         std::vector<MeshData> meshes;
+        std::vector<ImageData> embedded_textures;
         std::vector<MaterialData> materials;
-
-        struct ModelResource_Impl;
-        std::unique_ptr<ModelResource_Impl> impl;
     };
 }

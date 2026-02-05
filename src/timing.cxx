@@ -37,7 +37,7 @@ namespace JAGE
         {
             target_deltatime = duration<u64, std::nano>{ SECONDS_TO_NANO / fps };
             target_fps_set = true;
-            JAGE_LOG_INFO("frame rate capped to {} FPS", fps);
+            JAGE_LOG_INFO("frame rate capped to {} FPS.", fps);
         }
 
         void UncapFPS() { target_fps_set = false; }

@@ -34,4 +34,16 @@ void main()
     f_color1 = v_color1;
 
     gl_Position = projection * view * model * vec4(v_position, 1.0);
+
+    // vec4 view_space = view * model * vec4(v_position, 1.0);
+
+    // float sign_x = sign(view_space.x);
+    // float sign_y = sign(view_space.y);
+    // float sign_z = sign(view_space.z);
+    // float factor = 5.5;
+    // view_space.x = sign_x * sqrt(abs(view_space.x) * factor);
+    // view_space.y = sign_y * sqrt(abs(view_space.y) * factor);
+    // view_space.z = sign_z * sqrt(abs(view_space.z) * factor);
+
+    // gl_Position = projection * view_space;
 }

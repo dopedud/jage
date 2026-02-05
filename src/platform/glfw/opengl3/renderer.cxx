@@ -300,7 +300,7 @@ namespace JAGE
                 OpenGLShader::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
                 sizeof(MeshData::VertexData),
-                (void*)elements[i].offset
+                reinterpret_cast<void*>(elements[i].offset)
             );
         }
 
@@ -334,6 +334,17 @@ namespace JAGE
             void main()
             {
                 gl_Position = projection * view * model * vec4(v_position, 1.0);
+                // vec4 view_space = view * model * vec4(v_position, 1.0);
+
+                // float sign_x = sign(view_space.x);
+                // float sign_y = sign(view_space.y);
+                // float sign_z = sign(view_space.z);
+                // float factor = 5.5;
+                // view_space.x = sign_x * sqrt(abs(view_space.x) * factor);
+                // view_space.y = sign_y * sqrt(abs(view_space.y) * factor);
+                // view_space.z = sign_z * sqrt(abs(view_space.z) * factor);
+
+                // gl_Position = projection * view_space;
             }
         )",
         R"(
@@ -528,8 +539,7 @@ namespace JAGE
         glm::vec3 forward { m_view[0][2], m_view[1][2], m_view[2][2] };
         glm::vec3 up { m_view[0][1], m_view[1][1], m_view[2][1] };
 
-        glm::vec3 view_pos {};
-        view_pos -= forward * 10.0f;
+        glm::vec3 view_pos { forward * -10.0f };
 
         glm::mat4 orbited_view { glm::lookAtLH(view_pos, view_pos + forward, up) };
 

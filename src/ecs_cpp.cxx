@@ -1,14 +1,14 @@
 /**
- * 
- * 
  * SOURCE FILE NOT IN USE, ISSUE IS DESCRIBED BELOW:
  * 
  * Currently the issue is trying to get context data to work in `flecs::world`. When context data was set in a world
- * via `flecs::world::set_ctx()`, it somehow has invalid data when queried/fetched via `flecs::world::get_ctx()`. One
+ * via `flecs::world::set_ctx()`, it somehow returns invalid data when queried/fetched via `flecs::world::get_ctx()`. One
  * example would be to fetch application data from a running system, in which the system would need to fetch it from an
  * iterator via `flecs::iter::world()` to get the world, and then get the context data.
  * 
- *
+ * There is also the issue of flecs C++ API not shutting down properly when the application is halted suddenly. Even
+ * when the application was shut down abruptly, it should call proper destructor functions (for example, for the case
+ * of the `Layer` class, calling `Layer::OnDetach()`) for all created objects, including flecs's objects.
  */
 
 #include "JAGE/ecs.h"

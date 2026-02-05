@@ -21,30 +21,34 @@ DISABLE_WARNING_POP
 namespace JAGE
 {
     fs::path Resource::dir_path() { return fs::current_path() / "resources"; }
-    fs::path TextResource::dir_path() { return Resource::dir_path() / "shaders"; }
-    fs::path ImageResource::dir_path() { return Resource::dir_path() / "images"; }
-    fs::path ModelResource::dir_path() { return Resource::dir_path() / "models"; }
+    fs::path TextResource::dir_path() { return "shaders"; }
+    fs::path ImageResource::dir_path() { return "images"; }
+    fs::path ModelResource::dir_path() { return "models"; }
 
     Resource::Resource(fs::path path)
-    : m_path { path } {}
+    : m_path { Resource::dir_path() / path } {}
 
     fs::path Resource::path() const { return m_path; }
+    bool Resource::is_valid() const { return m_is_valid; }
 
     template<typename T>
     ResourceHandle<T>::ResourceHandle(ResourceID id, T* resource)
     : m_id { id }, m_resource { resource } {}
 
     template<typename T> ResourceID ResourceHandle<T>::id() const { return m_id; }
-    template<typename T> T* ResourceHandle<T>::resource() const { return m_resource; }
+    template<typename T> const T* ResourceHandle<T>::resource() const { return m_resource; }
 
     ResourceManager::ResourceManager() : resources {}
     {
+        stbi_set_flip_vertically_on_load(true);
+
+        load<TextResource>("default.vs");
         load<TextResource>("default.vs");
         load<TextResource>("default.fs");
         load<ImageResource>("image.jpg");
         load<ModelResource>("ICOSPHERE.glb");
         load<ModelResource>("cube.glb");
-        load<ModelResource>("pipo.fbx");
+        // load<ModelResource>("pipo.fbx");
     }
 
     ResourceManager& ResourceManager::instance()
@@ -67,15 +71,23 @@ namespace JAGE
     template<typename T>
     void ResourceManager::load(std::string_view filename) 
     {
+        fs::path path { Resource::dir_path() / T::dir_path() / fs::path{ filename } };
+        ResourceID id_hash { path_to_ID(path) };
+
+        if (resources.find(id_hash) != resources.end())
+        { 
+            JAGE_LOG_WARN("JAGE resource warning: resource with file name \"{}\" already loaded.", filename);
+            return;
+        }
+
         std::unique_ptr<Resource> resource { std::make_unique<T>(Key{}, filename) };
-        ResourceID id_hash { path_to_ID(resource->path()) };
         resources.emplace(id_hash, std::move(resource));
     }
 
     template<typename T>
     ResourceHandle<T> ResourceManager::get(std::string_view filename)
     {
-        fs::path path { T::dir_path() / fs::path{ filename } };
+        fs::path path { Resource::dir_path() / T::dir_path() / fs::path{ filename } };
         ResourceID id_hash { path_to_ID(path) };
 
         if (resources.find(id_hash) == resources.end())
@@ -110,103 +122,108 @@ namespace JAGE
         try
         {
             file.open(m_path);
-
             std::stringstream sstream {};
             sstream << file.rdbuf();
-
             file.close();
-
             m_content = sstream.str();
+            m_is_valid = true;
         }
 
         catch (const std::ifstream::failure& e)
         {
             JAGE_LOG_ERROR("JAGE I/O error ({} - {}): {}.", e.code().value(), e.code().message(), e.what());
             JAGE_MSG_ERROR("Returning empty contents.");
-
             m_content = "";
+            m_is_valid = false;
         }
     }
 
     std::string_view TextResource::content() const { return m_content; }
-
-    void ImageData::set_pixel(unsigned row, unsigned column, unsigned channel, u8 value)
-    { pixels[(row * width + column) * 4 + channel] = value; }
-
-    ImageData ImageData::pink_black_checkerbox()
-    {
-        ImageData data;
-
-        unsigned width { 1024 };
-        unsigned height { 1024 };
-
-        data.width = width;
-        data.height = height;
-
-        data.pixels.resize(width * height * 4);
-
-        for (unsigned i {}; i < width; i++)
-        {
-            for (unsigned j {}; j < height; j++)
-            {
-                data.set_pixel(i, j, 3, U8_MAX);
-
-                if 
-                (
-                    (i < width / 2 && j < height / 2)
-                    ||
-                    (i > width / 2 && j > height / 2)
-                )
-                {
-                    data.set_pixel(i, j, 0, U8_MAX);
-                    data.set_pixel(i, j, 1, U8_MAX);
-                    data.set_pixel(i, j, 2, U8_MAX);
-                }
-
-                else
-                {
-                    data.set_pixel(i, j, 0, U8_MAX);
-                    data.set_pixel(i, j, 1, 0);
-                    data.set_pixel(i, j, 2, U8_MAX);
-                }
-            }
-        }
-
-        return data;
-    }
 
     ImageResource::ImageResource(ResourceManager::Key, std::string_view filename)
     : Resource{ dir_path() / fs::path{ filename } }
     , m_data {}
     {
         int width {}, height {};
-
-        stbi_set_flip_vertically_on_load(true);
-        u8* loaded_data { stbi_load(m_path.string().c_str(), &width, &height, nullptr, STBI_rgb_alpha) };
+        u8* loaded_data
+        { 
+            stbi_load(m_path.string().c_str(),
+            &width, &height, nullptr, STBI_rgb_alpha)
+        };
 
         if (!loaded_data)
         {
             JAGE_LOG_ERROR("JAGE I/O error: failed to load image at path - {}", m_path.string());
             JAGE_MSG_ERROR("Returning pink black checkerbox image.");
-
-            m_data = ImageData::pink_black_checkerbox();
+            m_data = *ImageData::pink_black_checkerbox();
+            m_is_valid = false;
             return;
         }
 
         m_data.width = width;
         m_data.height = height;
 
-        // literal 4 here indicates the number of channels the image has
+        // literal 4 here indicates the desired number of channels the image should have
         // since desired channels was set to 4 upon loading the image via stbi_load, there is no need for variable
         // number of channels
         m_data.pixels.resize(width * height * 4);
 
-        for (unsigned i {}; i < m_data.pixels.size(); i++) m_data.pixels[i] = loaded_data[i];
+        for (unsigned i {}; i < m_data.pixels.size(); i++)
+        m_data.pixels[i] = loaded_data[i];
 
         stbi_image_free(loaded_data);
+        m_is_valid = true;
     }
 
     const ImageData* ImageResource::data() const { return &m_data; }
+
+    void ImageData::set_pixel(unsigned row, unsigned column, unsigned channel, u8 value)
+    { pixels[(row * width + column) * 4 + channel] = value; }
+
+    const ImageData* ImageData::pink_black_checkerbox()
+    {
+        static ImageData data;
+
+        if (data.pixels.empty())
+        {
+            unsigned width { 1024 };
+            unsigned height { 1024 };
+
+            data.width = width;
+            data.height = height;
+
+            data.pixels.resize(width * height * 4);
+
+            for (unsigned i {}; i < width; i++)
+            {
+                for (unsigned j {}; j < height; j++)
+                {
+                    data.set_pixel(i, j, 3, U8_MAX);
+
+                    if 
+                    (
+                        (i < width / 2 && j < height / 2)
+                        ||
+                        (i > width / 2 && j > height / 2)
+                    )
+                    {
+                        data.set_pixel(i, j, 0, U8_MAX);
+                        data.set_pixel(i, j, 1, U8_MAX);
+                        data.set_pixel(i, j, 2, U8_MAX);
+                    }
+
+                    else
+                    {
+                        data.set_pixel(i, j, 0, U8_MAX);
+                        data.set_pixel(i, j, 1, 0);
+                        data.set_pixel(i, j, 2, U8_MAX);
+                    }
+                }
+            }
+        }
+
+        return &data;
+    }
 
     static void print_metadata(const aiScene* ai_scene)
     {
@@ -261,114 +278,51 @@ namespace JAGE
         }
     }
 
-    // function to process textures in a material, stored embedded or externally
-    // for now process only a texture for a texture type, might need to rewrite to support process multiple textures
-    // for a texture type in the future
-    static ImageData process_texture(const aiMaterial* ai_material, aiTextureType ai_texture_type, const aiScene* ai_scene)
+    // function to process and get material textures, stored embedded or externally
+    // for now process and get only a texture for a texture type, might need to rewrite to support process multiple
+    // textures for a texture type in the future
+    static const ImageData* get_material_texture
+    (
+        const aiMaterial* ai_material, 
+        aiTextureType ai_texturetype, 
+        const aiScene* ai_scene, 
+        const std::vector<ImageData>& embedded_textures
+    )
     {
-        ImageData data;
-
-        if (ai_material->GetTextureCount(ai_texture_type) > 0)
+        if (ai_material->GetTextureCount(ai_texturetype) > 0)
         {
             aiString ai_texture_path_str {};
-            ai_material->GetTexture(ai_texture_type, 0, &ai_texture_path_str);
+            ai_material->GetTexture(ai_texturetype, 0, &ai_texture_path_str);
 
-            fs::path texture_path { ImageResource::dir_path() / fs::path{ ai_texture_path_str.C_Str() }.filename() };
-            std::string filename { texture_path.filename().string() };
+            std::string filename { fs::path{ ai_texture_path_str.C_Str() }.filename().string() };
 
-            stbi_set_flip_vertically_on_load(true);
-
-            const aiTexture* ai_texture {};
+            std::pair<const aiTexture*, int> ai_texture_index { ai_scene->GetEmbeddedTextureAndIndex(filename.c_str()) };
 
             // load textures from memory (embedded)
-            if (ai_texture = ai_scene->GetEmbeddedTexture(filename.c_str()))
-            {
-                // texture is compressed
-                if (ai_texture->mHeight == 0)
-                {
-                    int width {}, height {};
-
-                    u8* loaded_data { stbi_load_from_memory(reinterpret_cast<u8*>(ai_texture->pcData), ai_texture->mWidth, &width, &height, nullptr, STBI_rgb_alpha) };
-
-                    if (!loaded_data)
-                    {
-                        JAGE_LOG_ERROR("JAGE I/O error: failed to load embedded material texture named {}.", ai_texture->mFilename.C_Str());
-                        JAGE_MSG_ERROR("Returning pink black checkerbox image.");
-
-                        data = ImageData::pink_black_checkerbox();
-                    }
-
-                    else
-                    {
-                        data.width = width;
-                        data.height = height;
-
-                        data.pixels.resize(width * height * 4);
-
-                        for (unsigned i {}; i < data.pixels.size(); i++) data.pixels[i] = loaded_data[i];
-                    }
-                }
-
-                // texture is uncompressed
-                else
-                {
-                    data.width = ai_texture->mWidth;
-                    data.height = ai_texture->mHeight;
-
-                    data.pixels.resize(ai_texture->mWidth * ai_texture->mHeight * 4);
-
-                    aiTexel* ai_texels { ai_texture->pcData };
-
-                    for (unsigned i {}; i < ai_texture->mWidth * ai_texture->mHeight; i++)
-                    {
-                        data.pixels[i * 4 + 0] = ai_texels[i].r;
-                        data.pixels[i * 4 + 1] = ai_texels[i].g;
-                        data.pixels[i * 4 + 2] = ai_texels[i].b;
-                        data.pixels[i * 4 + 3] = ai_texels[i].a;
-                    }
-                }
-            }
+            if (ai_texture_index.first) return &embedded_textures[ai_texture_index.second];
 
             // load textures externally
             else
             {
-                int width {}, height {};
-
-                u8* loaded_data { stbi_load(texture_path.string().c_str(), &width, &height, nullptr, STBI_rgb_alpha) };
-
-                if (!loaded_data)
-                {
-                    JAGE_LOG_ERROR("JAGE I/O error: failed to load material texture at path - {}", texture_path.string());
-                    JAGE_MSG_ERROR("Returning pink black checkerbox image.");
-
-                    data = ImageData::pink_black_checkerbox();
-                }
-
-                else
-                {
-                    data.width = width;
-                    data.height = height;
-
-                    data.pixels.resize(width * height * 4);
-
-                    for (unsigned i {}; i < data.pixels.size(); i++) data.pixels[i] = loaded_data[i];
-                }
+                ResourceManager::instance().load<ImageResource>(filename);
+                return ResourceManager::instance().get<ImageResource>(filename).resource()->data();
             }
         }
 
         else
         {
             JAGE_LOG_WARN("JAGE asset warning: texture type {} for material named \"{}\" does not exist.", 
-                aiTextureTypeToString(ai_texture_type), ai_material->GetName().C_Str());
-            JAGE_MSG_WARN("Returning black (empty) image.");
+                aiTextureTypeToString(ai_texturetype), ai_material->GetName().C_Str());
+            JAGE_MSG_WARN("Returning pink black checkerbox image.");
+            return ImageData::pink_black_checkerbox();
         }
-
-        return data;
     }
 
-    static MaterialData process_material(const aiMaterial* ai_material, const aiScene* ai_scene)
+    static MaterialData process_material(const aiMaterial* ai_material, const aiScene* ai_scene, const std::vector<ImageData>& embedded_textures)
     {
         MaterialData data;
+
+        data.name = ai_material->GetName().C_Str();
 
         aiColor4D diffuse_color;
         if (ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color) == aiReturn::aiReturn_SUCCESS)
@@ -379,7 +333,7 @@ namespace JAGE
             data.albedo_color.a = diffuse_color.a;
         }
 
-        data.albedo_map = process_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene);
+        data.albedo_map = get_material_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene, embedded_textures);
 
         aiColor4D specular_color;
         if (ai_material->Get(AI_MATKEY_COLOR_SPECULAR, specular_color) == aiReturn::aiReturn_SUCCESS)
@@ -390,7 +344,63 @@ namespace JAGE
             data.specular_color.a = specular_color.a;
         }
 
-        data.specular_map = process_texture(ai_material, aiTextureType::aiTextureType_SPECULAR, ai_scene);
+        data.specular_map = get_material_texture(ai_material, aiTextureType::aiTextureType_SPECULAR, ai_scene, embedded_textures);
+
+        return data;
+    }
+
+    static ImageData process_embedded_texture(const aiTexture* ai_texture, const aiScene* ai_scene)
+    {
+        ImageData data;
+
+        // texture is compressed
+        if (ai_texture->mHeight == 0)
+        {
+            int width {}, height {};
+            u8* loaded_data
+            { 
+                stbi_load_from_memory(reinterpret_cast<u8*>(ai_texture->pcData),
+                ai_texture->mWidth, &width, &height, nullptr, STBI_rgb_alpha)
+            };
+
+            if (!loaded_data)
+            {
+                JAGE_LOG_ERROR("JAGE I/O error: failed to load embedded material texture named \"{}\".", ai_texture->mFilename.C_Str());
+                JAGE_MSG_ERROR("Returning pink black checkerbox image.");
+                data = *ImageData::pink_black_checkerbox();
+            }
+
+            else
+            {
+                data.width = width;
+                data.height = height;
+
+                data.pixels.resize(width * height * 4);
+
+                for (unsigned i {}; i < data.pixels.size(); i++) data.pixels[i] = loaded_data[i];
+
+                stbi_image_free(loaded_data);
+            }
+        }
+
+        // texture is uncompressed
+        else
+        {
+            data.width = ai_texture->mWidth;
+            data.height = ai_texture->mHeight;
+
+            data.pixels.resize(ai_texture->mWidth * ai_texture->mHeight * 4);
+
+            aiTexel* ai_texels { ai_texture->pcData };
+
+            for (unsigned i {}; i < ai_texture->mWidth * ai_texture->mHeight; i++)
+            {
+                data.pixels[i * 4 + 0] = ai_texels[i].r;
+                data.pixels[i * 4 + 1] = ai_texels[i].g;
+                data.pixels[i * 4 + 2] = ai_texels[i].b;
+                data.pixels[i * 4 + 3] = ai_texels[i].a;
+            }
+        }
 
         return data;
     }
@@ -410,7 +420,7 @@ namespace JAGE
             default: 
                 data.ptype = MeshData::PrimitiveType::UNKNOWN;
                 JAGE_MSG_ERROR("JAGE mesh error: unknown primitive type, unable to assign indices."); 
-                JAGE_LOG_ERROR("Assigning 0 indices to mesh named {}.", ai_mesh->mName.C_Str());
+                JAGE_LOG_ERROR("Assigning 0 indices to mesh named \"{}\".", ai_mesh->mName.C_Str());
             break;
         }
 
@@ -472,10 +482,9 @@ namespace JAGE
         data.material_index = ai_mesh->mMaterialIndex;
 
         return data;
-
     }
 
-    static std::unique_ptr<ModelNode> process_node(aiNode* ai_node, const aiScene* ai_scene, ModelNode* parent, std::vector<MeshData>& meshes)
+    static std::unique_ptr<ModelNode> process_node(aiNode* ai_node, const aiScene* ai_scene, ModelNode* parent)
     {
         std::unique_ptr<ModelNode> model_node { std::make_unique<ModelNode>() };
 
@@ -485,50 +494,59 @@ namespace JAGE
         model_node->transformation_matrix[i][j] = ai_node->mTransformation[j][i];
 
         for (unsigned i {}; i < ai_node->mNumMeshes; i++)
-        {
-            model_node->meshes_index.push_back(ai_node->mMeshes[i]);
-            aiMesh* ai_mesh { ai_scene->mMeshes[ai_node->mMeshes[i]] };
-            meshes.push_back(process_mesh(ai_mesh, ai_scene));
-        }
+        model_node->meshes_index.push_back(ai_node->mMeshes[i]);
 
         for (unsigned i {}; i < ai_node->mNumChildren; i++)
-        model_node->children.push_back(process_node(ai_node->mChildren[i], ai_scene, model_node.get(), meshes));
+        model_node->children.push_back(process_node(ai_node->mChildren[i], ai_scene, model_node.get()));
 
         model_node->parent = parent;
 
         return model_node;
     }
 
-    struct ModelResource::ModelResource_Impl
-    {
-        Assimp::Importer importer {};
-        const aiScene* ai_scene;
-    };
-
     ModelResource::ModelResource(ResourceManager::Key, std::string_view filename)
     : Resource{ dir_path() / fs::path{ filename } }
     , meshes {}
-    , impl { std::make_unique<ModelResource_Impl>() }
+    , embedded_textures {}
+    , materials {}
     {
-        JAGE_LOG_TRACE("Loading ModelResource named {}", filename);
+        JAGE_LOG_TRACE("Loading ModelResource named \"{}\".", filename);
 
-        impl->ai_scene = impl->importer.ReadFile(m_path.string(), aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded);
+        Assimp::Importer importer {};
+        const aiScene* ai_scene { importer.ReadFile(m_path.string(), aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded) };
 
-        if (!impl->ai_scene || impl->ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !impl->ai_scene->mRootNode)
+        if (!ai_scene || ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !ai_scene->mRootNode)
         {
-            JAGE_LOG_ERROR("JAGE I/O error: {}", impl->importer.GetErrorString());
+            JAGE_LOG_ERROR("JAGE I/O error: {}", importer.GetErrorString());
             JAGE_MSG_ERROR("Returning empty contents.");
+            m_is_valid = false;
             return;
         }
 
-        print_metadata(impl->ai_scene);
+        print_metadata(ai_scene);
 
-        m_root = process_node(impl->ai_scene->mRootNode, impl->ai_scene, nullptr, meshes);
+        JAGE_MSG_TRACE("Processing model nodes.");
+        m_root = process_node(ai_scene->mRootNode, ai_scene, nullptr);
+        JAGE_MSG_TRACE("Model nodes processed.");
 
-        for (unsigned i {}; i < impl->ai_scene->mNumMaterials; i++)
-        materials.push_back(process_material(impl->ai_scene->mMaterials[i], impl->ai_scene));
+        JAGE_MSG_TRACE("Processing meshes.");
+        for (unsigned i {}; i < ai_scene->mNumMeshes; i++)
+        meshes.push_back(process_mesh(ai_scene->mMeshes[i], ai_scene));
+        JAGE_MSG_TRACE("Meshes processed.");
 
-        JAGE_LOG_TRACE("ModelResource {} loaded.", filename);
+        JAGE_MSG_TRACE("Processing embedded textures.");
+        for (unsigned i {}; i < ai_scene->mNumMeshes; i++)
+        for (unsigned i {}; i < ai_scene->mNumTextures; i++)
+        embedded_textures.push_back(process_embedded_texture(ai_scene->mTextures[i], ai_scene));
+        JAGE_MSG_TRACE("Embedded textures processed.");
+
+        JAGE_MSG_TRACE("Processing materials.");
+        for (unsigned i {}; i < ai_scene->mNumMaterials; i++)
+        materials.push_back(process_material(ai_scene->mMaterials[i], ai_scene, embedded_textures));
+        JAGE_MSG_TRACE("Materials processed.");
+
+        m_is_valid = true;
+        JAGE_LOG_TRACE("ModelResource \"{}\" loaded.", filename);
     }
 
     ModelResource::~ModelResource() = default;
@@ -537,13 +555,13 @@ namespace JAGE
 
     const MeshData* ModelResource::mesh_data(unsigned index) const
     {
-        if (index >= impl->ai_scene->mNumMeshes)
+        if (index >= meshes.size())
         {
             JAGE_LOG_ERROR
             (
                 "JAGE resource error: index out of bounds "s +
-                "for number of meshes in ModelResource named {}."s,
-                impl->ai_scene->mName.C_Str()
+                "for number of meshes in ModelResource named \"{}\"."s,
+                m_path.filename().string()
             );
             return nullptr;
         }
@@ -553,13 +571,13 @@ namespace JAGE
 
     const MaterialData* ModelResource::material_data(unsigned index) const
     {
-        if (index >= impl->ai_scene->mNumMaterials)
+        if (index >= materials.size())
         {
             JAGE_LOG_ERROR
             (
                 "JAGE resource error: index out of bounds "s +
-                "for number of materials in ModelResource named {}."s,
-                impl->ai_scene->mName.C_Str()
+                "for number of materials in ModelResource named \"{}\"."s,
+                m_path.filename().string()
             );
             return nullptr;
         }

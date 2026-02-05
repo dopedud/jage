@@ -28,6 +28,7 @@ namespace JAGE
         World::ApplicationContext app_ctx;
         app_ctx.window = m_window;
         app_ctx.renderer = renderer.get();
+        app_ctx.debug_renderer = debug_renderer.get();
         world = World{ app_ctx };
         camera = Entity{ world, "FreeCamera" };
         object = Entity{ world, "Object" };
@@ -39,7 +40,7 @@ namespace JAGE
         MeshRenderer mesh_renderer {};
         mesh_renderer.mesh = mesh.get();
         mesh_renderer.material = material.get();
-        object.AddComponent<MeshRenderer>(&mesh_renderer);
+        object.AddComponent<MeshRenderer>(mesh_renderer);
 
         camera_component = camera.GetComponent<Camera>();
 
@@ -59,26 +60,6 @@ namespace JAGE
     void GameLayer::OnUpdate()
     {
         world.progress(Time::DeltaTime());
-
-        // glm::mat4 model { glm::translate(glm::mat4{ 1.0f }, glm::vec3{ 1.0f, 0.0f, 2.0f }) };
-        // glm::mat4 view { camera_component->view_matrix };
-        // glm::mat4 projection { camera_component->projection_matrix };
-
-        // shader->bind();
-        // shader->set_uniform_mat4("model", glm::mat4{ 1.0f });
-        // shader->set_uniform_mat4("view", view);
-        // shader->set_uniform_mat4("projection", projection);
-        // shader->unbind();
-
-        // texture->bind();
-
-        // mesh->render(shader.get());
-
-        // texture->unbind();
-
-        // debug_renderer->set_vp(view, projection);
-        // debug_renderer->RenderGridLines(5, 25.0f);
-        // debug_renderer->RenderBaseAxes(0.1f);
     }
 
     void GameLayer::OnEvent(const Event& e)
