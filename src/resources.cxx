@@ -48,7 +48,7 @@ namespace JAGE
         load<ImageResource>("image.jpg");
         load<ModelResource>("ICOSPHERE.glb");
         load<ModelResource>("cube.glb");
-        // load<ModelResource>("pipo.fbx");
+        load<ModelResource>("pipo.fbx");
     }
 
     ResourceManager& ResourceManager::instance()
@@ -529,21 +529,20 @@ namespace JAGE
         m_root = process_node(ai_scene->mRootNode, ai_scene, nullptr);
         JAGE_MSG_TRACE("Model nodes processed.");
 
-        JAGE_MSG_TRACE("Processing meshes.");
+        if (ai_scene->mNumMeshes) JAGE_MSG_TRACE("Processing meshes.");
         for (unsigned i {}; i < ai_scene->mNumMeshes; i++)
         meshes.push_back(process_mesh(ai_scene->mMeshes[i], ai_scene));
-        JAGE_MSG_TRACE("Meshes processed.");
+        if (ai_scene->mNumMeshes) JAGE_MSG_TRACE("Meshes processed.");
 
-        JAGE_MSG_TRACE("Processing embedded textures.");
-        for (unsigned i {}; i < ai_scene->mNumMeshes; i++)
+        if (ai_scene->mNumTextures) JAGE_MSG_TRACE("Processing embedded textures.");
         for (unsigned i {}; i < ai_scene->mNumTextures; i++)
         embedded_textures.push_back(process_embedded_texture(ai_scene->mTextures[i], ai_scene));
-        JAGE_MSG_TRACE("Embedded textures processed.");
+        if (ai_scene->mNumTextures) JAGE_MSG_TRACE("Embedded textures processed.");
 
-        JAGE_MSG_TRACE("Processing materials.");
+        if (ai_scene->mNumMaterials) JAGE_MSG_TRACE("Processing materials.");
         for (unsigned i {}; i < ai_scene->mNumMaterials; i++)
         materials.push_back(process_material(ai_scene->mMaterials[i], ai_scene, embedded_textures));
-        JAGE_MSG_TRACE("Materials processed.");
+        if (ai_scene->mNumMaterials) JAGE_MSG_TRACE("Materials processed.");
 
         m_is_valid = true;
         JAGE_LOG_TRACE("ModelResource \"{}\" loaded.", filename);
