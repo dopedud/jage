@@ -8,10 +8,15 @@ namespace JAGE
     namespace fs = std::filesystem;
     using ResourceID = u64;
 
-    // NOTE: Resources could technically be instantiated directly from classes derived from Resource, but this should
-    // be avoided and only get resources from ResourceManager. Proper compile-time restrictions has been programmed in
-    // place to avoid the user from accidentally instantiated Resource directly.
-
+    /**
+     * @class Resource
+     * 
+     * @brief The `Resource` class that acts as a base class for all different types of assets to derive from.
+     * 
+     * @note Resources could technically be instantiated directly from classes derived from Resource, but this should
+     * be avoided and only get resources from `ResourceManager`. Proper compile-time restrictions has been programmed in
+     * place to avoid the user from accidentally instantiating Resource directly.
+     */
     class JAGE_API Resource
     {
     public:
@@ -50,7 +55,7 @@ namespace JAGE
         };
 
         static ResourceManager& instance();
-        static void reset();
+        static void release();
 
         ~ResourceManager() = default;
 
@@ -59,10 +64,8 @@ namespace JAGE
          * 
          * @{
          */
-
         ResourceManager(const ResourceManager&) = delete;
         ResourceManager &operator=(const ResourceManager&) = delete;
-
         /** @} */
 
         ResourceID path_to_ID(fs::path path);
@@ -71,10 +74,10 @@ namespace JAGE
         template<typename T> ResourceHandle<T>  get(std::string_view filename);
     private:
         ResourceManager();
-        inline static std::unique_ptr<ResourceManager> m_instance;
-        inline static std::mutex mutex;
-
+        inline static std::unique_ptr<ResourceManager> m_instance {};
         std::unordered_map<ResourceID, std::unique_ptr<Resource>> resources;
+
+        inline static std::mutex mutex {};
     };
 
     class JAGE_API TextResource final : public Resource
@@ -92,6 +95,10 @@ namespace JAGE
 
     struct JAGE_API ImageData
     {
+        enum class Type : u8 { NONE = 0, ALBEDO, NORMAL, SPECULAR };
+
+        Type type {};
+
         /**
          * @var pixels
          * 
@@ -151,10 +158,8 @@ namespace JAGE
              * 
              * @{
              */
-
             std::array<glm::vec2, 4> uvcoords {};
             std::array<glm::vec4, 4> colors {};
-
             /** @} */
         };
 
@@ -172,6 +177,9 @@ namespace JAGE
         const ImageData* albedo_map {};
         glm::vec4 specular_color {};
         const ImageData* specular_map {};
+
+        // metadata, mostly unimportant
+        std::vector<std::string> unloaded_textures {};
     };
 
     struct JAGE_API ModelNode
@@ -199,5 +207,11 @@ namespace JAGE
         std::vector<MeshData> meshes;
         std::vector<ImageData> embedded_textures;
         std::vector<MaterialData> materials;
+
+        /**
+         * Bad fucking design, but is needed to access `materials` (to load unloaded material textures) without
+         * exposing it as a public API.
+         */
+        friend class ResourceManager;
     };
 }

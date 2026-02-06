@@ -252,7 +252,7 @@ namespace JAGE
         virtual void OnUpdate() = 0;
 
         /**
-         * @fn handle()
+         * @fn handle
          * @brief A function to expose backend implementation of a window.
          * 
          * @note This should be used only if you know what you're doing.
@@ -280,7 +280,7 @@ namespace JAGE
 
         /**
          * @struct WindowData
-         * @brief The @c WindowData structure 
+         * @brief The `WindowData` structure 
          */
         struct WindowData
         {

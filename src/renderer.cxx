@@ -36,8 +36,6 @@ namespace JAGE
     std::unique_ptr<Texture> Texture::Create(const ImageData* imagedata)
     { return std::make_unique<OpenGLTexture>(imagedata); }
 
-    Texture::Type Texture::type() const { return m_type; }
-
     Material::Material() : m_shader {}, m_materialdata {} {}
 
     Material::Material(Shader* shader, const MaterialData* materialdata)

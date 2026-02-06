@@ -25,6 +25,6 @@ namespace JAGE
     {
         LogDestroy();
 
-        ResourceManager::reset();
+        ResourceManager::release();
     }
 }

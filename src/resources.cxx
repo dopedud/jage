@@ -43,12 +43,34 @@ namespace JAGE
         stbi_set_flip_vertically_on_load(true);
 
         load<TextResource>("default.vs");
-        load<TextResource>("default.vs");
         load<TextResource>("default.fs");
         load<ImageResource>("image.jpg");
         load<ModelResource>("ICOSPHERE.glb");
         load<ModelResource>("cube.glb");
-        load<ModelResource>("pipo.fbx");
+        load<ModelResource>("potted_plant_3.fbx");
+
+        for (std::pair<const ResourceID, std::unique_ptr<Resource>>& pair : resources)
+        {
+            ModelResource* model_resource { dynamic_cast<ModelResource*>(pair.second.get()) };
+            if (!model_resource) continue;
+            for (MaterialData& material : model_resource->materials)
+            {
+                if (material.unloaded_textures.size()) JAGE_MSG_TRACE("Loading external material textures.");
+                for (const std::string& filename : material.unloaded_textures)
+                {
+                    load<ImageResource>(filename);
+                    const ImageData* data { get<ImageResource>(filename).resource()->data() };
+                    switch (data->type)
+                    {
+                        case ImageData::Type::ALBEDO: material.albedo_map = data; break;
+                        case ImageData::Type::SPECULAR: material.specular_map = data; break;
+                    }
+                }
+                if (material.unloaded_textures.size()) JAGE_MSG_TRACE("External material textures loaded.");
+
+                material.unloaded_textures.clear();
+            }
+        }
     }
 
     ResourceManager& ResourceManager::instance()
@@ -59,10 +81,10 @@ namespace JAGE
         return *m_instance;
     }
 
-    void ResourceManager::reset()
+    void ResourceManager::release()
     {
         std::lock_guard<std::mutex> lock { mutex };
-        m_instance.reset();
+        m_instance.release();
     }
 
     ResourceID ResourceManager::path_to_ID(fs::path path)
@@ -155,7 +177,6 @@ namespace JAGE
         {
             JAGE_LOG_ERROR("JAGE I/O error: failed to load image at path - {}", m_path.string());
             JAGE_MSG_ERROR("Returning pink black checkerbox image.");
-            m_data = *ImageData::pink_black_checkerbox();
             m_is_valid = false;
             return;
         }
@@ -175,7 +196,11 @@ namespace JAGE
         m_is_valid = true;
     }
 
-    const ImageData* ImageResource::data() const { return &m_data; }
+    const ImageData* ImageResource::data() const
+    { 
+        if (m_is_valid) return &m_data;
+        else return ImageData::pink_black_checkerbox();
+    }
 
     void ImageData::set_pixel(unsigned row, unsigned column, unsigned channel, u8 value)
     { pixels[(row * width + column) * 4 + channel] = value; }
@@ -286,7 +311,8 @@ namespace JAGE
         const aiMaterial* ai_material, 
         aiTextureType ai_texturetype, 
         const aiScene* ai_scene, 
-        const std::vector<ImageData>& embedded_textures
+        const std::vector<ImageData>& embedded_textures,
+        std::vector<std::string>& unloaded_textures
     )
     {
         if (ai_material->GetTextureCount(ai_texturetype) > 0)
@@ -304,8 +330,11 @@ namespace JAGE
             // load textures externally
             else
             {
-                ResourceManager::instance().load<ImageResource>(filename);
-                return ResourceManager::instance().get<ImageResource>(filename).resource()->data();
+                JAGE_MSG_WARN("Loading textures externally, deferring operations later.");
+                JAGE_MSG_WARN("This might be a bad design, but it is good for now.");
+                JAGE_MSG_WARN("Returning pink black checkerbox image.");
+                unloaded_textures.push_back(filename);
+                return ImageData::pink_black_checkerbox();
             }
         }
 
@@ -318,7 +347,12 @@ namespace JAGE
         }
     }
 
-    static MaterialData process_material(const aiMaterial* ai_material, const aiScene* ai_scene, const std::vector<ImageData>& embedded_textures)
+    static MaterialData process_material
+    (
+        const aiMaterial* ai_material,
+        const aiScene* ai_scene,
+        const std::vector<ImageData>& embedded_textures
+    )
     {
         MaterialData data;
 
@@ -333,7 +367,7 @@ namespace JAGE
             data.albedo_color.a = diffuse_color.a;
         }
 
-        data.albedo_map = get_material_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene, embedded_textures);
+        data.albedo_map = get_material_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene, embedded_textures, data.unloaded_textures);
 
         aiColor4D specular_color;
         if (ai_material->Get(AI_MATKEY_COLOR_SPECULAR, specular_color) == aiReturn::aiReturn_SUCCESS)
@@ -344,7 +378,7 @@ namespace JAGE
             data.specular_color.a = specular_color.a;
         }
 
-        data.specular_map = get_material_texture(ai_material, aiTextureType::aiTextureType_SPECULAR, ai_scene, embedded_textures);
+        data.specular_map = get_material_texture(ai_material, aiTextureType::aiTextureType_SPECULAR, ai_scene, embedded_textures, data.unloaded_textures);
 
         return data;
     }
@@ -534,10 +568,10 @@ namespace JAGE
         meshes.push_back(process_mesh(ai_scene->mMeshes[i], ai_scene));
         if (ai_scene->mNumMeshes) JAGE_MSG_TRACE("Meshes processed.");
 
-        if (ai_scene->mNumTextures) JAGE_MSG_TRACE("Processing embedded textures.");
+        if (ai_scene->mNumTextures) JAGE_MSG_TRACE("Processing embedded material textures.");
         for (unsigned i {}; i < ai_scene->mNumTextures; i++)
         embedded_textures.push_back(process_embedded_texture(ai_scene->mTextures[i], ai_scene));
-        if (ai_scene->mNumTextures) JAGE_MSG_TRACE("Embedded textures processed.");
+        if (ai_scene->mNumTextures) JAGE_MSG_TRACE("Embedded material textures processed.");
 
         if (ai_scene->mNumMaterials) JAGE_MSG_TRACE("Processing materials.");
         for (unsigned i {}; i < ai_scene->mNumMaterials; i++)

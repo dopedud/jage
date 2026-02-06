@@ -39,17 +39,11 @@ namespace JAGE
     class JAGE_API Texture
     {
     public:
-        enum class Type : u8 { DIFFUSE = 0, SPECULAR };
-
         static std::unique_ptr<Texture> Create(const ImageData* imagedata);
         virtual ~Texture() = default;
 
         virtual void bind() = 0;
         virtual void unbind() = 0;
-
-        Type type() const;
-    protected:
-        Type m_type;
     };
 
     class JAGE_API Material

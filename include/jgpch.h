@@ -14,6 +14,7 @@
 #include <typeindex>
 #include <exception>
 #include <stdexcept>
+#include <concepts>
 
 #include <cstdlib>
 #include <cmath>
