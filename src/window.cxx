@@ -20,10 +20,7 @@ namespace JAGE
     Window::Window(const WindowProperties& properties) 
     : layers {}
     , layer_insert_index {}
-    {
-        data.properties = properties;
-        layers.reserve(10);
-    }
+    { data.properties = properties; }
 
     std::unique_ptr<Window> Window::Create(const WindowProperties& properties)
     { return std::make_unique<GLFWWindow>(properties); }

@@ -36,13 +36,21 @@ namespace JAGE
     std::unique_ptr<Texture> Texture::Create(const ImageData* imagedata)
     { return std::make_unique<OpenGLTexture>(imagedata); }
 
-    Material::Material() : m_shader {}, m_materialdata {} {}
+    Material::Material()
+    : m_shader {}
+    , m_albedo_texture {}
+    , m_materialdata {}
+    {}
 
     Material::Material(Shader* shader, const MaterialData* materialdata)
-    : m_shader { shader }, m_materialdata { materialdata } {}
+    : m_shader { shader }, m_materialdata { materialdata }
+    {
+        m_albedo_texture = Texture::Create(materialdata->albedo_map);
+    }
 
     Shader* Material::shader() const { return m_shader; }
     const MaterialData* Material::materialdata() const { return m_materialdata; }
+    Texture* Material::albedo_texture() const { return m_albedo_texture.get(); }
 
     Mesh::Mesh(const MeshData* meshdata) : m_meshdata { meshdata } {} 
 

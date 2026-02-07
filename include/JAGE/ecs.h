@@ -3,6 +3,7 @@
 #include "JAGE/core.h"
 #include "JAGE/renderer.h"
 #include "JAGE/math.h"
+#include "JAGE/assets.h"
 
 #include <flecs.h>
 
@@ -29,8 +30,8 @@ namespace JAGE
         glm::mat4 view_matrix { 1.0f };
         glm::mat4 projection_matrix { 1.0f };
 
-        float move_speed { 0.01f };
-        float zoom_speed { 0.1f };
+        float move_speed { 1.01f };
+        float zoom_speed { 100.0f };
         float sensitivity { 8.5f * 0.01f };
 
         float pitch {};
@@ -74,12 +75,10 @@ namespace JAGE
          * 
          * @{
          */
-
         World(const World&) = delete;
         World& operator=(const World&) = delete;
         World(World&& other) noexcept;
         World& operator=(World&& other) noexcept;
-
         /** @} */
         
         ecs_world_t* world() const;
@@ -116,6 +115,8 @@ namespace JAGE
     class JAGE_API Entity
     {
     public:
+        static Entity EntityFromModelAsset(const ModelResource* model_resource);
+
         Entity(const World& world, std::string_view name);
         Entity();
         ~Entity();
@@ -127,12 +128,10 @@ namespace JAGE
          * 
          * @{
          */
-
         Entity(const Entity&) = delete;
         Entity& operator=(const Entity&) = delete;
         Entity(Entity&& other) noexcept;
         Entity& operator=(Entity&& other) noexcept;
-
         /** @} */
 
         template<typename T> void AddComponent();

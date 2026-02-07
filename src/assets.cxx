@@ -1,4 +1,4 @@
-#include "JAGE/resources.h"
+#include "JAGE/assets.h"
 
 #include "log.h"
 
@@ -48,22 +48,25 @@ namespace JAGE
         load<ModelResource>("ICOSPHERE.glb");
         load<ModelResource>("cube.glb");
         load<ModelResource>("potted_plant_3.fbx");
+        load<ModelResource>("utah_teapot.obj");
 
-        for (std::pair<const ResourceID, std::unique_ptr<Resource>>& pair : resources)
+        for (const std::pair<const ResourceID, std::unique_ptr<Resource>>& resource : resources)
         {
-            ModelResource* model_resource { dynamic_cast<ModelResource*>(pair.second.get()) };
+            ModelResource* model_resource { dynamic_cast<ModelResource*>(resource.second.get()) };
             if (!model_resource) continue;
             for (MaterialData& material : model_resource->materials)
             {
                 if (material.unloaded_textures.size()) JAGE_MSG_TRACE("Loading external material textures.");
-                for (const std::string& filename : material.unloaded_textures)
+                for (const std::pair<const std::string, MaterialData::TextureType>& unloaded_texture : material.unloaded_textures)
                 {
-                    load<ImageResource>(filename);
-                    const ImageData* data { get<ImageResource>(filename).resource()->data() };
-                    switch (data->type)
+                    load<ImageResource>(unloaded_texture.first);
+                    const ImageData* data { get<ImageResource>(unloaded_texture.first).resource()->data() };
+                    switch (unloaded_texture.second)
                     {
-                        case ImageData::Type::ALBEDO: material.albedo_map = data; break;
-                        case ImageData::Type::SPECULAR: material.specular_map = data; break;
+                        case MaterialData::TextureType::ALBEDO: material.albedo_map = data; break;
+                        case MaterialData::TextureType::NORMAL: material.normal_map = data; break;
+                        case MaterialData::TextureType::SPECULAR: material.specular_map = data; break;
+                        default: material.albedo_map = data; break;
                     }
                 }
                 if (material.unloaded_textures.size()) JAGE_MSG_TRACE("External material textures loaded.");
@@ -166,6 +169,8 @@ namespace JAGE
     : Resource{ dir_path() / fs::path{ filename } }
     , m_data {}
     {
+        JAGE_LOG_TRACE("Loading ImageResource named \"{}\".", filename);
+
         int width {}, height {};
         u8* loaded_data
         { 
@@ -193,7 +198,9 @@ namespace JAGE
         m_data.pixels[i] = loaded_data[i];
 
         stbi_image_free(loaded_data);
+
         m_is_valid = true;
+        JAGE_LOG_TRACE("ImageResource \"{}\" loaded.", filename);
     }
 
     const ImageData* ImageResource::data() const
@@ -232,9 +239,9 @@ namespace JAGE
                         (i > width / 2 && j > height / 2)
                     )
                     {
-                        data.set_pixel(i, j, 0, U8_MAX);
-                        data.set_pixel(i, j, 1, U8_MAX);
-                        data.set_pixel(i, j, 2, U8_MAX);
+                        data.set_pixel(i, j, 0, 0);
+                        data.set_pixel(i, j, 1, 0);
+                        data.set_pixel(i, j, 2, 0);
                     }
 
                     else
@@ -303,16 +310,27 @@ namespace JAGE
         }
     }
 
+    static MaterialData::TextureType aiTextureType_ToTextureType(aiTextureType ai_texturetype)
+    {
+        switch (ai_texturetype)
+        {
+            case aiTextureType::aiTextureType_DIFFUSE: return MaterialData::TextureType::ALBEDO;
+            case aiTextureType::aiTextureType_NORMALS: return MaterialData::TextureType::NORMAL;
+            case aiTextureType::aiTextureType_SPECULAR: return MaterialData::TextureType::SPECULAR;
+            default: return MaterialData::TextureType::NONE;
+        }
+    }
+
     // function to process and get material textures, stored embedded or externally
     // for now process and get only a texture for a texture type, might need to rewrite to support process multiple
     // textures for a texture type in the future
     static const ImageData* get_material_texture
     (
-        const aiMaterial* ai_material, 
-        aiTextureType ai_texturetype, 
-        const aiScene* ai_scene, 
+        const aiMaterial* ai_material,
+        aiTextureType ai_texturetype,
+        const aiScene* ai_scene,
         const std::vector<ImageData>& embedded_textures,
-        std::vector<std::string>& unloaded_textures
+        std::unordered_map<std::string, MaterialData::TextureType>& unloaded_textures
     )
     {
         if (ai_material->GetTextureCount(ai_texturetype) > 0)
@@ -333,7 +351,7 @@ namespace JAGE
                 JAGE_MSG_WARN("Loading textures externally, deferring operations later.");
                 JAGE_MSG_WARN("This might be a bad design, but it is good for now.");
                 JAGE_MSG_WARN("Returning pink black checkerbox image.");
-                unloaded_textures.push_back(filename);
+                unloaded_textures.emplace(filename, aiTextureType_ToTextureType(ai_texturetype));
                 return ImageData::pink_black_checkerbox();
             }
         }
@@ -368,6 +386,17 @@ namespace JAGE
         }
 
         data.albedo_map = get_material_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene, embedded_textures, data.unloaded_textures);
+
+        aiColor4D normal_color;
+        if (ai_material->Get(AI_MATKEY_COLOR_SPECULAR, normal_color) == aiReturn::aiReturn_SUCCESS)
+        {
+            data.normal_color.r = normal_color.r;
+            data.normal_color.g = normal_color.g;
+            data.normal_color.b = normal_color.b;
+            data.normal_color.a = normal_color.a;
+        }
+
+        data.normal_map = get_material_texture(ai_material, aiTextureType::aiTextureType_NORMALS, ai_scene, embedded_textures, data.unloaded_textures);
 
         aiColor4D specular_color;
         if (ai_material->Get(AI_MATKEY_COLOR_SPECULAR, specular_color) == aiReturn::aiReturn_SUCCESS)
@@ -518,7 +547,7 @@ namespace JAGE
         return data;
     }
 
-    static std::unique_ptr<ModelNode> process_node(aiNode* ai_node, const aiScene* ai_scene, ModelNode* parent)
+    static std::unique_ptr<ModelNode> process_node(const aiNode* ai_node, const aiScene* ai_scene, ModelNode* parent)
     {
         std::unique_ptr<ModelNode> model_node { std::make_unique<ModelNode>() };
 
@@ -538,16 +567,31 @@ namespace JAGE
         return model_node;
     }
 
+    struct ModelResource::Impl
+    {
+        void print_metadata(const aiScene* ai_scene);
+        std::unique_ptr<ModelNode> process_node(const aiNode* ai_node, const aiScene* ai_scene, ModelNode* parent);
+    };
+
     ModelResource::ModelResource(ResourceManager::Key, std::string_view filename)
     : Resource{ dir_path() / fs::path{ filename } }
     , meshes {}
     , embedded_textures {}
     , materials {}
+    , pimpl { std::make_unique<Impl>() }
     {
         JAGE_LOG_TRACE("Loading ModelResource named \"{}\".", filename);
 
         Assimp::Importer importer {};
-        const aiScene* ai_scene { importer.ReadFile(m_path.string(), aiProcessPreset_TargetRealtime_Quality | aiProcess_ConvertToLeftHanded) };
+        const aiScene* ai_scene
+        { 
+            importer.ReadFile
+            (
+                m_path.string(), 
+                aiProcessPreset_TargetRealtime_Quality |
+                aiProcess_TransformUVCoords
+            )
+        };
 
         if (!ai_scene || ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !ai_scene->mRootNode)
         {
@@ -557,10 +601,10 @@ namespace JAGE
             return;
         }
 
-        print_metadata(ai_scene);
+        pimpl->print_metadata(ai_scene);
 
         JAGE_MSG_TRACE("Processing model nodes.");
-        m_root = process_node(ai_scene->mRootNode, ai_scene, nullptr);
+        m_root = pimpl->process_node(ai_scene->mRootNode, ai_scene, nullptr);
         JAGE_MSG_TRACE("Model nodes processed.");
 
         if (ai_scene->mNumMeshes) JAGE_MSG_TRACE("Processing meshes.");
@@ -596,6 +640,7 @@ namespace JAGE
                 "for number of meshes in ModelResource named \"{}\"."s,
                 m_path.filename().string()
             );
+            JAGE_MSG_ERROR("Returning nullptr.");
             return nullptr;
         }
 
@@ -612,6 +657,7 @@ namespace JAGE
                 "for number of materials in ModelResource named \"{}\"."s,
                 m_path.filename().string()
             );
+            JAGE_MSG_ERROR("Returning nullptr.");
             return nullptr;
         }
 

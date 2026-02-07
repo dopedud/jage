@@ -9,6 +9,19 @@ namespace JAGE
 {
     namespace Input
     {
+        /**
+         * @fn SetActiveWindow
+         * @brief Sets the active window to query input from.
+         * 
+         * Querying input should only be for a single window at any given moment in time.
+         * 
+         * @param window The window to query input from. 
+         * 
+         * @{
+         */
+        void SetActiveWindow(GLFWwindow* window);
+        /** @} */
+
         void UpdateMousePosition();
 
         int ToGLFWKey(KeyCode key);

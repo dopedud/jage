@@ -95,10 +95,6 @@ namespace JAGE
 
     struct JAGE_API ImageData
     {
-        enum class Type : u8 { NONE = 0, ALBEDO, NORMAL, SPECULAR };
-
-        Type type {};
-
         /**
          * @var pixels
          * 
@@ -115,12 +111,10 @@ namespace JAGE
         unsigned width {}, height {};
 
         /**
-         * @fn ImageData::set_pixel
+         * @fn set_pixel
          * 
          * @brief Setter function to set a pixel value of an image.
          * 
-         * @param row The row of the pixel to set.
-         * @param collumn The column of the pixel to set.
          * @param channel The color channel of the pixel to set. Set 0, 1, 2, or 3 for red, green, blue, or alpha
          * channel respectively.
          * @param value The value to set the pixel value. Must be between 0 to 255 (255 is the maximum value for an
@@ -128,6 +122,11 @@ namespace JAGE
          */
         void set_pixel(unsigned row, unsigned column, unsigned channel, u8 value);
 
+        /**
+         * @fn pink_black_checkerbox
+         * 
+         * @brief Spits out a pink black image with a checkerbox pattern, indicating it's an errorr image.
+         */
         static const ImageData* pink_black_checkerbox();
     };
 
@@ -175,11 +174,14 @@ namespace JAGE
         std::string name {};
         glm::vec4 albedo_color { 1.0f };
         const ImageData* albedo_map {};
-        glm::vec4 specular_color {};
+        glm::vec4 normal_color { 0.5f };
+        const ImageData* normal_map {};
+        glm::vec4 specular_color { 0.5f };
         const ImageData* specular_map {};
 
         // metadata, mostly unimportant
-        std::vector<std::string> unloaded_textures {};
+        enum class TextureType : u8 { NONE = 0, ALBEDO, NORMAL, SPECULAR };
+        std::unordered_map<std::string, TextureType> unloaded_textures {};
     };
 
     struct JAGE_API ModelNode
@@ -207,6 +209,9 @@ namespace JAGE
         std::vector<MeshData> meshes;
         std::vector<ImageData> embedded_textures;
         std::vector<MaterialData> materials;
+
+        struct Impl;
+        std::unique_ptr<Impl> pimpl;
 
         /**
          * Bad fucking design, but is needed to access `materials` (to load unloaded material textures) without

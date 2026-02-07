@@ -393,7 +393,7 @@ namespace JAGE
 
         enum class MouseButton : u8
         {
-            _1 = 0, _2, _3, _4, _5
+            UNKNOWN = 0, _1, _2, _3, _4, _5
         };
 
         enum class Action : u8
@@ -411,22 +411,12 @@ namespace JAGE
 
         enum class CursorMode : u8 { NORMAL = 0, DISABLED, HIDDEN };
 
-        JAGE_API int operator&(Modifier lhs, Modifier rhs);
-        JAGE_API int operator|(Modifier lhs, Modifier rhs);
-        JAGE_API int operator&(int lhs, Modifier rhs);
-        JAGE_API int operator|(int lhs, Modifier rhs);
-        JAGE_API int operator&(Modifier lhs, int rhs);
-        JAGE_API int operator|(Modifier lhs, int rhs);
-
-        /**
-         * @fn SetActiveWindow
-         * @brief Sets the active window to query input from.
-         * 
-         * Querying input should only be for a single window at any given moment in time.
-         * 
-         * @param window The window to query input from. 
-         */
-        JAGE_API void SetActiveWindow(Window* window);
+        JAGE_API u8 operator&(Modifier lhs, Modifier rhs);
+        JAGE_API u8 operator|(Modifier lhs, Modifier rhs);
+        JAGE_API u8 operator&(u8 lhs, Modifier rhs);
+        JAGE_API u8 operator|(u8 lhs, Modifier rhs);
+        JAGE_API u8 operator&(Modifier lhs, u8 rhs);
+        JAGE_API u8 operator|(Modifier lhs, u8 rhs);
 
         JAGE_API bool IsKeyPressed(KeyCode key);
         JAGE_API bool IsKeyReleased(KeyCode key);

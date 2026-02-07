@@ -50,6 +50,6 @@ namespace JAGE
             return static_cast<float>(diff.count()) / static_cast<float>(MILLI_TO_NANO);
         }
 
-        float DeltaTime() { return static_cast<float>(deltatime.count()) / static_cast<float>(MILLI_TO_NANO); }
+        float DeltaTime() { return static_cast<float>(deltatime.count()) / static_cast<float>(SECONDS_TO_NANO); }
     }
 }

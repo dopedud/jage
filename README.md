@@ -24,7 +24,7 @@ and easy-to-use interface.
 - **Editor GUI:**                   Dear ImGui
 - **Code Documentation:**           Doxygen
 
-### Overview (Basic)
+### Overview (basic)
 
 JAGE can act as a framework where developers can take control of low-level systems commonly used in a game engine by
 providing the necessary header files and CMake build scripts to let them build the game executable from the ground up,
@@ -43,19 +43,23 @@ You can start by coding the example below in the client side:
 
 int main(int argc, char** argv)
 {
+    // initialise the engine (mostly on logging and asset management)
     JAGE::Init(argc, argv);
 
+    // have your own variable to dictate whether to run the game loop or not
     bool running { true };
 
+    // JAGE provides logging utilities for both the application and the engine (although it's private for the engine)
     APP_MSG_TRACE("Creating a window.");
+
+    // set your own window properties like width and height of the window and the title (optional)
     JAGE::WindowProperties window_properties {};
     std::unique_ptr<JAGE::Window> window { JAGE::Window::Create(window_properties) };
 
-    JAGE::Input::SetActiveWindow(window.get());
-
+    // you can push your own layer, or use the provided game layer that renders the game world
     window->PushLayer(new JAGE::GameLayer{ window.get() });
-    window->PushOverlay(new JAGE::ImguiLayer{ window.get() });
 
+    // have a callback function to receive JAGE's WindowCloseEvent event to switch running to false
     std::function<bool(const JAGE::WindowCloseEvent&)> OnWindowClose
     {
         [&running](const JAGE::WindowCloseEvent& e) -> bool
@@ -72,6 +76,7 @@ int main(int argc, char** argv)
         dispatcher.dispatch<JAGE::WindowCloseEvent>(OnWindowClose);
     });
 
+    // cap your application FPS (optional)
     JAGE::Time::SetTargetFPS(60);
 
     APP_MSG_TRACE("Running the game loop.");
@@ -82,8 +87,8 @@ int main(int argc, char** argv)
 
     APP_MSG_INFO("Exiting application.");
 
+    // clean up resources (optional)
     window.reset();
-
     JAGE::Destroy();
 
     return 0;

@@ -6,41 +6,41 @@ namespace JAGE
 {
     namespace Input
     {
-        int operator&(Modifier lhs, Modifier rhs)
+        u8 operator&(Modifier lhs, Modifier rhs)
         {
-            int lhs_casted { static_cast<int>(lhs) };
-            int rhs_casted { static_cast<int>(rhs) };
+            u8 lhs_casted { static_cast<u8>(lhs) };
+            u8 rhs_casted { static_cast<u8>(rhs) };
             return lhs_casted & rhs_casted;
         }
 
-        int operator|(Modifier lhs, Modifier rhs)
+        u8 operator|(Modifier lhs, Modifier rhs)
         {
-            int lhs_casted { static_cast<int>(lhs) };
-            int rhs_casted { static_cast<int>(rhs) };
+            u8 lhs_casted { static_cast<u8>(lhs) };
+            u8 rhs_casted { static_cast<u8>(rhs) };
             return lhs_casted | rhs_casted;
         }
 
-        int operator&(Modifier lhs, int rhs)
+        u8 operator&(Modifier lhs, u8 rhs)
         {
-            int lhs_casted { static_cast<int>(lhs) };
+            u8 lhs_casted { static_cast<u8>(lhs) };
             return lhs_casted & rhs;
         }
 
-        int operator|(Modifier lhs, int rhs)
+        u8 operator|(Modifier lhs, u8 rhs)
         {
-            int lhs_casted { static_cast<int>(lhs) };
+            u8 lhs_casted { static_cast<u8>(lhs) };
             return lhs_casted | rhs;
         }
 
-        int operator&(int lhs, Modifier rhs)
+        u8 operator&(u8 lhs, Modifier rhs)
         {
-            int rhs_casted { static_cast<int>(rhs) };
+            u8 rhs_casted { static_cast<u8>(rhs) };
             return lhs & rhs_casted;
         }
 
-        int operator|(int lhs, Modifier rhs)
+        u8 operator|(u8 lhs, Modifier rhs)
         {
-            int rhs_casted { static_cast<int>(rhs) };
+            u8 rhs_casted { static_cast<u8>(rhs) };
             return lhs | rhs_casted;
         }
 
@@ -144,9 +144,9 @@ namespace JAGE
                 case JAGE_KEY_KP8: return "KP8";
                 case JAGE_KEY_KP9: return "KP9";
                 case JAGE_KEY_KP0: return "KP0";
-            }
 
-            JAGE_LOG_ERROR("ToString Error: unknown key numbered {}.", static_cast<int>(key)); return "UNKNOWN";
+                default: JAGE_LOG_ERROR("JAGE to_string() error: unknown key numbered {}.", static_cast<int>(key)); return "UNKNOWN";
+            }
         }
 
         std::string to_string(MouseButton button)
@@ -158,6 +158,8 @@ namespace JAGE
                 case JAGE_MOUSE_BUTTON_MIDDLE_CLICK:    return "MOUSE MIDDLE CLICK";
                 case JAGE_MOUSE_BUTTON_4:               return "MOUSE BUTTON 4";
                 case JAGE_MOUSE_BUTTON_5:               return "MOUSE BUTTON 5";
+
+                default: JAGE_LOG_ERROR("JAGE to_string() error: unknown mouse button numbered {}.", static_cast<int>(button)); return "UNKNOWN";
             }
         }
 

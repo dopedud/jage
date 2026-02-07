@@ -27,11 +27,15 @@ namespace JAGE
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        m_handle = glfwCreateWindow(
+        m_handle = glfwCreateWindow
+        (
             properties.width,
             properties.height,
-            properties.title.c_str(), nullptr, nullptr
+            properties.title.c_str(),
+            nullptr, nullptr
         );
+
+        Input::SetActiveWindow(m_handle);
 
         JAGE_MSG_ASSERT(m_handle, "GLFW error: Failed to create GLFW window.")
 

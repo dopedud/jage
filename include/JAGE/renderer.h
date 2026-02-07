@@ -2,7 +2,7 @@
 
 #include "JAGE/core.h"
 #include "JAGE/math.h"
-#include "JAGE/resources.h"
+#include "JAGE/assets.h"
 
 namespace JAGE
 {
@@ -42,8 +42,8 @@ namespace JAGE
         static std::unique_ptr<Texture> Create(const ImageData* imagedata);
         virtual ~Texture() = default;
 
-        virtual void bind() = 0;
-        virtual void unbind() = 0;
+        virtual void bind(unsigned unit) const = 0;
+        virtual void unbind() const = 0;
     };
 
     class JAGE_API Material
@@ -54,8 +54,10 @@ namespace JAGE
 
         Shader* shader() const;
         const MaterialData* materialdata() const;
+        Texture* albedo_texture() const;
     private:
         Shader* m_shader;
+        std::unique_ptr<Texture> m_albedo_texture;
         const MaterialData* m_materialdata;
     };
 
@@ -96,14 +98,15 @@ namespace JAGE
         virtual ~DebugRenderer() = default;
 
         /**
-         * @fn RenderGridLines()
+         * @fn RenderGridLines
          * @brief Render grid lines in the game world.
          * 
-         * Ideally, @c slices should take even values to get half slices correctly. Odd values will be truncated to the
+         * Ideally, `slices` should take even values to get half slices correctly. Odd values will be truncated to the
          * lowest and nearest even value.
          * 
-         * @param slices number of slices
-         * @param spacing spacing between slices
+         * @param slices  Number of slices. Note that the slices start from the center of the grid (meaning that if you
+         * set this value to, for example, 5 slices, you'll get 10 slices total).
+         * @param spacing Spacing between slices. 
          */
         virtual void RenderGridLines(unsigned slices = 5, float spacing = 25.0f) = 0;
 

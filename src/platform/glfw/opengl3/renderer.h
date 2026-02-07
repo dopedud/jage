@@ -46,8 +46,8 @@ namespace JAGE
         OpenGLTexture(const ImageData* imagedata);
         ~OpenGLTexture();
 
-        virtual void bind() override;
-        virtual void unbind() override;
+        virtual void bind(unsigned unit) const override;
+        virtual void unbind() const override;
     private:
         unsigned textureID;
     };

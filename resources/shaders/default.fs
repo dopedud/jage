@@ -9,10 +9,10 @@ in vec4 f_color2;
 
 out vec4 color;
 
-uniform sampler2D texture_sampler;
+uniform sampler2D texture_albedo;
 
 void main()
 {
     // color = vec4(f_normal, 1.0);
-    color = texture(texture_sampler, f_uvcoord);
+    color = texture(texture_albedo, f_uvcoord);
 }

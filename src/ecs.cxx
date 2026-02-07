@@ -89,6 +89,11 @@ namespace JAGE
         }        
     }
 
+    Entity Entity::EntityFromModelAsset(const ModelResource* model_resource)
+    {
+
+    }
+
     Entity::Entity() : m_world {}, m_name {}, m_entity {} {}
 
     Entity::Entity(const World& world, std::string_view name)
@@ -135,9 +140,7 @@ namespace JAGE
     void Entity::release()
     {
         if (m_world && m_entity && ecs_is_valid(m_world, m_entity))
-        {
-            ecs_delete(m_world, m_entity);
-        }
+        ecs_delete(m_world, m_entity);
     }
 
     // TEMPLATE INSTANTIATIONS
@@ -299,11 +302,13 @@ namespace JAGE
             Transform& t { transform[i] };
             MeshRenderer& mr { mesh_renderer[i] };
 
-            mr.material->shader()->bind();
-            mr.material->shader()->set_uniform_mat4("model", t.transformation_matrix);
-            mr.material->shader()->set_uniform_mat4("view", renderer->view());
-            mr.material->shader()->set_uniform_mat4("projection", renderer->projection());
-            mr.material->shader()->unbind();
+            Shader* shader { mr.material->shader() };
+
+            shader->bind();
+            shader->set_uniform_mat4("model", t.transformation_matrix);
+            shader->set_uniform_mat4("view", renderer->view());
+            shader->set_uniform_mat4("projection", renderer->projection());
+            shader->unbind();
 
             mr.mesh->render(mr.material);
         }
@@ -315,6 +320,6 @@ namespace JAGE
         DebugRenderer* debug_renderer { app_ctx->debug_renderer };
 
         debug_renderer->RenderBaseAxes();
-        debug_renderer->RenderGridLines();
+        debug_renderer->RenderGridLines(10, 1.0f);
     }
 }

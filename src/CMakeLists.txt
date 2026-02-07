@@ -10,7 +10,7 @@ set(CORE_SRC
     timing.cxx
     window.cxx
     renderer.cxx
-    resources.cxx
+    assets.cxx
     ecs.cxx
     math.cxx
     game_layer.cxx

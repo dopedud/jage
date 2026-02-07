@@ -11,10 +11,7 @@ namespace JAGE
         static double previous_mouse_positionX {}, previous_mouse_positionY {};
         static double current_mouse_positionX {}, current_mouse_positionY {};
 
-        void SetActiveWindow(Window* window)
-        {
-            glfw_handle = static_cast<GLFWwindow*>(window->handle());
-        }
+        void SetActiveWindow(GLFWwindow* window) { glfw_handle = window; }
 
         bool IsKeyPressed(KeyCode key)
         {

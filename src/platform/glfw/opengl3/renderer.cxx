@@ -189,13 +189,13 @@ namespace JAGE
     void OpenGLShader::set_uniform_bool(std::string_view name, bool value)
     {
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
-        glUniform1i(loc, static_cast<int>(value));
+        glUniform1ui(loc, static_cast<int>(value));
     }
 
     void OpenGLShader::set_uniform_uint(std::string_view name, unsigned value)
     {
         GLint loc { glGetUniformLocation(shaderID, name.data()) };
-        glUniform1i(loc, value);
+        glUniform1ui(loc, value);
     }
 
     void OpenGLShader::set_uniform_int(std::string_view name, int value)
@@ -237,7 +237,6 @@ namespace JAGE
     OpenGLTexture::OpenGLTexture(const ImageData* imagedata)
     {
         glGenTextures(1, &textureID);
-        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imagedata->width, imagedata->height,
@@ -254,8 +253,8 @@ namespace JAGE
 
     OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &textureID); }
 
-    void OpenGLTexture::bind() { glBindTexture(GL_TEXTURE_2D, textureID); }
-    void OpenGLTexture::unbind() { glBindTexture(GL_TEXTURE_2D, 0); }
+    void OpenGLTexture::bind(unsigned unit) const { glActiveTexture(GL_TEXTURE0 + unit); glBindTexture(GL_TEXTURE_2D, textureID); }
+    void OpenGLTexture::unbind() const { glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, 0); }
 
     OpenGLMesh::OpenGLMesh(const MeshData* meshdata)
     : Mesh{ meshdata }
@@ -309,11 +308,17 @@ namespace JAGE
 
     void OpenGLMesh::render(const Material* material)
     {
-        material->shader()->bind();
+        Shader* shader { material->shader() };
+        Texture* albedo_texture { material->albedo_texture() };
+
+        shader->bind();
+        albedo_texture->bind(0);
+        shader->set_uniform_int("texture_albedo", 0);
         glBindVertexArray(vao);
         glDrawElements(GL_TRIANGLES, m_meshdata->indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
-        material->shader()->unbind();
+        albedo_texture->unbind();
+        shader->unbind();
     }
 
     OpenGLRenderer::OpenGLRenderer(Window* window) : Renderer{ window } {}
