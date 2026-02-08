@@ -7,8 +7,13 @@ namespace JAGE
 {
     GraphicsContext::GraphicsContext(Window* window) : m_window { window } {}
 
-    std::unique_ptr<Shader> Shader::Create(std::string_view vertex_str, std::string_view fragment_str)
-    { return std::make_unique<OpenGLShader>(vertex_str, fragment_str); }
+    std::unique_ptr<Shader> Shader::Create
+    (
+        std::string_view vertex_str,
+        std::string_view fragment_str,
+        std::string_view geometry_str
+    )
+    { return std::make_unique<OpenGLShader>(vertex_str, fragment_str, geometry_str); }
 
     unsigned Shader::datatype_size(Shader::DataType datatype)
     {

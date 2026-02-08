@@ -22,7 +22,12 @@ namespace JAGE
     public:
         static GLenum to_opengl_type(DataType datatype);
 
-        OpenGLShader(std::string_view vertex_str, std::string_view fragment_str);
+        OpenGLShader
+        (
+            std::string_view vertex_str,
+            std::string_view fragment_str,
+            std::string_view geometry_str
+        );
         ~OpenGLShader();
 
         virtual void bind() const override;

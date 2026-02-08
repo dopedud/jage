@@ -20,7 +20,12 @@ namespace JAGE
 
         static unsigned datatype_size(DataType datatype);
 
-        static std::unique_ptr<Shader> Create(std::string_view vertex_str, std::string_view fragment_str);
+        static std::unique_ptr<Shader> Create
+        (
+            std::string_view vertex_str,
+            std::string_view fragment_str,
+            std::string_view geometry_str = ""
+        );
         virtual ~Shader() = default;
 
         virtual void bind() const = 0;

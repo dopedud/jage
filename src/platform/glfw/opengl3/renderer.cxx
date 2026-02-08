@@ -169,14 +169,23 @@ namespace JAGE
         return 0;
     }
 
-    OpenGLShader::OpenGLShader(std::string_view vertex_str, std::string_view fragment_str)
+    OpenGLShader::OpenGLShader
+    (
+        std::string_view vertex_str,
+        std::string_view fragment_str,
+        std::string_view geometry_str
+    )
     {
         JAGE_MSG_TRACE("Initialising an OpenGL shader.");
 
         GLuint vertex_shader { CreateSubShader(vertex_str.data(), GL_VERTEX_SHADER) };
         GLuint fragment_shader { CreateSubShader(fragment_str.data(), GL_FRAGMENT_SHADER) };
 
-        shaderID = CreateShaderProgram(vertex_shader, fragment_shader);
+        if (!geometry_str.empty())
+        {
+            GLuint geometry_shader { CreateSubShader(geometry_str.data(), GL_GEOMETRY_SHADER) };
+            shaderID = CreateShaderProgram(vertex_shader, fragment_shader, geometry_shader);
+        } else shaderID = CreateShaderProgram(vertex_shader, fragment_shader);
 
         JAGE_MSG_TRACE("OpenGL shader initialised.");
     }
@@ -361,7 +370,7 @@ namespace JAGE
             {
                 color = vec4(0.5, 0.5, 0.5, 0.5);
             }
-        )"
+        )", ""
     }
     , axes_shader
     {
@@ -392,7 +401,7 @@ namespace JAGE
             {
                 color = vec4(normalize(f_position), 1.0);
             }
-        )"
+        )", ""
     }
     {
         glGenVertexArrays(1, &grid_vao);

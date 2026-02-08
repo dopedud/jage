@@ -18,7 +18,7 @@ namespace JAGE
 
         JAGE_LOG_INFO("Current working directory: {}", fs::current_path().string());
 
-        ResourceManager::instance();
+        ResourceManager::instance().Initialise();
     }
 
     void Destroy()

@@ -68,16 +68,17 @@ namespace JAGE
         ResourceManager &operator=(const ResourceManager&) = delete;
         /** @} */
 
+        void Initialise();
+
         ResourceID path_to_ID(fs::path path);
 
         template<typename T> void               load(std::string_view filename);
         template<typename T> ResourceHandle<T>  get(std::string_view filename);
     private:
         ResourceManager();
+
         inline static std::unique_ptr<ResourceManager> m_instance {};
         std::unordered_map<ResourceID, std::unique_ptr<Resource>> resources;
-
-        inline static std::mutex mutex {};
     };
 
     class JAGE_API TextResource final : public Resource
