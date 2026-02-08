@@ -18,7 +18,7 @@ namespace JAGE
         ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };
         ResourceHandle<TextResource> vertex_shader { ResourceManager::instance().get<TextResource>("default.vs") };
         ResourceHandle<TextResource> fragment_shader { ResourceManager::instance().get<TextResource>("default.fs") };
-        ResourceHandle<ModelResource> cube { ResourceManager::instance().get<ModelResource>("utah_teapot.obj") };
+        ResourceHandle<ModelResource> cube { ResourceManager::instance().get<ModelResource>("potted_plant_3.fbx") };
 
         texture = Texture::Create(image.resource()->data());
         shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());

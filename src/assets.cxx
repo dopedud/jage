@@ -364,10 +364,8 @@ namespace JAGE
         JAGE_MSG_TRACE("Model information:");
 
         std::string vertices_count {};
-
         for (unsigned i {}; i < ai_scene->mNumMeshes; i++)
         vertices_count += " " + std::to_string(ai_scene->mMeshes[i]->mNumVertices) + ",";
-
         if (!vertices_count.empty()) vertices_count.back() = '.';
 
         JAGE_LOG_TRACE
@@ -376,6 +374,66 @@ namespace JAGE
             ai_scene->mNumMeshes,
             vertices_count
         );
+
+        JAGE_LOG_TRACE("    Model contains {} embedded texture(s).", ai_scene->mNumTextures);
+
+        std::string matprop_count {};
+        for (unsigned i {}; i < ai_scene->mNumMaterials; i++)
+        matprop_count += " " + std::to_string(ai_scene->mMaterials[i]->mNumProperties) + ",";
+        if (!matprop_count.empty()) matprop_count.back() = '.';
+
+        JAGE_LOG_TRACE
+        (
+            "    Model contains {} material(s), with number of properties from each material by order:{}",
+            ai_scene->mNumMaterials,
+            matprop_count
+        );
+
+        #define VERBOSE
+
+        // define the VERBOSE macro to print out each material property in each material
+        #ifdef VERBOSE
+        JAGE_MSG_TRACE("Material information:");
+        for (unsigned i {}; i < ai_scene->mNumMaterials; i++)
+        {
+            JAGE_LOG_TRACE("MATERIAL {}:", i);
+            for (unsigned j {}; j < ai_scene->mMaterials[i]->mNumProperties; j++)
+            {
+                const aiMaterialProperty& matprop { *ai_scene->mMaterials[i]->mProperties[j] };
+                std::string array_str {};
+                switch (matprop.mType)
+                {
+                    case aiPropertyTypeInfo::aiPTI_String:
+                    JAGE_LOG_TRACE("    {}: {}", matprop.mKey.C_Str(), reinterpret_cast<aiString*>(matprop.mData)->C_Str());
+                    break;
+
+                    case aiPropertyTypeInfo::aiPTI_Integer:
+                        for (unsigned k {}; k < matprop.mDataLength; k++)
+                        array_str += " " + std::to_string(reinterpret_cast<i32*>(matprop.mData)[k]) + ",";
+                        if (!array_str.empty()) array_str.back() = '.';
+                        JAGE_LOG_TRACE("    {}:{}", matprop.mKey.C_Str(), array_str);
+                    break;
+
+                    case aiPropertyTypeInfo::aiPTI_Float: 
+                        for (unsigned k {}; k < matprop.mDataLength; k++)
+                        array_str += " " + std::to_string(reinterpret_cast<float*>(matprop.mData)[k]) + ",";
+                        if (!array_str.empty()) array_str.back() = '.';
+                        JAGE_LOG_TRACE("    {}:{}", matprop.mKey.C_Str(), array_str);
+                    break;
+
+                    case aiPropertyTypeInfo::aiPTI_Double:
+                        for (unsigned k {}; k < matprop.mDataLength; k++)
+                        array_str += " " + std::to_string(reinterpret_cast<double*>(matprop.mData)[k]) + ",";
+                        if (!array_str.empty()) array_str.back() = '.';
+                        JAGE_LOG_TRACE("    {}:{}", matprop.mKey.C_Str(), array_str);
+                    break;
+
+                    default: JAGE_LOG_TRACE("    {}: {}", matprop.mKey.C_Str(), "material property not recognized.");
+                }
+            }
+        }
+        #undef VERBOSE
+        #endif
 
         JAGE_MSG_TRACE("Metadata information:");
 
@@ -396,7 +454,7 @@ namespace JAGE
                 
                 case aiMetadataType::AI_AIVECTOR3D:
                 {
-                    aiVector3D ai_vector { *static_cast<aiVector3D*>(metadata.mValues[i].mData) };
+                    const aiVector3D& ai_vector { *static_cast<aiVector3D*>(metadata.mValues[i].mData) };
                     glm::vec3 vector { ai_vector.x, ai_vector.y, ai_vector.z };
                     JAGE_LOG_TRACE
                     (
