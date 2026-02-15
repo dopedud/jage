@@ -6,24 +6,24 @@
 namespace JAGE
 {
     namespace fs = std::filesystem;
-    using ResourceID = u64;
+    using AssetID = u64;
 
     /**
-     * @class Resource
+     * @class Asset
      * 
-     * @brief The `Resource` class that acts as a base class for all different types of assets to derive from.
+     * @brief The `Asset` class that acts as a base class for all different types of assets to derive from.
      * 
-     * @note Resources could technically be instantiated directly from classes derived from Resource, but this should
-     * be avoided and only get resources from `ResourceManager`. Proper compile-time restrictions has been programmed in
-     * place to avoid the user from accidentally instantiating Resource directly.
+     * @note Assets could technically be instantiated directly from classes derived from `Asset`, but this should
+     * be avoided and only get assets from `AssetManager`. Proper compile-time restrictions has been programmed in
+     * place to avoid the user from accidentally instantiating `Asset` and classes that derive from it directly.
      */
-    class JAGE_API Resource
+    class JAGE_API Asset
     {
     public:
         static fs::path dir_path();
 
-        Resource(fs::path path);
-        virtual ~Resource() = default;
+        Asset(fs::path path);
+        virtual ~Asset() = default;
 
         fs::path path() const;
         bool is_valid() const;
@@ -33,61 +33,61 @@ namespace JAGE
     };
 
     template<typename T>
-    class ResourceHandle
+    class AssetHandle
     {
     public:
-        ResourceHandle(ResourceID id, T* resource);
+        AssetHandle(AssetID id, T* asset);
 
-        ResourceID id() const;
-        const T* resource() const;
+        AssetID id() const;
+        const T* asset() const;
     private:
-        ResourceID m_id;
-        T* m_resource;
+        AssetID m_id;
+        T* m_asset;
     };
 
-    class JAGE_API ResourceManager
+    class JAGE_API AssetManager
     {
     public:
         class Key
         {
             Key() = default;
-            friend class ResourceManager;
+            friend class AssetManager;
         };
 
-        static ResourceManager& instance();
+        static AssetManager& instance();
         static void release();
 
-        ~ResourceManager() = default;
+        ~AssetManager() = default;
 
         /**
-         * `ResourceManager` is a singleton, which means it cannot be copied.
+         * `AssetManager` is a singleton, which means it cannot be copied.
          * 
          * @{
          */
-        ResourceManager(const ResourceManager&) = delete;
-        ResourceManager &operator=(const ResourceManager&) = delete;
+        AssetManager(const AssetManager&) = delete;
+        AssetManager &operator=(const AssetManager&) = delete;
         /** @} */
 
         void Initialise();
 
-        ResourceID path_to_ID(fs::path path);
+        AssetID path_to_ID(fs::path path);
 
         template<typename T> void               load(std::string_view filename);
-        template<typename T> ResourceHandle<T>  get(std::string_view filename);
+        template<typename T> AssetHandle<T>     get(std::string_view filename);
     private:
-        ResourceManager();
+        AssetManager();
 
-        inline static std::unique_ptr<ResourceManager> m_instance {};
-        std::unordered_map<ResourceID, std::unique_ptr<Resource>> resources;
+        inline static std::unique_ptr<AssetManager> m_instance {};
+        std::unordered_map<AssetID, std::unique_ptr<Asset>> assets;
     };
 
-    class JAGE_API TextResource final : public Resource
+    class JAGE_API TextAsset final : public Asset
     {
     public:
         static fs::path dir_path();
 
-        explicit TextResource(ResourceManager::Key, std::string_view filename);
-        ~TextResource() = default;
+        explicit TextAsset(AssetManager::Key, std::string_view filename);
+        ~TextAsset() = default;
 
         std::string_view content() const;
     private:
@@ -131,12 +131,12 @@ namespace JAGE
         static const ImageData* pink_black_checkerbox();
     };
 
-    class JAGE_API ImageResource final : public Resource
+    class JAGE_API ImageAsset final : public Asset
     {
     public:
         static fs::path dir_path();
 
-        explicit ImageResource(ResourceManager::Key, std::string_view filename);
+        explicit ImageAsset(AssetManager::Key, std::string_view filename);
 
         const ImageData* data() const;
     private:
@@ -194,13 +194,13 @@ namespace JAGE
         std::vector<unsigned> meshes_index {};
     };
 
-    class JAGE_API ModelResource final : public Resource
+    class JAGE_API ModelAsset final : public Asset
     {
     public:
         static fs::path dir_path();
 
-        explicit ModelResource(ResourceManager::Key, std::string_view filename);
-        ~ModelResource();
+        explicit ModelAsset(AssetManager::Key, std::string_view filename);
+        ~ModelAsset();
 
         const ModelNode* root() const;
         const MeshData* mesh_data(unsigned index) const;
@@ -218,6 +218,6 @@ namespace JAGE
          * Bad fucking design, but is needed to access `materials` (to load unloaded material textures) without
          * exposing it as a public API.
          */
-        friend class ResourceManager;
+        friend class AssetManager;
     };
 }
