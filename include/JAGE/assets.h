@@ -48,6 +48,14 @@ namespace JAGE
     class JAGE_API AssetManager
     {
     public:
+        /**
+         * @class Key
+         * 
+         * @brief The `Key` class that classes that are derived from `Asset` receives as a constructor argument.
+         * 
+         * The `Key` class is the compile-time restriction to prevent the user from instantiating `Asset` and its
+         * derived classes directly. Can only be used by `AssetManager`.
+         */
         class Key
         {
             Key() = default;
