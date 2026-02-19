@@ -15,15 +15,15 @@ namespace JAGE
         renderer = Renderer::Create(m_window);
         debug_renderer = DebugRenderer::Create(m_window);
 
-        ResourceHandle<ImageResource> image { ResourceManager::instance().get<ImageResource>("image.jpg") };
-        ResourceHandle<TextResource> vertex_shader { ResourceManager::instance().get<TextResource>("default.vs") };
-        ResourceHandle<TextResource> fragment_shader { ResourceManager::instance().get<TextResource>("default.fs") };
-        ResourceHandle<ModelResource> cube { ResourceManager::instance().get<ModelResource>("potted_plant_3.fbx") };
+        AssetHandle<ImageAsset> image { AssetManager::instance().get<ImageAsset>("image.jpg") };
+        AssetHandle<TextAsset> vertex_shader { AssetManager::instance().get<TextAsset>("default.vs") };
+        AssetHandle<TextAsset> fragment_shader { AssetManager::instance().get<TextAsset>("default.fs") };
+        AssetHandle<ModelAsset> cube { AssetManager::instance().get<ModelAsset>("potted_plant_3.fbx") };
 
-        texture = Texture::Create(image.resource()->data());
-        shader = Shader::Create(vertex_shader.resource()->content(), fragment_shader.resource()->content());
-        mesh = Mesh::Create(cube.resource()->mesh_data(0));
-        material = std::make_unique<Material>(shader.get(), cube.resource()->material_data(0));
+        texture = Texture::Create(image.asset()->data());
+        shader = Shader::Create(vertex_shader.asset()->content(), fragment_shader.asset()->content());
+        mesh = Mesh::Create(cube.asset()->mesh_data(0));
+        material = std::make_unique<Material>(shader.get(), cube.asset()->material_data(0));
 
         World::ApplicationContext app_ctx;
         app_ctx.window = m_window;

@@ -43,6 +43,14 @@ namespace JAGE
 
     void AssetManager::Initialise()
     {
+        try { fs::directory_iterator{ Asset::dir_path() }; }
+        catch (const fs::filesystem_error& e)
+        {
+            JAGE_LOG_ERROR("JAGE I/O error ({} - {}) at path \"{}\" and \"{}\": {}.",
+                e.code().value(), e.code().message(), e.path1().string(), e.path2().string(), e.what());
+            return;
+        }
+
         for (const fs::directory_entry& entry : fs::directory_iterator{ Asset::dir_path() / TextAsset::dir_path() })
         load<TextAsset>(entry.path().filename().string());
         for (const fs::directory_entry& entry : fs::directory_iterator{ Asset::dir_path() / ImageAsset::dir_path() })
@@ -112,15 +120,17 @@ namespace JAGE
         fs::path path { Asset::dir_path() / T::dir_path() / fs::path{ filename } };
         AssetID id_hash { path_to_ID(path) };
 
-        if (assets.find(id_hash) == assets.end())
+        std::unordered_map<AssetID, std::unique_ptr<Asset>>::iterator assets_iterator { assets.find(id_hash) };
+
+        if (assets_iterator == assets.end())
         { 
             fs::path truncated_path { T::dir_path() / fs::path{ filename } };
-            JAGE_LOG_ERROR("JAGE asset error: no asset with \"{}\".", truncated_path.string());
+            JAGE_LOG_ERROR("JAGE asset error: no asset with file name \"{}\".", truncated_path.string());
             JAGE_MSG_ERROR("Returning null asset.");
             return AssetHandle<T>{ id_hash, nullptr };
         }
 
-        Asset* asset { assets.find(id_hash)->second.get() };
+        Asset* asset { assets_iterator->second.get() };
         return AssetHandle<T>{ id_hash, static_cast<T*>(asset) };
     }
 
@@ -128,12 +138,12 @@ namespace JAGE
     template class AssetHandle<ImageAsset>;
     template class AssetHandle<ModelAsset>;
 
-    template void                           AssetManager::load<TextAsset>(std::string_view filename);
-    template void                           AssetManager::load<ImageAsset>(std::string_view filename);
-    template void                           AssetManager::load<ModelAsset>(std::string_view filename);
-    template AssetHandle<TextAsset>   AssetManager::get<TextAsset>(std::string_view filename);
-    template AssetHandle<ImageAsset>  AssetManager::get<ImageAsset>(std::string_view filename);
-    template AssetHandle<ModelAsset>  AssetManager::get<ModelAsset>(std::string_view filename);
+    template void                       AssetManager::load<TextAsset>(std::string_view filename);
+    template void                       AssetManager::load<ImageAsset>(std::string_view filename);
+    template void                       AssetManager::load<ModelAsset>(std::string_view filename);
+    template AssetHandle<TextAsset>     AssetManager::get<TextAsset>(std::string_view filename);
+    template AssetHandle<ImageAsset>    AssetManager::get<ImageAsset>(std::string_view filename);
+    template AssetHandle<ModelAsset>    AssetManager::get<ModelAsset>(std::string_view filename);
 
     TextAsset::TextAsset(AssetManager::Key, std::string_view filename)
     : Asset{ dir_path() / fs::path{ filename } }
