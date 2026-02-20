@@ -37,14 +37,14 @@ namespace JAGE
 
     void Window::OnEvent(const Event& e)
     {
-        for (std::vector<Layer*>::iterator it = layers.end(); it != layers.begin();)
+        for (std::vector<std::unique_ptr<Layer>>::iterator it = layers.end(); it != layers.begin();)
         {
             if (e.handled()) break;
             (*(--it))->OnEvent(e);
         }
     }
 
-    void Window::PushLayer(Layer* layer)
+    void Window::PushLayer(std::unique_ptr<Layer> layer)
     {
         JAGE_MSG_TRACE("Pushing layer named: " + layer->name());
 
@@ -55,7 +55,7 @@ namespace JAGE
         JAGE_MSG_TRACE("Pushed layer named: " + layer->name());
     }
 
-    void Window::PushOverlay(Layer* overlay)
+    void Window::PushOverlay(std::unique_ptr<Layer> overlay)
     {
         JAGE_MSG_TRACE("Pushing overlay named: " + overlay->name());
 
@@ -65,7 +65,7 @@ namespace JAGE
         JAGE_MSG_TRACE("Pushed overlay named: " + overlay->name());
     }
 
-    void Window::PopLayer(Layer* layer)
+    void Window::PopLayer(std::unique_ptr<Layer> layer)
     {
         JAGE_MSG_TRACE("Popping layer named: " + layer->name());
 
@@ -82,7 +82,7 @@ namespace JAGE
         JAGE_MSG_TRACE("Popped layer named: " + layer->name());
     }
 
-    void Window::PopOverlay(Layer* overlay)
+    void Window::PopOverlay(std::unique_ptr<Layer> overlay)
     {
         JAGE_MSG_TRACE("Popping overlay named: " + overlay->name());
 
@@ -95,8 +95,8 @@ namespace JAGE
         JAGE_MSG_TRACE("Popped overlay named: " + overlay->name());
     }
 
-    std::vector<Layer*>::iterator Window::layers_begin() { return layers.begin(); }
-    std::vector<Layer*>::iterator Window::layers_end() { return layers.end(); }
+    std::vector<std::unique_ptr<Layer>>::iterator Window::layers_begin() { return layers.begin(); }
+    std::vector<std::unique_ptr<Layer>>::iterator Window::layers_end() { return layers.end(); }
 
     Layer::Layer(Window* window, std::string_view name) : m_window { window }, m_name { name }
     { JAGE_MSG_TRACE("Initialised a layer with name: " + m_name); }

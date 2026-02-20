@@ -261,10 +261,10 @@ namespace JAGE
 
         void OnEvent(const Event& e);
 
-        void PushLayer(Layer* layer);
-        void PushOverlay(Layer* overlay);
-        void PopLayer(Layer* layer);
-        void PopOverlay(Layer* overlay);
+        void PushLayer(std::unique_ptr<Layer> layer);
+        void PushOverlay(std::unique_ptr<Layer> overlay);
+        void PopLayer(std::unique_ptr<Layer> layer);
+        void PopOverlay(std::unique_ptr<Layer> overlay);
 
         /**
          * @name layer iterators
@@ -273,8 +273,8 @@ namespace JAGE
          * 
          * @{
          */
-        std::vector<Layer*>::iterator layers_begin();
-        std::vector<Layer*>::iterator layers_end();
+        std::vector<std::unique_ptr<Layer>>::iterator layers_begin();
+        std::vector<std::unique_ptr<Layer>>::iterator layers_end();
         /** @} */
     protected:
 
@@ -291,7 +291,7 @@ namespace JAGE
 
         WindowData data;
 
-        std::vector<Layer*> layers;
+        std::vector<std::unique_ptr<Layer>> layers;
         int layer_insert_index;
 
         std::unique_ptr<GraphicsContext> graphics_context;

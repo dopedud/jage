@@ -146,12 +146,6 @@ namespace JAGE
 
     GLFWWindow::~GLFWWindow()
     {
-        for (Layer* layer : layers)
-        {
-            layer->OnDetach();
-            delete layer;
-        }
-
         glfwDestroyWindow(m_handle);
         m_handle = nullptr;
 
@@ -163,7 +157,7 @@ namespace JAGE
         graphics_context->Clear();
 
         Input::UpdateMousePosition();
-        for (Layer* layer : layers) layer->OnUpdate();
+        for (const std::unique_ptr<Layer>& layer : layers) layer->OnUpdate();
 
         graphics_context->SwapBuffers();
 
