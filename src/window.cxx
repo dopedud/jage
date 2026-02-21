@@ -46,54 +46,57 @@ namespace JAGE
 
     void Window::PushLayer(std::unique_ptr<Layer> layer)
     {
-        JAGE_MSG_TRACE("Pushing layer named: " + layer->name());
+        std::string name { layer->name() };
+        JAGE_MSG_TRACE("Pushing layer named: " + name);
 
-        layers.emplace(layers.begin() + layer_insert_index, layer);
-        layer_insert_index++;
         layer->OnAttach();
+        layers.emplace(layers.begin() + layer_insert_index, std::move(layer));
+        layer_insert_index++;
 
-        JAGE_MSG_TRACE("Pushed layer named: " + layer->name());
+        JAGE_MSG_TRACE("Pushed layer named: " + name);
     }
 
     void Window::PushOverlay(std::unique_ptr<Layer> overlay)
     {
-        JAGE_MSG_TRACE("Pushing overlay named: " + overlay->name());
+        std::string name { overlay->name() };
+        JAGE_MSG_TRACE("Pushing overlay named: " + name);
 
-        layers.emplace_back(overlay);
         overlay->OnAttach();
+        layers.emplace_back(std::move(overlay));
 
-        JAGE_MSG_TRACE("Pushed overlay named: " + overlay->name());
+        JAGE_MSG_TRACE("Pushed overlay named: " + name);
     }
 
-    void Window::PopLayer(std::unique_ptr<Layer> layer)
-    {
-        JAGE_MSG_TRACE("Popping layer named: " + layer->name());
+    // void Window::PopLayer(std::unique_ptr<Layer> layer)
+    // {
+    //     std::string name { layer->name() };
+    //     JAGE_MSG_TRACE("Popping layer named: " + layer->name());
 
-        auto it { std::find(layers.begin(), layers.end(), layer) };
+    //     layer->OnDetach();
 
-        if (it != layers.end())
-        {
-            layers.erase(it);
-            layer_insert_index--;
-        }
+    //     auto it { std::find(layers.begin(), layers.end(), layer) };
 
-        layer->OnDetach();
+    //     if (it != layers.end())
+    //     {
+    //         layers.erase(it);
+    //         layer_insert_index--;
+    //     }
 
-        JAGE_MSG_TRACE("Popped layer named: " + layer->name());
-    }
+    //     JAGE_MSG_TRACE("Popped layer named: " + layer->name());
+    // }
 
-    void Window::PopOverlay(std::unique_ptr<Layer> overlay)
-    {
-        JAGE_MSG_TRACE("Popping overlay named: " + overlay->name());
+    // void Window::PopOverlay(std::unique_ptr<Layer> overlay)
+    // {
+    //     JAGE_MSG_TRACE("Popping overlay named: " + overlay->name());
 
-        auto it { std::find(layers.begin(), layers.end(), overlay) };
+    //     overlay->OnDetach();
 
-        if (it != layers.end()) layers.erase(it);
+    //     auto it { std::find(layers.begin(), layers.end(), overlay) };
 
-        overlay->OnDetach();
+    //     if (it != layers.end()) layers.erase(it);
 
-        JAGE_MSG_TRACE("Popped overlay named: " + overlay->name());
-    }
+    //     JAGE_MSG_TRACE("Popped overlay named: " + overlay->name());
+    // }
 
     std::vector<std::unique_ptr<Layer>>::iterator Window::layers_begin() { return layers.begin(); }
     std::vector<std::unique_ptr<Layer>>::iterator Window::layers_end() { return layers.end(); }

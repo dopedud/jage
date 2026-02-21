@@ -263,19 +263,8 @@ namespace JAGE
 
         void PushLayer(std::unique_ptr<Layer> layer);
         void PushOverlay(std::unique_ptr<Layer> overlay);
-        void PopLayer(std::unique_ptr<Layer> layer);
-        void PopOverlay(std::unique_ptr<Layer> overlay);
-
-        /**
-         * @name layer iterators
-         * 
-         * For use in `for` loops and search algorithms like `std::find`.
-         * 
-         * @{
-         */
-        std::vector<std::unique_ptr<Layer>>::iterator layers_begin();
-        std::vector<std::unique_ptr<Layer>>::iterator layers_end();
-        /** @} */
+        // void PopLayer(std::unique_ptr<Layer> layer);
+        // void PopOverlay(std::unique_ptr<Layer> overlay);
     protected:
 
         /**
@@ -320,7 +309,7 @@ namespace JAGE
 
         virtual void OnEvent(const Event& e) = 0;
 
-        std::string name() const { return m_name; }
+        std::string_view name() const { return m_name; }
     protected:
         Window* m_window;
         const std::string m_name;
@@ -630,7 +619,6 @@ namespace JAGE
         {
             if (event.event_type() == TEvent::static_type())
             event.set_handled(function(static_cast<const TEvent&>(event)));
-
         }
     private:
         const Event& event;

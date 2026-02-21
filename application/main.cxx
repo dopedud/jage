@@ -13,8 +13,8 @@ int main(int argc, char** argv)
     WindowProperties window_properties {};
     std::unique_ptr<Window> window { Window::Create(window_properties) };
 
-    window->PushLayer(new GameLayer{ window.get() });
-    window->PushOverlay(new ImguiLayer{ window.get() });
+    window->PushLayer(std::make_unique<GameLayer>(window.get()));
+    window->PushOverlay(std::make_unique<ImguiLayer>(window.get()));
 
     std::function<bool(const WindowCloseEvent&)> OnWindowClose
     {
