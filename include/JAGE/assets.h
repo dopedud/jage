@@ -211,8 +211,8 @@ namespace JAGE
         ~ModelAsset();
 
         const ModelNode* root() const;
-        const MeshData* mesh_data(unsigned index) const;
-        const MaterialData* material_data(unsigned index) const;
+        const MeshData* meshdata(unsigned index) const;
+        const MaterialData* materialdata(unsigned index) const;
     private:
         std::unique_ptr<ModelNode> m_root;
         std::vector<MeshData> meshes;

@@ -98,9 +98,6 @@ namespace JAGE
     //     JAGE_MSG_TRACE("Popped overlay named: " + overlay->name());
     // }
 
-    std::vector<std::unique_ptr<Layer>>::iterator Window::layers_begin() { return layers.begin(); }
-    std::vector<std::unique_ptr<Layer>>::iterator Window::layers_end() { return layers.end(); }
-
     Layer::Layer(Window* window, std::string_view name) : m_window { window }, m_name { name }
     { JAGE_MSG_TRACE("Initialised a layer with name: " + m_name); }
 }

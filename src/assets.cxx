@@ -39,6 +39,9 @@ namespace JAGE
     template<typename T> const T* AssetHandle<T>::asset() const { return m_asset; }
 
     AssetManager::AssetManager() : assets {}
+    // might need to disable Assimp's flip UVs post-processing step after importing a model, or disable
+    // stb_image's flip images vertically upon loading
+    // either one should be disabled
     { stbi_set_flip_vertically_on_load(true); }
 
     void AssetManager::Initialise()
@@ -287,14 +290,21 @@ namespace JAGE
 
         pimpl->embedded_textures = &embedded_textures;
 
+        // TODO: transform FBX models so match engine's coordinate system
+        // Somehow a FBX model is rotated 90 degrees along the X-axis upon import.
         Assimp::Importer importer {};
-        const aiScene* ai_scene
-        { 
+        const aiScene *ai_scene
+        {
             importer.ReadFile
             (
-                m_path.string(), 
-                aiProcessPreset_TargetRealtime_Quality |
-                aiProcess_TransformUVCoords
+                m_path.string(),
+                aiProcess_MakeLeftHanded |
+                // might need to disable Assimp's flip UVs post-processing step after importing a model, or disable
+                // stb_image's flip images vertically upon loading
+                // either one should be disabled
+                aiProcess_FlipUVs |
+                aiProcess_TransformUVCoords |
+                aiProcessPreset_TargetRealtime_Quality
             )
         };
 
@@ -335,7 +345,7 @@ namespace JAGE
 
     const ModelNode* ModelAsset::root() const { return m_root.get(); }
 
-    const MeshData* ModelAsset::mesh_data(unsigned index) const
+    const MeshData* ModelAsset::meshdata(unsigned index) const
     {
         if (index >= meshes.size())
         {
@@ -352,7 +362,7 @@ namespace JAGE
         return &meshes[index];
     }
 
-    const MaterialData* ModelAsset::material_data(unsigned index) const
+    const MaterialData* ModelAsset::materialdata(unsigned index) const
     {
         if (index >= materials.size())
         {

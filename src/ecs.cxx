@@ -196,7 +196,7 @@ namespace JAGE
     {
         Transform* transform { ecs_field(it, Transform, 0) };
 
-        for (unsigned i {}; i < it->count; i++)
+        for (int i {}; i < it->count; i++)
         {
             Transform& t { transform[i] };
 
@@ -297,7 +297,7 @@ namespace JAGE
         Transform* transform { ecs_field(it, Transform, 0) };
         MeshRenderer* mesh_renderer { ecs_field(it, MeshRenderer, 1) };
 
-        for (unsigned i {}; i < it->count; i++)
+        for (int i {}; i < it->count; i++)
         {
             Transform& t { transform[i] };
             MeshRenderer& mr { mesh_renderer[i] };
