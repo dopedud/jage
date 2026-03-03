@@ -39,4 +39,30 @@ a submitted game must appeal to the general audience (including kids), and the h
 that criteria. The first submission did get through, and it is what me and my team at the time presented when the
 competition took place. I could tell more about this competition, but to cut it short, we unfortunately didn't win it
 and return to our school sort of empty-handed. It did end up a really great experience though, and I got to learn a
-lot of new things regarding game development.
+lot of new things involving game development.
+
+Fast forward to 4 years later (I had to once again divert my focus to my studies for pre-university preparation for
+that 4 years), I'd started my student years as a computer science student at my university. I don't think there's
+really anything significant going on in the first 2 years (aside from learning foundational topics all CS students
+should know). It's not until year 3 where I'd started revisit game development again to work on one of the elective
+modules the course provides (and which I chose explicitly), which is game development. Obviously, I choose Unity as the
+game engine to work on my games (as the coursework), and needless to say, it's a lot of fun developing games when I'm
+not pressured by other aspects of my life. At the time (specifically on the game development module), I had to do 2
+courseworks, each for a different kind of game. The first coursework requires me to develop a game with a strong theme
+supporting it, which I end up developing a 2D top-down shooter. The second coursework was more narrative-driven, and to
+be honest, it is quite the challenge to develop a linear story progression system in Unity (which is a given, Unity
+isn't supposed to provide primitives to develop narrative-based games, although I think it would be a great idea for
+them to implement it as a separate feature where developers can optionally opt in). Nonetheless, I did both of them
+quite well (I think) and overall, I've graduated with a computer science degree in the end.
+
+Now, for a moment, telling stories about my background took me to a nostalgic trip, but it does not warrant me to
+develop a whole game engine from scratch. Even then, it helps explain where my experiences with game development came
+from, and I think that serves as evidence for some of my opinions I'm about to elaborate regarding game development
+with off-the-shelf game engines.
+
+The biggest issue I see when developing games using tools made by big tech companies is their development environment.
+<!-- 
+TODO: explain about how you as a developer would be locked in their development environment, no freedom, source code
+unavailable in the case of Unity, bloated tools, not needed features being included, on the bright side support and
+documentation is abundant, massive community, ease of use, 
+-->

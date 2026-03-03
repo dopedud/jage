@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 }
 ```
 
-For a more detailed view on how to use JAGE effectively, please refer to the separate [Overview](./overview.md) section
+For a more detailed view on how to use JAGE effectively, refer to the separate [Overview](./overview.md) section
 located in the `overview.md` file.
 
 ## Build and Installation 
