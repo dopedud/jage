@@ -16,62 +16,83 @@ namespace JAGE
         return lhs_casted | rhs_casted;
     }
 
-    std::string WindowResizeEvent::to_string() const
+    std::string_view Event::to_string() const
     {
-        std::stringstream ss;
+        m_to_string = std::string{ name() } + "Event";
+        return m_to_string;
+    }
+
+    std::string_view WindowResizeEvent::to_string() const
+    {
+        std::stringstream ss {};
+        ss.clear();
         ss << name() << "Event: " << m_width << ", " << m_height;
-        return ss.str();
+        m_to_string = ss.str();
+        return m_to_string;
     }
 
-    std::string WindowFocusEvent::to_string() const
+    std::string_view WindowFocusEvent::to_string() const
     {
-        std::stringstream ss;
+        std::stringstream ss {};
+        ss.clear();
         ss << name() << "Event: " << (m_focused ? "window focused." : "window unfocused.");
-        return ss.str();
+        m_to_string = ss.str();
+        return m_to_string;
     }
 
-    std::string KeyEvent::to_string() const
+    std::string_view KeyEvent::to_string() const
     {
-        std::stringstream ss;
+        std::stringstream ss {};
+        ss.clear();
         ss << name() << "Event: " << m_key << ", " << m_scancode << ", " << m_action << ", ";
         Input::operator<<(ss, m_mods);
-        return ss.str();
+        m_to_string = ss.str();
+        return m_to_string;
     }
 
-    std::string CharEvent::to_string() const
+    std::string_view CharEvent::to_string() const
     {
-        std::stringstream ss;
+        std::stringstream ss {};
+        ss.clear();
         ss << name() << "Event: " << m_codepoint;
-        return ss.str();
+        m_to_string = ss.str();
+        return m_to_string;
     }
 
-    std::string MouseButtonEvent::to_string() const
+    std::string_view MouseButtonEvent::to_string() const
     {
-        std::stringstream ss;
+        std::stringstream ss {};
+        ss.clear();
         ss << name() << "Event: " << m_button << ", " << m_action << ", ";
         Input::operator<<(ss, m_mods);
-        return ss.str();
+        m_to_string = ss.str();
+        return m_to_string;
     }
 
-    std::string MouseEnterEvent::to_string() const 
+    std::string_view MouseEnterEvent::to_string() const
     {
-        std::stringstream ss;
-        ss << name() << "Event: " << (m_entered ? "mouse entered." : "mouse exited."); 
-        return ss.str();
+        std::stringstream ss {};
+        ss.clear();
+        ss << name() << "Event: " << (m_entered ? "mouse entered." : "mouse exited.");
+        m_to_string = ss.str();
+        return m_to_string;
     }
 
-    std::string MouseMovedEvent::to_string() const
+    std::string_view MouseMovedEvent::to_string() const
     {
-        std::stringstream ss;
+        std::stringstream ss {};
+        ss.clear();
         ss << name() << "Event: " << m_mouseX << ", " << m_mouseY;
-        return ss.str();
+        m_to_string = ss.str();
+        return m_to_string;
     }
 
-    std::string MouseScrolledEvent::to_string() const
+    std::string_view MouseScrolledEvent::to_string() const
     {
-        std::stringstream ss;
-        ss.str() = "";
+        std::stringstream ss {};
+        ss.clear();
         ss << name() << "Event: " << m_offsetX << ", " << m_offsetY;
-        return ss.str();
+        m_to_string = ss.str();
+        return m_to_string;
     }
 }

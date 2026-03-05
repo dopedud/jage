@@ -123,26 +123,10 @@ namespace JAGE
      * @class AppLogger
      * @brief The `AppLogger` class used to log game operations.
      *
-     * Both JAGE and the game use @c spdlog as its logging backend. This means that the game won't really rely on JAGE
-     * to provide logging utilities, but instead rely directly from @c spdlog . Ideally, the opposite should happen
-     * (the game relying on JAGE and not having to fuss around with the implementation/backend), though for the case of
-     * logging, there's really no reason to switch between different backends as long as it works as intended. 
-     *
-     * The reason for this tightly-coupled dependency is because @c spdlog uses variadic templates internally to enable
-     * variable number and types of objects to log. By defnition, templates should have its implementation exposed. As
-     * a consequence, both JAGE and the game should know what @c spdlog is.
-     *
-     * It is possible to have only JAGE know what logging backend it's using, and let the game use logging from JAGE
-     * without knowing what's going on internally by using the @c PImpl (pointer-to-implementation) pattern. However,
-     * some sacrifices had to be made for templates and the @c PImpl pattern to work together. Templates must be
-     * explicitly instantiated in translation units for types one wants to support. However, doing this would defeat
-     * the whole purpose of templates, which is to allow the flexibility of supporting any type and any number of them.
-     * In fact, it is better to just overload the same function with different types and different amount of arguments
-     * one wants to support, since the intent is clearer.
-     *
-     * Templates and the @c PImpl pattern are programming patterns that go against each other. Templates require the
-     * implementation to be exposed, while the @c PImpl pattern requires it to be hidden. Templates are chose over the
-     * @c PImpl pattern since the flexibility that comes with it is more important.
+     * Both JAGE and the game use `spdlog` as its logging backend. `spdlog` is templated, which means either the JAGE's
+     * API has to also expose `spdlog`'s templates (which lets the game bypass JAGE's API altogether if it wants), or
+     * hide them via pointer-to-implementation (which then means that JAGE has to implement each and every template
+     * instantiation possible when using `spdlog`). The former was chose to prioritise flexibility.
      */
     class JAGE_API AppLogger
     {
@@ -583,22 +567,23 @@ namespace JAGE
 
     /**
      * @class Event
-     * @brief The `Event` base class used to communicate events happening between the engine and the application.
+     * @brief The `Event` base class used to communicate events happening between the JAGE and the application.
      */
     class JAGE_API Event
     {
     public:
-        virtual std::string name() const = 0;
+        virtual std::string_view name() const = 0;
         virtual EventType event_type() const = 0;
         virtual int event_category_flags() const = 0;
-        virtual std::string to_string() const { return name() + "Event"; }
+        virtual std::string_view to_string() const;
 
-        bool category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
+        bool is_category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
 
         bool handled() const { return m_handled; }
         void set_handled(bool handled) const { m_handled = handled; }
     protected:
         mutable bool m_handled {};
+        mutable std::string m_to_string {};
     };
 
     inline std::ostream& operator<<(std::ostream& os, const Event& e) { return os << e.to_string(); }
@@ -644,7 +629,7 @@ namespace JAGE
 #define EVENT_CLASS_TYPE(type) \
     static EventType static_type() { return EventType::type; } \
     virtual EventType event_type() const override { return static_type(); } \
-    virtual std::string name() const override { return #type; }
+    virtual std::string_view name() const override { return #type; }
 
 #define EVENT_CLASS_CATEGORY(category) \
     virtual int event_category_flags() const override { return static_cast<int>(category); }
@@ -678,7 +663,7 @@ namespace JAGE
         unsigned width() const { return m_width; }
         unsigned height() const { return m_height; }
 
-        std::string to_string() const override;
+        std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(WindowResize)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
@@ -693,7 +678,7 @@ namespace JAGE
 
         bool focused() const { return m_focused; }
 
-        std::string to_string() const override;
+        std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(WindowFocus)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
@@ -724,7 +709,7 @@ namespace JAGE
         Input::Action   action()    const { return m_action; }
         int             mods()      const { return m_mods; }
 
-        std::string to_string() const override;
+        std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(Key)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
@@ -742,7 +727,7 @@ namespace JAGE
 
         unsigned codepoint() const { return m_codepoint; }
 
-        std::string to_string() const override;
+        std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(Char)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
@@ -773,7 +758,7 @@ namespace JAGE
         Input::Action       action()    const { return m_action; }
         int                 mods()      const { return m_mods; }
 
-        std::string to_string() const override;
+        std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(MouseButton)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
@@ -790,7 +775,7 @@ namespace JAGE
 
         int entered() const { return m_entered; }
 
-        std::string to_string() const override;
+        std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(MouseEnter)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
@@ -806,7 +791,7 @@ namespace JAGE
         float mouseX() const { return m_mouseX; }
         float mouseY() const { return m_mouseY; }
 
-        std::string to_string() const override;
+        std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(MouseMoved)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
@@ -823,7 +808,7 @@ namespace JAGE
         float offsetX() const { return m_offsetX; }
         float offsetY() const { return m_offsetY; }
 
-        std::string to_string() const override;
+        std::string_view to_string() const override;
 
         EVENT_CLASS_TYPE(MouseScrolled)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
