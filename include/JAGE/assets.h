@@ -113,7 +113,7 @@ namespace JAGE
          * laid out as such.
          * 
          * @note The size of this array must be `width * height * 4`, with the literal 4 here being the number of
-         * channels each pixel occupy. The modern format is RGBA8888 for each pixel.
+         * channels each pixel occupy. The format used is RGBA8888 for each pixel.
          */
         std::vector<u8> pixels {};
 
@@ -183,9 +183,9 @@ namespace JAGE
         std::string name {};
         glm::vec4 albedo_color { 1.0f };
         const ImageData* albedo_map {};
-        glm::vec4 normal_color { 0.5f };
+        float normal_factor { 0.5f };
         const ImageData* normal_map {};
-        glm::vec4 specular_color { 0.5f };
+        float specular_factor { 0.5f };
         const ImageData* specular_map {};
 
         // metadata, mostly unimportant
@@ -223,7 +223,7 @@ namespace JAGE
         std::unique_ptr<Impl> pimpl;
 
         /**
-         * Bad fucking design, but is needed to access `materials` (to load unloaded material textures) without
+         * Bad fucking design, but is needed to access `MaterialData` (to load unloaded material textures) without
          * exposing it as a public API.
          */
         friend class AssetManager;

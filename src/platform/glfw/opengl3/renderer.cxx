@@ -327,7 +327,22 @@ namespace JAGE
         albedo_texture->bind(0);
         shader->set_uniform_int("texture_albedo", 0);
         glBindVertexArray(vao);
+
+        switch (material->face_culling_mode())
+        {
+            case Material::FaceCullingMode::NONE: glDisable(GL_CULL_FACE); break;
+            case Material::FaceCullingMode::BACK:
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_BACK);
+            break;
+            case Material::FaceCullingMode::FRONT:
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_FRONT);
+            break;
+        }
+
         glDrawElements(GL_TRIANGLES, m_meshdata->indices.size(), GL_UNSIGNED_INT, 0);
+
         glBindVertexArray(0);
         albedo_texture->unbind();
         shader->unbind();

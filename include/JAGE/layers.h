@@ -20,14 +20,16 @@ namespace JAGE
         std::unique_ptr<DebugRenderer> debug_renderer;
 
         std::unique_ptr<Shader> shader;
-        std::unique_ptr<Material> material;
+        std::unique_ptr<Material> mat1;
+        std::unique_ptr<Material> mat2;
         std::unique_ptr<Texture> texture;
-        std::unique_ptr<Mesh> mesh;
+        std::unique_ptr<Mesh> mesh1;
+        std::unique_ptr<Mesh> mesh2;
 
         World world;
         Entity camera;
-        Entity object;
-        const Camera* camera_component;
+        Entity object1;
+        Entity object2;
     };
 
     class JAGE_API ImguiLayer final : public Layer

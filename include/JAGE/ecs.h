@@ -115,7 +115,7 @@ namespace JAGE
     class JAGE_API Entity
     {
     public:
-        static Entity EntityFromModelAsset(const ModelAsset* model_resource);
+        static Entity EntityFromModelAsset(const ModelAsset* model_asset);
 
         Entity(const World& world, std::string_view name);
         Entity();

@@ -54,16 +54,22 @@ namespace JAGE
     class JAGE_API Material
     {
     public:
+        enum class FaceCullingMode : u8 { NONE = 0, BACK, FRONT };
+
         Material(Shader* shader, const MaterialData* materialdata);
         Material();
 
         Shader* shader() const;
         const MaterialData* materialdata() const;
         Texture* albedo_texture() const;
+
+        FaceCullingMode face_culling_mode() const;
+        void set_face_culling_mode(FaceCullingMode mode);
     private:
         Shader* m_shader;
-        std::unique_ptr<Texture> m_albedo_texture;
         const MaterialData* m_materialdata;
+        std::unique_ptr<Texture> m_albedo_texture;
+        FaceCullingMode m_face_culling_mode;
     };
 
     class JAGE_API Mesh

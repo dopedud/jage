@@ -18,12 +18,17 @@ namespace JAGE
         AssetHandle<ImageAsset> image { AssetManager::instance().get<ImageAsset>("image.jpg") };
         AssetHandle<TextAsset> vertex_shader { AssetManager::instance().get<TextAsset>("default.vs") };
         AssetHandle<TextAsset> fragment_shader { AssetManager::instance().get<TextAsset>("default.fs") };
-        AssetHandle<ModelAsset> cube { AssetManager::instance().get<ModelAsset>("sombs.fbx") };
+        AssetHandle<ModelAsset> model1 { AssetManager::instance().get<ModelAsset>("potted_plant_3.fbx") };
+        AssetHandle<ModelAsset> model2 { AssetManager::instance().get<ModelAsset>("sombs.fbx") };
 
         texture = Texture::Create(image.asset()->data());
         shader = Shader::Create(vertex_shader.asset()->content(), fragment_shader.asset()->content());
-        mesh = Mesh::Create(cube.asset()->meshdata(0));
-        material = std::make_unique<Material>(shader.get(), cube.asset()->materialdata(0));
+        mesh1 = Mesh::Create(model1.asset()->meshdata(0));
+        mesh2 = Mesh::Create(model2.asset()->meshdata(0));
+        mat1 = std::make_unique<Material>(shader.get(), model1.asset()->materialdata(0));
+        mat2 = std::make_unique<Material>(shader.get(), model2.asset()->materialdata(0));
+        mat1->set_face_culling_mode(Material::FaceCullingMode::NONE);
+        mat2->set_face_culling_mode(Material::FaceCullingMode::NONE);
 
         World::ApplicationContext app_ctx;
         app_ctx.window = m_window;
@@ -31,18 +36,22 @@ namespace JAGE
         app_ctx.debug_renderer = debug_renderer.get();
         world = World{ app_ctx };
         camera = Entity{ world, "FreeCamera" };
-        object = Entity{ world, "Object" };
+        object1 = Entity{ world, "Object1" };
+        object2 = Entity{ world, "Object2" };
 
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();
 
-        object.AddComponent<Transform>();
-        MeshRenderer mesh_renderer {};
-        mesh_renderer.mesh = mesh.get();
-        mesh_renderer.material = material.get();
-        object.AddComponent<MeshRenderer>(mesh_renderer);
-
-        camera_component = camera.GetComponent<Camera>();
+        object1.AddComponent<Transform>();
+        object2.AddComponent<Transform>();
+        MeshRenderer mesh_renderer1 {};
+        mesh_renderer1.mesh = mesh1.get();
+        mesh_renderer1.material = mat1.get();
+        object1.AddComponent<MeshRenderer>(mesh_renderer1);
+        MeshRenderer mesh_renderer2 {};
+        mesh_renderer2.mesh = mesh2.get();
+        mesh_renderer2.material = mat2.get();
+        object2.AddComponent<MeshRenderer>(mesh_renderer2);
 
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
     }

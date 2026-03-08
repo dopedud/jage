@@ -89,7 +89,7 @@ namespace JAGE
         }        
     }
 
-    Entity Entity::EntityFromModelAsset(const ModelAsset* model_resource)
+    Entity Entity::EntityFromModelAsset(const ModelAsset* model_asset)
     {
 
     }

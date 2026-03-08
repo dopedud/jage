@@ -42,7 +42,8 @@ namespace JAGE
     // might need to disable Assimp's flip UVs post-processing step after importing a model, or disable
     // stb_image's flip images vertically upon loading
     // either one should be disabled
-    { stbi_set_flip_vertically_on_load(true); }
+    // { stbi_set_flip_vertically_on_load(true); }
+    {}
 
     void AssetManager::Initialise()
     {
@@ -290,9 +291,10 @@ namespace JAGE
 
         pimpl->embedded_textures = &embedded_textures;
 
-        // TODO: transform FBX models so match engine's coordinate system
+        // TODO: transform FBX models so that it matches engine's coordinate system
         // Somehow a FBX model is rotated 90 degrees along the X-axis upon import.
         Assimp::Importer importer {};
+
         const aiScene *ai_scene
         {
             importer.ReadFile
@@ -663,26 +665,11 @@ namespace JAGE
 
         data.albedo_map = get_material_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene, data.unloaded_textures);
 
-        aiColor4D normal_color;
-        if (ai_material->Get(AI_MATKEY_COLOR_SPECULAR, normal_color) == aiReturn::aiReturn_SUCCESS)
-        {
-            data.normal_color.r = normal_color.r;
-            data.normal_color.g = normal_color.g;
-            data.normal_color.b = normal_color.b;
-            data.normal_color.a = normal_color.a;
-        }
-
         data.normal_map = get_material_texture(ai_material, aiTextureType::aiTextureType_NORMALS, ai_scene, data.unloaded_textures);
 
-        aiColor4D specular_color;
-        if (ai_material->Get(AI_MATKEY_COLOR_SPECULAR, specular_color) == aiReturn::aiReturn_SUCCESS)
-        {
-            data.specular_color.r = specular_color.r;
-            data.specular_color.g = specular_color.g;
-            data.specular_color.b = specular_color.b;
-            data.specular_color.a = specular_color.a;
-        }
-
+        ai_real specular_factor {};
+        if (ai_material->Get(AI_MATKEY_SPECULAR_FACTOR, specular_factor) == aiReturn::aiReturn_SUCCESS)
+        data.specular_factor = specular_factor;
         data.specular_map = get_material_texture(ai_material, aiTextureType::aiTextureType_SPECULAR, ai_scene, data.unloaded_textures);
 
         return data;

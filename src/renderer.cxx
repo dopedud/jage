@@ -56,6 +56,8 @@ namespace JAGE
     Shader* Material::shader() const { return m_shader; }
     const MaterialData* Material::materialdata() const { return m_materialdata; }
     Texture* Material::albedo_texture() const { return m_albedo_texture.get(); }
+    Material::FaceCullingMode Material::face_culling_mode() const { return m_face_culling_mode; }
+    void Material::set_face_culling_mode(Material::FaceCullingMode mode) { m_face_culling_mode = mode; }
 
     Mesh::Mesh(const MeshData* meshdata) : m_meshdata { meshdata } {} 
 
