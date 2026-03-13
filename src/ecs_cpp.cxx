@@ -17,95 +17,95 @@
 
 namespace JAGE
 {
-    World::World(ApplicationContext app_ctx) : m_world {}, m_app_ctx { app_ctx }
+    World::World() : m_world {}, eventemitter {}, m_app_ctx {} {}
+
+    World::World(ApplicationContext app_ctx)
+    : m_world {}
+    , eventemitter { m_world.entity("EventEmitter") }
+    , m_app_ctx { std::make_unique<ApplicationContext>(app_ctx) }
     {
-        JAGE_LOG_DEBUG("{}", app_ctx.window == nullptr);
-        JAGE_LOG_DEBUG("{}", m_app_ctx.window == nullptr);
-        JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(app_ctx.window));
-        JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(m_app_ctx.window));
-        JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(&m_app_ctx));
-        m_world.set_ctx(&m_app_ctx);
+        m_world.set_ctx(m_app_ctx.get());
 
         m_world.component<Transform>();
+        m_world.component<MeshRenderer>();
         m_world.component<Camera>();
 
-        m_world.system<Transform, Camera>().kind(flecs::OnStart).run(CameraSystem_Initialise);
-        m_world.system<Camera>().kind(flecs::OnStart).run(RenderSystem_Initialise);
+        // m_world.observer<Camera>()
+        // .event<MouseScrolledEvent>()
+        // .run(CameraMovementSystem_OnMouseScrolled);
 
         m_world.system<Transform>().run(TransformSystem);
-        m_world.system<Transform, Camera>().run(CameraSystem);
-        m_world.system<Transform, Camera>().ctx(&m_app_ctx).run(RenderSystem);
+        m_world.system<Transform, Camera>().run(CameraMovementSystem);
+        m_world.system<Transform, Camera>().run(CameraRenderSystem);
+        m_world.system<Transform, MeshRenderer>().run(MeshRenderSystem);
+
+        m_world.system().run(DebugRenderSystem);
+    }
+
+    World::World(World&& other) noexcept
+    : m_world { other.m_world }
+    , m_app_ctx { std::move(other.m_app_ctx) }
+    {}
+
+    World& World::operator=(World&& other) noexcept
+    {
+        if (this != &other)
+        {
+            m_world = other.m_world;
+            m_app_ctx = std::move(other.m_app_ctx);
+        }
+        
+        return *this;
     }
 
     const flecs::world& World::world() const { return m_world; }
 
     void World::progress(float deltatime) { m_world.progress(deltatime); }
 
+    Entity::Entity() : m_entity {} {}
+
     Entity::Entity(const World& world, std::string_view name)
     : m_entity { world.world().entity(name.data()) } {}
 
     // TEMPLATE INSTANTIATIONS
 
+    template<> void World::emit_event<MouseScrolledEvent>(const MouseScrolledEvent& e)
+    {
+        // m_world.event<MouseScrolledEvent>().ctx(e).emit();
+    }
+
     template<typename T> void       Entity::AddComponent()                      { m_entity.add<T>(); }
     template<typename T> void       Entity::AddComponent(const T& component)    { m_entity.set<T>(component); }
     template<typename T> const T&   Entity::GetComponent()                      { return m_entity.get<T>(); }
-    template<typename T> T&         Entity::GetComponentMutable()               { return m_entity.get_mut<T>(); }
     template<typename T> void       Entity::RemoveComponent()                   { m_entity.remove<T>(); }
 
-    template void               Entity::AddComponent<Transform>();
-    template void               Entity::AddComponent<Transform>(const Transform& component);
-    template const Transform&   Entity::GetComponent<Transform>();
-    template Transform&         Entity::GetComponentMutable<Transform>();
-    template void               Entity::RemoveComponent<Transform>();
+    template void                   Entity::AddComponent<Transform>();
+    template void                   Entity::AddComponent<Transform>(const Transform& component);
+    template const Transform&       Entity::GetComponent<Transform>();
+    template void                   Entity::RemoveComponent<Transform>();
 
-    template void           Entity::AddComponent<Camera>();
-    template void           Entity::AddComponent<Camera>(const Camera& component);
-    template const Camera&  Entity::GetComponent<Camera>();
-    template Camera&        Entity::GetComponentMutable<Camera>();
-    template void           Entity::RemoveComponent<Camera>();
+    template void                   Entity::AddComponent<MeshRenderer>();
+    template void                   Entity::AddComponent<MeshRenderer>(const MeshRenderer& component);
+    template const MeshRenderer&    Entity::GetComponent<MeshRenderer>();
+    template void                   Entity::RemoveComponent<MeshRenderer>();
+
+    template void                   Entity::AddComponent<Camera>();
+    template void                   Entity::AddComponent<Camera>(const Camera& component);
+    template const Camera&          Entity::GetComponent<Camera>();
+    template void                   Entity::RemoveComponent<Camera>();
 
 
     // END TEMPLATE INSTANTIATIONS
 
-    void CameraSystem_Initialise(flecs::iter& it)
-    {
-        while (it.next())
-        {
-            flecs::field transform { it.field<Transform>(0) };
-            flecs::field camera { it.field<Camera>(1) };
-
-            for (unsigned i : it)
-            {
-                Transform& t { transform[i] };
-                Camera& c { camera[i] };
-
-                t.position = glm::vec3{};
-                t.orientation = glm::quat{ 1.0f, 0.0f, 0.0f, 0.0f };
-                t.scale = glm::vec3{ 1.0f };
-
-                c.move_speed = 0.01f;
-                c.zoom_speed = 0.1f;
-                c.sensitivity = 8.5f * 0.01f;
-
-                c.pitch = 0.0f;
-                c.yaw = 0.0f;
-                c.fov = 90.0f;
-            }
-        }
-    }
-
-    void RenderSystem_Initialise(flecs::iter& it)
+    void CameraMovementSystem_OnMouseScrolled(flecs::iter& it)
     {
         while (it.next())
         {
             flecs::field camera { it.field<Camera>(0) };
-
-            for (unsigned i : it)
-            {
-                Camera& c { camera[i] };
-                c.view_matrix = glm::mat4{ 1.0f };
-                c.projection_matrix = glm::mat4{ 1.0f };
-            }
+            Camera& c { camera[0] };
+            MouseScrolledEvent* e { static_cast<MouseScrolledEvent*>(it.param()) };
+            float scaled_delta { -e->offsetY() *10.0f * std::pow(c.fov / 90.0f, 2.0f) };
+            c.fov = std::clamp(c.fov + scaled_delta, 1.0f, 150.0f);
         }
     }
 
@@ -133,7 +133,47 @@ namespace JAGE
         }
     }
 
-    void CameraSystem(flecs::iter& it)
+    void MeshRenderSystem(flecs::iter& it)
+    {
+        while (it.next())
+        {
+            World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(it.world().get_ctx()) };
+            Renderer* renderer { app_ctx->renderer };
+
+            flecs::field transform { it.field<Transform>(0) };
+            flecs::field mesh_renderer { it.field<MeshRenderer>(1) };
+
+            for (unsigned i : it)
+            {
+                Transform& t { transform[i] };
+                MeshRenderer& mr { mesh_renderer[i] };
+
+                Shader* shader { mr.material->shader() };
+
+                shader->bind();
+                shader->set_uniform_mat4("model", t.transformation_matrix);
+                shader->set_uniform_mat4("view", renderer->view());
+                shader->set_uniform_mat4("projection", renderer->projection());
+                shader->unbind();
+
+                mr.mesh->render(mr.material);
+            }
+        }
+    }
+
+    void DebugRenderSystem(flecs::iter& it)
+    {
+        while (it.next())
+        {
+            World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(it.world().get_ctx()) };
+            DebugRenderer* debug_renderer { app_ctx->debug_renderer };
+
+            debug_renderer->RenderBaseAxes();
+            debug_renderer->RenderGridLines(10, 1.0f);
+        }
+    }
+
+    void CameraMovementSystem(flecs::iter& it)
     {
         if (Input::GetCursorMode() == JAGE_CURSOR_MODE_NORMAL) return;
 
@@ -195,25 +235,19 @@ namespace JAGE
         }
     }
 
-    void RenderSystem(flecs::iter& it)
+    void CameraRenderSystem(flecs::iter& it)
     {
         while (it.next())
         {
             flecs::field transform { it.field<Transform>(0) };
             flecs::field camera { it.field<Camera>(1) };
 
-            ApplicationContext* app_ctx { static_cast<ApplicationContext*>(it.world().get_ctx()) };
-            JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(app_ctx));
+            World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(it.world().get_ctx()) };
+
             for (unsigned i : it)
             {
                 Transform& t { transform[i] };
                 Camera& c { camera[i] };
-
-                JAGE_LOG_DEBUG("{}", app_ctx == nullptr);
-                JAGE_LOG_DEBUG("{}", app_ctx->window == nullptr);
-                JAGE_LOG_DEBUG("{}", app_ctx->value);
-                JAGE_LOG_DEBUG("{}", reinterpret_cast<uintptr_t>(app_ctx->window));
-                JAGE_LOG_DEBUG("{}", app_ctx->window->aspect_ratio());
 
                 c.view_matrix = glm::lookAtLH(t.position, t.position + t.forward, t.up);
                 c.projection_matrix = glm::infinitePerspectiveLH(glm::radians(c.fov), app_ctx->window->aspect_ratio(), 0.01f);

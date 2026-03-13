@@ -48,7 +48,7 @@ namespace JAGE
     class OpenGLTexture final : public Texture
     {
     public:
-        OpenGLTexture(const ImageData* imagedata);
+        OpenGLTexture(const Data::Image* imagedata);
         ~OpenGLTexture();
 
         virtual void bind(unsigned unit) const override;
@@ -60,7 +60,7 @@ namespace JAGE
     class OpenGLMesh final : public Mesh
     {
     public:
-        OpenGLMesh(const MeshData* meshdata);
+        OpenGLMesh(const Data::Mesh* meshdata);
 
         virtual void render(const Material* material) override;
     private:

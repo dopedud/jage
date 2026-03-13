@@ -6,6 +6,36 @@
 
 namespace JAGE
 {
+    using ResourceID = u64;
+
+    /**
+     * @class Resource
+     * 
+     * @brief The `Resource` class that acts as a base class for all the different types of GPU resources to derive from.
+     * 
+     * "Resource" in the context of game engines can refer to a wide variety of meaning, including memory resources and
+     * persistent resources (files that live on the hard disk), but in JAGE "Resource" specifically means GPU
+     * resource, which are data that is uploaded from CPU to GPU, and stay in GPU memory.
+     * 
+     * @note Assets could technically be instantiated directly from classes derived from `Asset`, but this should
+     * be avoided and only get assets from `AssetManager`. Proper compile-time restrictions has been programmed in
+     * place to avoid the user from accidentally instantiating `Asset` and classes that derive from it directly.
+     */
+    // class JAGE_API Asset
+    // {
+    // public:
+    //     static fs::path dir_path();
+
+    //     Asset(fs::path path);
+    //     virtual ~Asset() = default;
+
+    //     fs::path path() const;
+    //     bool is_valid() const;
+    // protected:
+    //     fs::path m_path;
+    //     bool m_is_valid;
+    // };
+
     class JAGE_API Shader
     {
     public:
@@ -44,7 +74,7 @@ namespace JAGE
     class JAGE_API Texture
     {
     public:
-        static std::unique_ptr<Texture> Create(const ImageData* imagedata);
+        static std::unique_ptr<Texture> Create(const Data::Image* imagedata);
         virtual ~Texture() = default;
 
         virtual void bind(unsigned unit) const = 0;
@@ -56,18 +86,18 @@ namespace JAGE
     public:
         enum class FaceCullingMode : u8 { NONE = 0, BACK, FRONT };
 
-        Material(Shader* shader, const MaterialData* materialdata);
+        Material(Shader* shader, const Data::Material* materialdata);
         Material();
 
         Shader* shader() const;
-        const MaterialData* materialdata() const;
+        const Data::Material* materialdata() const;
         Texture* albedo_texture() const;
 
         FaceCullingMode face_culling_mode() const;
         void set_face_culling_mode(FaceCullingMode mode);
     private:
         Shader* m_shader;
-        const MaterialData* m_materialdata;
+        const Data::Material* m_materialdata;
         std::unique_ptr<Texture> m_albedo_texture;
         FaceCullingMode m_face_culling_mode;
     };
@@ -75,13 +105,13 @@ namespace JAGE
     class JAGE_API Mesh
     {
     public:
-        static std::unique_ptr<Mesh> Create(const MeshData* meshdata);
-        Mesh(const MeshData* meshdata);
+        static std::unique_ptr<Mesh> Create(const Data::Mesh* meshdata);
+        Mesh(const Data::Mesh* meshdata);
         virtual ~Mesh() = default;
 
         virtual void render(const Material* material) = 0;
     protected:
-        const MeshData* m_meshdata;
+        const Data::Mesh* m_meshdata;
     };
 
     class JAGE_API Renderer

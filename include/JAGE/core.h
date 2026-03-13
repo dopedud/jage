@@ -22,6 +22,7 @@
  * - LAYER DEFINITIONS
  * - GRAPHICS CONTEXT DEFINITIONS
  * - INPUT DEFINITIONS
+ * - URI DEFINITIONS
  * - CORE EVENT DEFINITIONS
  * - MACRO FOR EVENTS DEFINITIONS
  * - APPLICATION/WINDOW EVENT DEFINITIONS
@@ -532,6 +533,56 @@ namespace JAGE
         #define JAGE_CURSOR_MODE_DISABLED   JAGE::Input::CursorMode::DISABLED
         #define JAGE_CURSOR_MODE_HIDDEN     JAGE::Input::CursorMode::HIDDEN
     };
+}
+
+/**
+ * 
+ * 
+ * URI DEFINITIONS
+ * 
+ * 
+ */
+namespace JAGE
+{
+    namespace URI
+    {
+        std::string percent_encode(const std::string &input, const std::string &safe_chars = "");
+        std::string percent_decode(const std::string &input);
+
+        struct Data
+        {
+            std::string scheme;
+            std::string userinfo;
+            std::string host;
+            std::optional<u16> port;
+            std::string path;
+            std::string query;
+            std::string fragment;
+
+            std::unordered_map<std::string, std::string> query_params;
+
+            bool has_authority() const { return !host.empty(); }
+            bool is_absolute() const { return !scheme.empty(); }
+            bool is_relative() const { return scheme.empty(); }
+
+            std::string to_string() const;
+        };
+
+        class Parser
+        {
+        public:
+            static Data parse(const std::string &raw);
+        private:
+            static std::string extract_scheme(const std::string &raw, size_t &pos);
+            static void extract_authority(const std::string &raw, size_t &pos, Data &out);
+            static std::string extract_path(const std::string &raw, size_t &pos);
+            static std::string extract_query(const std::string &raw, size_t &pos);
+            static std::string extract_fragment(const std::string &raw, size_t &pos);
+            static std::unordered_map<std::string, std::string> parse_query_params(const std::string &query);
+            static bool is_valid_scheme_char(char c, bool first);
+            static bool is_valid_host_char(char c);
+        };
+    }
 }
 
 /**

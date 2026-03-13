@@ -45,25 +45,15 @@ namespace JAGE
         Material* material {};
     };
 
-    void CameraMovementSystem_OnMouseScrolled(ecs_iter_t* it);
+    void CameraMovementSystem_OnMouseScrolled(flecs::iter& it);
 
-    void TransformSystem(ecs_iter_t* it);
-    void CameraMovementSystem(ecs_iter_t* it);
-    void CameraRenderSystem(ecs_iter_t* it);
-    void MeshRenderSystem(ecs_iter_t* it);
+    void TransformSystem(flecs::iter& it);
+    void CameraMovementSystem(flecs::iter& it);
+    void CameraRenderSystem(flecs::iter& it);
+    void MeshRenderSystem(flecs::iter& it);
 
-    void DebugRenderSystem(ecs_iter_t* it);
+    void DebugRenderSystem(flecs::iter& it);
 
-    class JAGE_API Entity;
-
-    /**
-     * @class World
-     * 
-     * @brief The ECS `World` class.
-     * 
-     * This class owns the world that lives in the ECS, which means that the class constructor/destructor
-     * effectively constructs/destructs an ECS world.
-     */
     class JAGE_API World
     {
     public:
@@ -76,7 +66,7 @@ namespace JAGE
 
         World(ApplicationContext app_ctx);
         World();
-        ~World();
+        ~World() = default;
 
         /**
          * ECS worlds are not meant to be copied, only moved from one another.
@@ -91,6 +81,8 @@ namespace JAGE
         World& operator=(World&& other) noexcept;
         /** @} */
 
+        const flecs::world& world() const;
+
         void progress(float deltatime);
 
         /**
@@ -103,56 +95,30 @@ namespace JAGE
          */
         template<typename TEventData>
         void emit_event(const TEventData& event_data);
-
-        Entity CreateEntity(std::string_view name = "");
-
-        Entity EntityFromModelAsset(const Asset::Model* model_asset);
-        Entity EntityFromModelAsset(const Asset::Model* model_asset, const Asset::Model::Node* node);
     private:
-        /**
-         * @var m_world
-         * 
-         * @brief The internal data structure for an ECS world.
-         * 
-         * This variable is a raw pointer to the underlying data structure of an ECS world instead of a
-         * `std::unique_ptr<ecs_world_t>` to easily interface with the C functions that mutate the ECS world
-         * (otherwise every function call has `m_world.get()`).
-         */
-        ecs_world_t* m_world;
+        flecs::world m_world;
+        flecs::entity eventemitter;
 
         std::unique_ptr<ApplicationContext> m_app_ctx;
-
-        void release();
     };
 
-    /**
-     * @class Entity
-     * 
-     * @brief The ECS `Entity` class.
-     * 
-     * This class does not own the entity that lives in the ECS world, or in other words, only act as a view to
-     * an entity. It can only do read/write operations on an entity, but never construct one by itself.
-     */
     class JAGE_API Entity
     {
     public:
-        void destruct();
+        static Entity EntityFromModelAsset(const ModelAsset* model_asset);
+        static Entity EntityFromModelAsset(const ModelAsset* model_asset, const ModelNode* node);
 
-        Entity parent();
-        Entity child(std::string name);
+        Entity(const World& world, std::string_view name);
+        Entity();
+        ~Entity() = default;
 
         template<typename T> void AddComponent();
-        template<typename T> void AddComponent(const T* component);
         template<typename T> void AddComponent(const T& component);
-
-        template<typename T> const T* GetComponent();
-
+        template<typename T> const T& GetComponent();
         template<typename T> void RemoveComponent();
-    private:
-        ecs_world_t* m_world;
-        std::string m_name;
-        ecs_entity_t m_entity;
 
-        friend class World;
+        Entity child(std::string name);
+    public:
+        flecs::entity m_entity;
     };
 }

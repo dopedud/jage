@@ -11,19 +11,19 @@ namespace JAGE
     /**
      * @class Asset
      * 
-     * @brief The `Asset` class that acts as a base class for all different types of assets to derive from.
+     * @brief The `Asset` class that acts as a base class for all the different types of assets to derive from.
      * 
      * @note Assets could technically be instantiated directly from classes derived from `Asset`, but this should
      * be avoided and only get assets from `AssetManager`. Proper compile-time restrictions has been programmed in
      * place to avoid the user from accidentally instantiating `Asset` and classes that derive from it directly.
      */
-    class JAGE_API Asset
+    class JAGE_API AssetBase
     {
     public:
         static fs::path dir_path();
 
-        Asset(fs::path path);
-        virtual ~Asset() = default;
+        AssetBase(fs::path path);
+        virtual ~AssetBase() = default;
 
         fs::path path() const;
         bool is_valid() const;
@@ -45,6 +45,14 @@ namespace JAGE
         T* m_asset;
     };
 
+    // forward declare TextAsset, ImageAsset, and ModelAsset class to be used by AssetManager` class
+    namespace Asset
+    {
+        class JAGE_API Text;
+        class JAGE_API Image;
+        class JAGE_API Model;
+    }
+
     class JAGE_API AssetManager
     {
     public:
@@ -54,7 +62,7 @@ namespace JAGE
          * @brief The `Key` class that classes that are derived from `Asset` receives as a constructor argument.
          * 
          * The `Key` class is the compile-time restriction to prevent the user from instantiating `Asset` and its
-         * derived classes directly. Can only be used by `AssetManager`.
+         * derived classes directly. It can only be used by `AssetManager`.
          */
         class Key
         {
@@ -80,152 +88,161 @@ namespace JAGE
 
         AssetID path_to_ID(fs::path path);
 
-        template<typename T> void               load(std::string_view filename);
-        template<typename T> AssetHandle<T>     get(std::string_view filename);
+        template<typename T> void               Load(std::string_view filename);
+        template<typename T> AssetHandle<T>     Get(std::string_view filename);
     private:
         AssetManager();
 
         inline static std::unique_ptr<AssetManager> m_instance {};
-        std::unordered_map<AssetID, std::unique_ptr<Asset>> assets;
+        std::unordered_map<AssetID, std::unique_ptr<Asset::Text>> text_assets;
+        std::unordered_map<AssetID, std::unique_ptr<Asset::Image>> image_assets;
+        std::unordered_map<AssetID, std::unique_ptr<Asset::Model>> model_assets;
     };
 
-    class JAGE_API TextAsset final : public Asset
+    namespace Data
     {
-    public:
-        static fs::path dir_path();
-
-        explicit TextAsset(AssetManager::Key, std::string_view filename);
-        ~TextAsset() = default;
-
-        std::string_view content() const;
-    private:
-        std::string m_content;
-    };
-
-    struct JAGE_API ImageData
-    {
-        /**
-         * @var pixels
-         * 
-         * @brief A dynamic array to hold the pixel data of an image.
-         * 
-         * This array holds image data in contiguous memory because the renderer expects the image data to be
-         * laid out as such.
-         * 
-         * @note The size of this array must be `width * height * 4`, with the literal 4 here being the number of
-         * channels each pixel occupy. The format used is RGBA8888 for each pixel.
-         */
-        std::vector<u8> pixels {};
-
-        unsigned width {}, height {};
-
-        /**
-         * @fn set_pixel
-         * 
-         * @brief Setter function to set a pixel value of an image.
-         * 
-         * @param channel The color channel of the pixel to set. Set 0, 1, 2, or 3 for red, green, blue, or alpha
-         * channel respectively.
-         * @param value The value to set the pixel value. Must be between 0 to 255 (255 is the maximum value for an
-         * unsigned 1-byte integer).
-         */
-        void set_pixel(unsigned row, unsigned column, unsigned channel, u8 value);
-
-        /**
-         * @fn pink_black_checkerbox
-         * 
-         * @brief Spits out a pink black image with a checkerbox pattern, indicating it's an errorr image.
-         */
-        static const ImageData* pink_black_checkerbox();
-    };
-
-    class JAGE_API ImageAsset final : public Asset
-    {
-    public:
-        static fs::path dir_path();
-
-        explicit ImageAsset(AssetManager::Key, std::string_view filename);
-
-        const ImageData* data() const;
-    private:
-        ImageData m_data;
-    };
-
-    struct JAGE_API MeshData
-    {
-        enum class PrimitiveType : u8 { UNKNOWN = 0, POINT, LINE, TRIANGLE };
-
-        struct JAGE_API VertexData
+        struct JAGE_API Image
         {
-            glm::vec3 position {};
-            glm::vec3 normal {};
+            /**
+             * @var pixels
+             * 
+             * @brief A dynamic array to hold the pixel data of an image.
+             * 
+             * This array holds image data in contiguous memory because the renderer expects the image data to be
+             * laid out as such.
+             * 
+             * @note The size of this array must be `width * height * 4`, with the literal 4 here being the number of
+             * channels each pixel occupy. The format used is RGBA8888 for each pixel.
+             */
+            std::vector<u8> pixels {};
+
+            unsigned width {}, height {};
 
             /**
-             * The number of UV channel and vertex color set in a vertex should be determined since shaders do not
-             * support variable number of them. For now, JAGE supports up to 4 UV channel set and 4 vertex color set.
+             * @fn set_pixel
              * 
-             * @{
+             * @brief Setter function to set a pixel value of an image.
+             * 
+             * @param channel The color channel of the pixel to set. Set 0, 1, 2, or 3 for red, green, blue, or alpha
+             * channel respectively.
+             * @param value The value to set the pixel value. Must be between 0 to 255 (255 is the maximum value for an
+             * unsigned 1-byte integer).
              */
-            std::array<glm::vec2, 4> uvcoords {};
-            std::array<glm::vec4, 4> colors {};
-            /** @} */
+            void set_pixel(unsigned row, unsigned column, unsigned channel, u8 value);
+
+            /**
+             * @fn pink_black_checkerbox
+             * 
+             * @brief Spits out a pink black image with a checkerbox pattern, indicating it's an error image.
+             */
+            static const Image* pink_black_checkerbox();
         };
 
-        std::string name {};
-        PrimitiveType ptype {};
-        std::vector<VertexData> vertices {};
-        std::vector<unsigned> indices {};
-        unsigned material_index {};
-    };
+        struct JAGE_API Mesh
+        {
+            enum class PrimitiveType : u8 { UNKNOWN = 0, POINT, LINE, TRIANGLE };
 
-    struct JAGE_API MaterialData
+            struct JAGE_API Vertex
+            {
+                glm::vec3 position {};
+                glm::vec3 normal {};
+
+                /**
+                 * The number of UV channel and vertex color set in a vertex should be determined since shaders do not
+                 * support variable number of them. For now, JAGE supports up to 4 UV channel set and 4 vertex color set.
+                 * 
+                 * @{
+                 */
+                std::array<glm::vec2, 4> uvcoords {};
+                std::array<glm::vec4, 4> colors {};
+                /** @} */
+            };
+
+            std::string name {};
+            PrimitiveType ptype {};
+            std::vector<Vertex> vertices {};
+            std::vector<unsigned> indices {};
+            unsigned material_index {};
+        };
+
+        struct JAGE_API Material
+        {
+            std::string name {};
+            glm::vec4 albedo_color { 1.0f };
+            const Image* albedo_map {};
+            float normal_factor { 0.5f };
+            const Image* normal_map {};
+            float specular_factor { 0.5f };
+            const Image* specular_map {};
+
+            // metadata, mostly unimportant
+            enum class TextureType : u8 { NONE = 0, ALBEDO, NORMAL, SPECULAR };
+            std::unordered_map<std::string, TextureType> unloaded_textures {};
+        };
+    }
+
+    namespace Asset
     {
-        std::string name {};
-        glm::vec4 albedo_color { 1.0f };
-        const ImageData* albedo_map {};
-        float normal_factor { 0.5f };
-        const ImageData* normal_map {};
-        float specular_factor { 0.5f };
-        const ImageData* specular_map {};
 
-        // metadata, mostly unimportant
-        enum class TextureType : u8 { NONE = 0, ALBEDO, NORMAL, SPECULAR };
-        std::unordered_map<std::string, TextureType> unloaded_textures {};
-    };
+        class JAGE_API Text final : public AssetBase
+        {
+        public:
+            static fs::path dir_path();
 
-    struct JAGE_API ModelNode
-    {
-        std::string name {};
-        ModelNode* parent {};
-        std::vector<std::unique_ptr<ModelNode>> children {};
-        glm::mat4 transformation_matrix { 1.0f };
-        std::vector<unsigned> meshes_index {};
-    };
+            explicit Text(AssetManager::Key, std::string_view filename);
+            ~Text() = default;
 
-    class JAGE_API ModelAsset final : public Asset
-    {
-    public:
-        static fs::path dir_path();
+            std::string_view content() const;
+        private:
+            std::string m_content;
+        };
 
-        explicit ModelAsset(AssetManager::Key, std::string_view filename);
-        ~ModelAsset();
+        class JAGE_API Image final : public AssetBase
+        {
+        public:
+            static fs::path dir_path();
 
-        const ModelNode* root() const;
-        const MeshData* meshdata(unsigned index) const;
-        const MaterialData* materialdata(unsigned index) const;
-    private:
-        std::unique_ptr<ModelNode> m_root;
-        std::vector<MeshData> meshes;
-        std::vector<ImageData> embedded_textures;
-        std::vector<MaterialData> materials;
+            explicit Image(AssetManager::Key, std::string_view filename);
 
-        struct Impl;
-        std::unique_ptr<Impl> pimpl;
+            const Data::Image* data() const;
+        private:
+            Data::Image m_data;
+        };
 
-        /**
-         * Bad fucking design, but is needed to access `MaterialData` (to load unloaded material textures) without
-         * exposing it as a public API.
-         */
-        friend class AssetManager;
-    };
+        class JAGE_API Model final : public AssetBase
+        {
+        public:
+            static fs::path dir_path();
+
+            explicit Model(AssetManager::Key, std::string_view filename);
+            ~Model();
+
+            struct JAGE_API Node
+            {
+                std::string name {};
+                Node* parent {};
+                std::vector<std::unique_ptr<Node>> children {};
+                glm::mat4 transformation_matrix { 1.0f };
+                std::vector<unsigned> meshes_index {};
+            };
+
+            const Node* root() const;
+            const Data::Mesh* meshdata(unsigned index) const;
+            const Data::Material* materialdata(unsigned index) const;
+        private:
+            std::unique_ptr<Node> m_root;
+            std::vector<Data::Mesh> meshes;
+            std::vector<Data::Image> embedded_textures;
+            std::vector<Data::Material> materials;
+
+            struct Impl;
+            std::unique_ptr<Impl> pimpl;
+
+            /**
+             * Bad fucking design, but is needed to access `materials` (to load unloaded material textures) without
+             * exposing it as a public API.
+             */
+            friend class ::JAGE::AssetManager;
+        };
+    }
 }

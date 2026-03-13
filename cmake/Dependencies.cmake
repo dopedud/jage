@@ -13,6 +13,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "build shared libraries by default" FORCE)
 # STB_IMAGE
 # ASSIMP
 # FLECS
+# RMLUI
 # XXHASH
 
 # CUSTOM BUILD PROCEDURES:
@@ -109,6 +110,17 @@ FetchContent_Declare(
 )
 # END FETCH FLECS
 
+# FETCH RMLUI
+# set(RMLUI_VERSION 6.2)
+# FetchContent_Declare(
+#     rmlui_repo
+#     GIT_REPOSITORY https://github.com/mikke89/RmlUi.git
+#     GIT_TAG ${RMLUI_VERSION}
+# )
+# 
+# FetchContent_MakeAvailable(rmlui_repo)
+#END FETCH RMLUI
+
 # FETCH XXHASH
 set(XXHASH_VERSION v0.8.3)
 FetchContent_Declare(
@@ -173,7 +185,7 @@ if(WIN32)
 endif()
 
 if (UNIX)
-    target_link_libraries(flecs pthread)
+    target_link_libraries(flecs pthread rt m)
 endif()
 
 target_compile_definitions(flecs PRIVATE

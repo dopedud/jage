@@ -38,30 +38,30 @@ namespace JAGE
         return 0;
     }
 
-    std::unique_ptr<Texture> Texture::Create(const ImageData* imagedata)
+    std::unique_ptr<Texture> Texture::Create(const Data::Image* imagedata)
     { return std::make_unique<OpenGLTexture>(imagedata); }
 
     Material::Material()
     : m_shader {}
-    , m_albedo_texture {}
     , m_materialdata {}
+    , m_albedo_texture {}
     {}
 
-    Material::Material(Shader* shader, const MaterialData* materialdata)
+    Material::Material(Shader* shader, const Data::Material* materialdata)
     : m_shader { shader }, m_materialdata { materialdata }
     {
         m_albedo_texture = Texture::Create(materialdata->albedo_map);
     }
 
     Shader* Material::shader() const { return m_shader; }
-    const MaterialData* Material::materialdata() const { return m_materialdata; }
+    const Data::Material* Material::materialdata() const { return m_materialdata; }
     Texture* Material::albedo_texture() const { return m_albedo_texture.get(); }
     Material::FaceCullingMode Material::face_culling_mode() const { return m_face_culling_mode; }
     void Material::set_face_culling_mode(Material::FaceCullingMode mode) { m_face_culling_mode = mode; }
 
-    Mesh::Mesh(const MeshData* meshdata) : m_meshdata { meshdata } {} 
+    Mesh::Mesh(const Data::Mesh* meshdata) : m_meshdata { meshdata } {} 
 
-    std::unique_ptr<Mesh> Mesh::Create(const MeshData* meshdata)
+    std::unique_ptr<Mesh> Mesh::Create(const Data::Mesh* meshdata)
     { return std::make_unique<OpenGLMesh>(meshdata); }
 
     Renderer::Renderer(Window* window) : m_window { window } {}

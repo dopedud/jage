@@ -246,7 +246,7 @@ namespace JAGE
         glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
     }
 
-    OpenGLTexture::OpenGLTexture(const ImageData* imagedata)
+    OpenGLTexture::OpenGLTexture(const Data::Image* imagedata)
     {
         glGenTextures(1, &textureID);
         glBindTexture(GL_TEXTURE_2D, textureID);
@@ -268,7 +268,7 @@ namespace JAGE
     void OpenGLTexture::bind(unsigned unit) const { glActiveTexture(GL_TEXTURE0 + unit); glBindTexture(GL_TEXTURE_2D, textureID); }
     void OpenGLTexture::unbind() const { glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, 0); }
 
-    OpenGLMesh::OpenGLMesh(const MeshData* meshdata)
+    OpenGLMesh::OpenGLMesh(const Data::Mesh* meshdata)
     : Mesh{ meshdata }
     {
         glGenVertexArrays(1, &vao);
@@ -278,7 +278,7 @@ namespace JAGE
         glBindVertexArray(vao);
 
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, meshdata->vertices.size() * sizeof(MeshData::VertexData), &meshdata->vertices[0], GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, meshdata->vertices.size() * sizeof(Data::Mesh::Vertex), &meshdata->vertices[0], GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, meshdata->indices.size() * sizeof(unsigned), &meshdata->indices[0], GL_STATIC_DRAW);
@@ -310,7 +310,7 @@ namespace JAGE
                 elements[i].component_count(),
                 OpenGLShader::to_opengl_type(elements[i].shader_datatype),
                 elements[i].normalized ? GL_TRUE : GL_FALSE,
-                sizeof(MeshData::VertexData),
+                sizeof(Data::Mesh::Vertex),
                 reinterpret_cast<void*>(elements[i].offset)
             );
         }

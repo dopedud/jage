@@ -15,11 +15,11 @@ namespace JAGE
         renderer = Renderer::Create(m_window);
         debug_renderer = DebugRenderer::Create(m_window);
 
-        AssetHandle<ImageAsset> image { AssetManager::instance().get<ImageAsset>("image.jpg") };
-        AssetHandle<TextAsset> vertex_shader { AssetManager::instance().get<TextAsset>("default.vs") };
-        AssetHandle<TextAsset> fragment_shader { AssetManager::instance().get<TextAsset>("default.fs") };
-        AssetHandle<ModelAsset> model1 { AssetManager::instance().get<ModelAsset>("potted_plant_3.fbx") };
-        AssetHandle<ModelAsset> model2 { AssetManager::instance().get<ModelAsset>("sombs.fbx") };
+        AssetHandle<Asset::Image> image { AssetManager::instance().Get<Asset::Image>("image.jpg") };
+        AssetHandle<Asset::Text> vertex_shader { AssetManager::instance().Get<Asset::Text>("default.vs") };
+        AssetHandle<Asset::Text> fragment_shader { AssetManager::instance().Get<Asset::Text>("default.fs") };
+        AssetHandle<Asset::Model> model1 { AssetManager::instance().Get<Asset::Model>("potted_plant_3.fbx") };
+        AssetHandle<Asset::Model> model2 { AssetManager::instance().Get<Asset::Model>("z4.fbx") };
 
         texture = Texture::Create(image.asset()->data());
         shader = Shader::Create(vertex_shader.asset()->content(), fragment_shader.asset()->content());
@@ -35,9 +35,9 @@ namespace JAGE
         app_ctx.renderer = renderer.get();
         app_ctx.debug_renderer = debug_renderer.get();
         world = World{ app_ctx };
-        camera = Entity{ world, "FreeCamera" };
-        object1 = Entity{ world, "Object1" };
-        object2 = Entity{ world, "Object2" };
+        camera = world.CreateEntity("FreeCamera");
+        object1 = world.CreateEntity("object1");
+        object2 = world.CreateEntity("object2");
 
         camera.AddComponent<Transform>();
         camera.AddComponent<Camera>();

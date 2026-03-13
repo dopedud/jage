@@ -145,7 +145,7 @@ Here are some of the common build commands for use in terminal:
 cmake --build build --target clean_install
 cmake --build build --target clean_full
 cmake --build build --target clean_full_dependency
-cmake --fresh --preset user-debug .
+cmake --fresh --preset user_debug .
 cmake --build build/debug
 cmake --install build/debug
 ```

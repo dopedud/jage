@@ -8,6 +8,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 

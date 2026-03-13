@@ -37,6 +37,44 @@ namespace JAGE
 
     DISABLE_WARNING_POP
 
+    // TEMPLATE SPECIALISATIONS
+
+    template<> void World::emit_event<MouseScrolledEvent>(const MouseScrolledEvent& e)
+    {
+        ecs_run(m_world, ecs_id(CameraMovementSystem_OnMouseScrolled), 0.0f, &const_cast<MouseScrolledEvent&>(e));
+    }
+
+    // NOTE: Template specialisations are used here (instead of template instantiations) due to Flecs fundamentally
+    // using macros to implement generic programming patterns. The template definitions are still provided for
+    // reference.
+    // NOTE: Also, template specialisations are put here early in this file because other code down below depends on it.
+
+    // template<typename T> void       Entity::AddComponent()                       { ecs_add(m_world, m_entity, T); }
+    // template<typename T> void       Entity::AddComponent(const T* component)     { ecs_set_ptr(m_world, m_entity, T, component); }
+    // template<typename T> const T*   Entity::GetComponent()                       { return ecs_get(m_world, m_entity, T); }
+    // template<typename T> T*         Entity::GetComponentMutable()                { return ecs_get_mut(m_world, m_entity, T); }
+    // template<typename T> void       Entity::RemoveComponent()                    { ecs_remove(m_world, m_entity, T); }
+
+    template<> void                 Entity::AddComponent<Transform>() { Transform c {}; ecs_set_ptr(m_world, m_entity, Transform, &c); }
+    template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_world, m_entity, Transform, component); }
+    template<> void                 Entity::AddComponent<Transform>(const Transform& component)     { ecs_set_ptr(m_world, m_entity, Transform, &component); }
+    template<> const Transform*     Entity::GetComponent<Transform>()                               { return ecs_get(m_world, m_entity, Transform); }
+    template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_world, m_entity, Transform); }
+
+    template<> void             Entity::AddComponent<Camera>() { Camera c {}; ecs_set_ptr(m_world, m_entity, Camera, &c); }
+    template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_world, m_entity, Camera, component); }
+    template<> void             Entity::AddComponent<Camera>(const Camera& component)   { ecs_set_ptr(m_world, m_entity, Camera, &component); }
+    template<> const Camera*    Entity::GetComponent<Camera>()                          { return ecs_get(m_world, m_entity, Camera); }
+    template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_world, m_entity, Camera); }
+
+    template<> void                 Entity::AddComponent<MeshRenderer>() { MeshRenderer c {}; ecs_set_ptr(m_world, m_entity, MeshRenderer, &c); }
+    template<> void                 Entity::AddComponent<MeshRenderer>(const MeshRenderer* component)   { ecs_set_ptr(m_world, m_entity, MeshRenderer, component); }
+    template<> void                 Entity::AddComponent<MeshRenderer>(const MeshRenderer& component)   { ecs_set_ptr(m_world, m_entity, MeshRenderer, &component); }
+    template<> const MeshRenderer*  Entity::GetComponent<MeshRenderer>()                                { return ecs_get(m_world, m_entity, MeshRenderer); }
+    template<> void                 Entity::RemoveComponent<MeshRenderer>()                             { ecs_remove(m_world, m_entity, MeshRenderer); }
+
+    // END TEMPLATE SPECIALISATIONS
+
     World::~World() { release(); }
 
     World::World(World&& other) noexcept
@@ -60,8 +98,6 @@ namespace JAGE
 
         return *this;
     }
-
-    ecs_world_t* World::world() const { return m_world; }
 
     void World::progress(float deltatime) { ecs_progress(m_world, deltatime); }
 
@@ -89,96 +125,73 @@ namespace JAGE
         }        
     }
 
-    Entity Entity::EntityFromModelAsset(const ModelAsset* model_asset)
+    Entity World::CreateEntity(std::string_view name)
     {
+        std::string realname {};
 
-    }
-
-    Entity::Entity() : m_world {}, m_name {}, m_entity {} {}
-
-    Entity::Entity(const World& world, std::string_view name)
-    : m_world { world.world() }
-    , m_name { name }
-    , m_entity {}
-    {
-        ecs_entity_desc_t entity_desc {};
-        entity_desc.name = m_name.c_str();
-
-        m_entity = ecs_entity_init(m_world, &entity_desc);
-    }
-
-    Entity::~Entity() { release(); }
-
-    Entity::Entity(Entity&& other) noexcept
-    : m_world { other.m_world }
-    , m_name { other.m_name }
-    , m_entity { other.m_entity }
-    {
-        other.m_world = nullptr;
-        other.m_name = "";
-        other.m_entity = 0;
-    }
-
-    Entity& Entity::operator=(Entity&& other) noexcept
-    {
-        if (this != &other)
+        static unsigned counter {};
+        if (name == "")
         {
-            release();
+            realname = "GameObject" + std::to_string(counter);
+            counter++;
+        } else realname = name;
 
-            m_world = other.m_world;
-            m_name = other.m_name;
-            m_entity = other.m_entity;
+        Entity entity;
+        entity.m_world = m_world;
+        entity.m_name = realname;
 
-            other.m_world = nullptr;
-            other.m_name = "";
-            other.m_entity = 0;
+        ecs_entity_desc_t entity_desc {};
+        entity_desc.name = realname.c_str();
+        entity.m_entity = ecs_entity_init(m_world, &entity_desc);
+
+        return entity;
+    }
+
+    Entity World::EntityFromModelAsset(const Asset::Model* model_asset)
+    { return EntityFromModelAsset(model_asset, model_asset->root()); }
+
+    Entity World::EntityFromModelAsset(const Asset::Model* model_asset, const Asset::Model::Node* node)
+    {
+        Entity entity { CreateEntity(node->name) };
+
+        glm::mat4 tm { node->transformation_matrix };
+        Transform transform;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::decompose(tm, transform.scale, transform.orientation, transform.position, skew, perspective);
+
+        entity.AddComponent<Transform>(transform);
+
+        for (unsigned mesh_index : node->meshes_index)
+        {
+            MeshRenderer mesh_renderer;
         }
 
-        return *this;
+        for (const std::unique_ptr<Asset::Model::Node>& child : node->children)
+        EntityFromModelAsset(model_asset, child.get());
+
+        return entity;
     }
 
-    void Entity::release()
+    void Entity::destruct() { ecs_delete(m_world, m_entity); }
+
+    Entity Entity::child(std::string name)
     {
-        if (m_world && m_entity && ecs_is_valid(m_world, m_entity))
-        ecs_delete(m_world, m_entity);
+        Entity entity;
+        ecs_entity_t e { ecs_lookup_child(m_world, m_entity, name.c_str()) };
+        if (e)
+        {
+            entity.m_world = m_world;
+            entity.m_entity = e;
+            entity.m_name = name;
+        } else
+        {
+            JAGE_LOG_ERROR("JAGE ECS error: No child with the name \"{}\" from parent \"{}\".", name, m_name);
+            JAGE_MSG_ERROR("Returning invalid entity.");
+        }
+
+        return entity;
     }
-
-    // TEMPLATE INSTANTIATIONS
-
-    template<> void World::emit_event<MouseScrolledEvent>(const MouseScrolledEvent& e)
-    {
-        ecs_run(m_world, ecs_id(CameraMovementSystem_OnMouseScrolled), 0.0f, &const_cast<MouseScrolledEvent&>(e));
-    }
-
-    // NOTE: Template specializations are used here (instead of template instantiations) due to Flecs fundamentally
-    // using macros to implement generic programming patterns. The template definitions are still provided for
-    // reference.
-
-    // template<typename T> void       Entity::AddComponent()                       { ecs_add(m_world, m_entity, T); }
-    // template<typename T> void       Entity::AddComponent(const T* component)     { ecs_set_ptr(m_world, m_entity, T, component); }
-    // template<typename T> const T*   Entity::GetComponent()                       { return ecs_get(m_world, m_entity, T); }
-    // template<typename T> T*         Entity::GetComponentMutable()                { return ecs_get_mut(m_world, m_entity, T); }
-    // template<typename T> void       Entity::RemoveComponent()                    { ecs_remove(m_world, m_entity, T); }
-
-    template<> void                 Entity::AddComponent<Transform>() { Transform c {}; ecs_set_ptr(m_world, m_entity, Transform, &c); }
-    template<> void                 Entity::AddComponent<Transform>(const Transform* component)     { ecs_set_ptr(m_world, m_entity, Transform, component); }
-    template<> void                 Entity::AddComponent<Transform>(const Transform& component)     { ecs_set_ptr(m_world, m_entity, Transform, &component); }
-    template<> const Transform*     Entity::GetComponent<Transform>()                               { return ecs_get(m_world, m_entity, Transform); }
-    template<> void                 Entity::RemoveComponent<Transform>()                            { ecs_remove(m_world, m_entity, Transform); }
-
-    template<> void             Entity::AddComponent<Camera>() { Camera c {}; ecs_set_ptr(m_world, m_entity, Camera, &c); }
-    template<> void             Entity::AddComponent<Camera>(const Camera* component)   { ecs_set_ptr(m_world, m_entity, Camera, component); }
-    template<> void             Entity::AddComponent<Camera>(const Camera& component)   { ecs_set_ptr(m_world, m_entity, Camera, &component); }
-    template<> const Camera*    Entity::GetComponent<Camera>()                          { return ecs_get(m_world, m_entity, Camera); }
-    template<> void             Entity::RemoveComponent<Camera>()                       { ecs_remove(m_world, m_entity, Camera); }
-
-    template<> void                 Entity::AddComponent<MeshRenderer>() { MeshRenderer c {}; ecs_set_ptr(m_world, m_entity, MeshRenderer, &c); }
-    template<> void                 Entity::AddComponent<MeshRenderer>(const MeshRenderer* component)   { ecs_set_ptr(m_world, m_entity, MeshRenderer, component); }
-    template<> void                 Entity::AddComponent<MeshRenderer>(const MeshRenderer& component)   { ecs_set_ptr(m_world, m_entity, MeshRenderer, &component); }
-    template<> const MeshRenderer*  Entity::GetComponent<MeshRenderer>()                                { return ecs_get(m_world, m_entity, MeshRenderer); }
-    template<> void                 Entity::RemoveComponent<MeshRenderer>()                             { ecs_remove(m_world, m_entity, MeshRenderer); }
-
-    // END TEMPLATE INSTANTIATIONS
 
     void CameraMovementSystem_OnMouseScrolled(ecs_iter_t* it)
     {
@@ -211,6 +224,40 @@ namespace JAGE
                 glm::mat4_cast(t.orientation) *
                 glm::scale(glm::mat4{ 1.0f }, t.scale);
         }
+    }
+
+    void MeshRenderSystem(ecs_iter_t* it)
+    {
+        World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
+        Renderer* renderer { app_ctx->renderer };
+
+        Transform* transform { ecs_field(it, Transform, 0) };
+        MeshRenderer* mesh_renderer { ecs_field(it, MeshRenderer, 1) };
+
+        for (int i {}; i < it->count; i++)
+        {
+            Transform& t { transform[i] };
+            MeshRenderer& mr { mesh_renderer[i] };
+
+            Shader* shader { mr.material->shader() };
+
+            shader->bind();
+            shader->set_uniform_mat4("model", t.transformation_matrix);
+            shader->set_uniform_mat4("view", renderer->view());
+            shader->set_uniform_mat4("projection", renderer->projection());
+            shader->unbind();
+
+            mr.mesh->render(mr.material);
+        }
+    }
+
+    void DebugRenderSystem(ecs_iter_t* it)
+    {
+        World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
+        DebugRenderer* debug_renderer { app_ctx->debug_renderer };
+
+        debug_renderer->RenderBaseAxes();
+        debug_renderer->RenderGridLines(10, 1.0f);
     }
 
     void CameraMovementSystem(ecs_iter_t* it)
@@ -288,38 +335,4 @@ namespace JAGE
         renderer->set_vp(c.view_matrix, c.projection_matrix);
         debug_renderer->set_vp(c.view_matrix, c.projection_matrix);
    }
-
-    void MeshRenderSystem(ecs_iter_t* it)
-    {
-        World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
-        Renderer* renderer { app_ctx->renderer };
-
-        Transform* transform { ecs_field(it, Transform, 0) };
-        MeshRenderer* mesh_renderer { ecs_field(it, MeshRenderer, 1) };
-
-        for (int i {}; i < it->count; i++)
-        {
-            Transform& t { transform[i] };
-            MeshRenderer& mr { mesh_renderer[i] };
-
-            Shader* shader { mr.material->shader() };
-
-            shader->bind();
-            shader->set_uniform_mat4("model", t.transformation_matrix);
-            shader->set_uniform_mat4("view", renderer->view());
-            shader->set_uniform_mat4("projection", renderer->projection());
-            shader->unbind();
-
-            mr.mesh->render(mr.material);
-        }
-    }
-
-    void DebugRenderSystem(ecs_iter_t* it)
-    {
-        World::ApplicationContext* app_ctx { static_cast<World::ApplicationContext*>(ecs_get_ctx(it->world)) };
-        DebugRenderer* debug_renderer { app_ctx->debug_renderer };
-
-        debug_renderer->RenderBaseAxes();
-        debug_renderer->RenderGridLines(10, 1.0f);
-    }
 }

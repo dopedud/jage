@@ -4,6 +4,7 @@ set(ENGINE_NAME JAGE CACHE STRING "" FORCE)
 set(CORE_SRC
     jgpch.cxx
     init.cxx
+    uri.cxx
     log.cxx
     event.cxx
     input.cxx
