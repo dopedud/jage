@@ -23,7 +23,7 @@ namespace JAGE
     fs::path AssetBase::dir_path() { return fs::current_path() / "assets"; }
 
     AssetBase::AssetBase(fs::path path)
-    : m_path { AssetBase::dir_path() / path }, m_is_valid {} {}
+    : m_path { dir_path() / path }, m_is_valid {} {}
 
     fs::path AssetBase::path() const { return m_path; }
     bool AssetBase::is_valid() const { return m_is_valid; }
@@ -34,6 +34,10 @@ namespace JAGE
 
     template<typename T> AssetID AssetHandle<T>::id() const { return m_id; }
     template<typename T> const T* AssetHandle<T>::asset() const { return m_asset; }
+
+    template class AssetHandle<Asset::Text>;
+    template class AssetHandle<Asset::Image>;
+    template class AssetHandle<Asset::Model>;
 
     AssetManager::AssetManager()
     : text_assets {}
@@ -47,152 +51,56 @@ namespace JAGE
 
     // TEMPLATE SPECIALISATIONS
     // NOTE: Template specialisations are put here early in this file because other code down below depends on it.
-    // NOTE: Template specialisations are used here for Load() and Get() AssetManager functions for each asset type
-    // because AssetManager stores each asset type in its own AssetID -> Asset map. The distinction is to store the
-    // loaded asset into its distincted type. The generic function would look like this:
-    //
-    // template<typename T>
-    // void AssetManager::Load(std::string_view filename) 
-    // {
-    //     fs::path path { AssetBase::dir_path() / T::dir_path() / fs::path{ filename } };
-    //     AssetID id { path_to_ID(path) };
 
-    //     if (T_assets.find(id) != T_assets.end())
-    //     { 
-    //         JAGE_LOG_WARN("JAGE asset warning: asset with file name \"{}\" already loaded.", filename);
-    //         return;
-    //     }
-
-    //     std::unique_ptr<T> asset { std::make_unique<T>(Key{}, filename) };
-    //     T_assets.emplace(id, std::move(asset));
-    // }
-    //
-    // template<typename T>
-    // AssetHandle<T> AssetManager::Get(std::string_view filename)
-    // {
-    //     fs::path path { AssetBase::dir_path() / T::dir_path() / fs::path{ filename } };
-    //     AssetID id { path_to_ID(path) };
-
-    //     std::unordered_map<AssetID, std::unique_ptr<T>>::iterator assets_it { T_assets.find(id) };
-
-    //     if (assets_it == T_assets.end())
-    //     { 
-    //         fs::path truncated_path { T::dir_path() / fs::path{ filename } };
-    //         JAGE_LOG_ERROR("JAGE asset error: no asset with file name \"{}\".", truncated_path.string());
-    //         JAGE_MSG_ERROR("Returning null asset.");
-    //         return AssetHandle<T>{ id, nullptr };
-    //     }
-
-    //     T* asset { assets_it->second.get() };
-    //     return AssetHandle<T>{ id, asset };
-    // }
-
-    template<> void AssetManager::Load<Asset::Text>(std::string_view filename) 
+    template<typename T>
+    void AssetManager::load(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
     {
-        fs::path path { AssetBase::dir_path() / Asset::Text::dir_path() / fs::path{ filename } };
+        fs::path path { AssetBase::dir_path() / T::dir_path() / fs::path { filename } };
         AssetID id { path_to_ID(path) };
 
-        if (text_assets.find(id) != text_assets.end())
-        { 
+        if (asset_map.find(id) != asset_map.end())
+        {
             JAGE_LOG_WARN("JAGE asset warning: asset with file name \"{}\" already loaded.", filename);
             return;
         }
 
-        std::unique_ptr<Asset::Text> asset { std::make_unique<Asset::Text>(Key{}, filename) };
-        text_assets.emplace(id, std::move(asset));
+        std::unique_ptr<T> asset { std::make_unique<T>(Key{}, filename) };
+        asset_map.emplace(id, std::move(asset));
     }
 
-    template<> void AssetManager::Load<Asset::Image>(std::string_view filename) 
+    template<typename T>
+    AssetHandle<T> AssetManager::get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
     {
-        fs::path path { AssetBase::dir_path() / Asset::Image::dir_path() / fs::path{ filename } };
+        fs::path path { AssetBase::dir_path() / T::dir_path() / fs::path { filename } };
         AssetID id { path_to_ID(path) };
 
-        if (image_assets.find(id) != image_assets.end())
+        typename std::unordered_map<AssetID, std::unique_ptr<T>>::iterator assets_it { asset_map.find(id) };
+
+        if (assets_it == asset_map.end())
         { 
-            JAGE_LOG_WARN("JAGE asset warning: asset with file name \"{}\" already loaded.", filename);
-            return;
-        }
-
-        std::unique_ptr<Asset::Image> asset { std::make_unique<Asset::Image>(Key{}, filename) };
-        image_assets.emplace(id, std::move(asset));
-    }
-
-    template<> void AssetManager::Load<Asset::Model>(std::string_view filename) 
-    {
-        fs::path path { AssetBase::dir_path() / Asset::Model::dir_path() / fs::path{ filename } };
-        AssetID id { path_to_ID(path) };
-
-        if (model_assets.find(id) != model_assets.end())
-        { 
-            JAGE_LOG_WARN("JAGE asset warning: asset with file name \"{}\" already loaded.", filename);
-            return;
-        }
-
-        std::unique_ptr<Asset::Model> asset { std::make_unique<Asset::Model>(Key{}, filename) };
-        model_assets.emplace(id, std::move(asset));
-    }
-
-    template<> AssetHandle<Asset::Text> AssetManager::Get<Asset::Text>(std::string_view filename)
-    {
-        fs::path path { AssetBase::dir_path() / Asset::Text::dir_path() / fs::path{ filename } };
-        AssetID id { path_to_ID(path) };
-
-        std::unordered_map<AssetID, std::unique_ptr<Asset::Text>>::iterator assets_it { text_assets.find(id) };
-
-        if (assets_it == text_assets.end())
-        { 
-            fs::path truncated_path { Asset::Text::dir_path() / fs::path{ filename } };
+            fs::path truncated_path { T::dir_path() / fs::path{ filename } };
             JAGE_LOG_ERROR("JAGE asset error: no asset with file name \"{}\".", truncated_path.string());
             JAGE_MSG_ERROR("Returning null asset.");
-            return AssetHandle<Asset::Text>{ id, nullptr };
+            return AssetHandle<T>{ id, nullptr };
         }
 
-        Asset::Text* asset { assets_it->second.get() };
-        return AssetHandle<Asset::Text>{ id, asset };
+        T* asset { assets_it->second.get() };
+        return AssetHandle<T>{ id, asset };
     }
 
-    template<> AssetHandle<Asset::Image> AssetManager::Get<Asset::Image>(std::string_view filename)
-    {
-        fs::path path { AssetBase::dir_path() / Asset::Image::dir_path() / fs::path{ filename } };
-        AssetID id { path_to_ID(path) };
-
-        std::unordered_map<AssetID, std::unique_ptr<Asset::Image>>::iterator assets_it { image_assets.find(id) };
-
-        if (assets_it == image_assets.end())
-        { 
-            fs::path truncated_path { Asset::Image::dir_path() / fs::path{ filename } };
-            JAGE_LOG_ERROR("JAGE asset error: no asset with file name \"{}\".", truncated_path.string());
-            JAGE_MSG_ERROR("Returning null asset.");
-            return AssetHandle<Asset::Image>{ id, nullptr };
-        }
-
-        Asset::Image* asset { assets_it->second.get() };
-        return AssetHandle<Asset::Image>{ id, asset };
-    }
-
-    template<> AssetHandle<Asset::Model> AssetManager::Get<Asset::Model>(std::string_view filename)
-    {
-        fs::path path { AssetBase::dir_path() / Asset::Model::dir_path() / fs::path{ filename } };
-        AssetID id { path_to_ID(path) };
-
-        std::unordered_map<AssetID, std::unique_ptr<Asset::Model>>::iterator assets_it { model_assets.find(id) };
-
-        if (assets_it == model_assets.end())
-        { 
-            fs::path truncated_path { Asset::Model::dir_path() / fs::path{ filename } };
-            JAGE_LOG_ERROR("JAGE asset error: no asset with file name \"{}\".", truncated_path.string());
-            JAGE_MSG_ERROR("Returning null asset.");
-            return AssetHandle<Asset::Model>{ id, nullptr };
-        }
-
-        Asset::Model* asset { assets_it->second.get() };
-        return AssetHandle<Asset::Model>{ id, asset };
-    }
+    template<> void                         AssetManager::Load<Asset::Text>(std::string_view filename)      { load<Asset::Text>(text_assets, filename); }
+    template<> void                         AssetManager::Load<Asset::Image>(std::string_view filename)     { load<Asset::Image>(image_assets, filename); }
+    template<> void                         AssetManager::Load<Asset::Model>(std::string_view filename)     { load<Asset::Model>(model_assets, filename); }
+    template<> AssetHandle<Asset::Text>     AssetManager::Get<Asset::Text>(std::string_view filename)       { return get<Asset::Text>(text_assets, filename); }
+    template<> AssetHandle<Asset::Image>    AssetManager::Get<Asset::Image>(std::string_view filename)      { return get<Asset::Image>(image_assets, filename); }
+    template<> AssetHandle<Asset::Model>    AssetManager::Get<Asset::Model>(std::string_view filename)      { return get<Asset::Model>(model_assets, filename); }
 
     // END TEMPLATE SPECIALISATIONS
 
     void AssetManager::Initialise()
     {
+        JAGE_MSG_INFO("Loading assets...");
+
         try { fs::directory_iterator{ AssetBase::dir_path() }; }
         catch (const fs::filesystem_error& e)
         {
@@ -243,10 +151,6 @@ namespace JAGE
 
     AssetID AssetManager::path_to_ID(fs::path path)
     { return XXH3_64bits(path.string().c_str(), path.string().size()); }
-
-    template class AssetHandle<Asset::Text>;
-    template class AssetHandle<Asset::Image>;
-    template class AssetHandle<Asset::Model>;
 
     static Data::Material::TextureType aiTextureType_ToTextureType(aiTextureType ai_texturetype)
     {
@@ -320,7 +224,7 @@ namespace JAGE
             // number of channels
             m_data.pixels.resize(width * height * 4);
 
-            for (unsigned i {}; i < m_data.pixels.size(); i++)
+            for (size_t i {}; i < m_data.pixels.size(); i++)
             m_data.pixels[i] = loaded_data[i];
 
             stbi_image_free(loaded_data);
@@ -340,12 +244,13 @@ namespace JAGE
             std::vector<Data::Image>* embedded_textures;
 
             void print_metadata(const aiScene* ai_scene);
-            std::unique_ptr<Model::Node> process_node(const aiNode* ai_node, const aiScene* ai_scene, Model::Node* parent);
-            Data::Mesh process_mesh(const aiMesh* ai_mesh, const aiScene* ai_scene);
-            Data::Image process_embedded_texture(const aiTexture* ai_texture, const aiScene* ai_scene);
-            Data::Material process_material(const aiMaterial* ai_material, const aiScene* ai_scene);
-            const Data::Image* get_material_texture(const aiMaterial* ai_material, aiTextureType ai_texturetype, const aiScene* ai_scene, 
-                std::unordered_map<std::string, Data::Material::TextureType>& unloaded_textures);
+            std::unique_ptr<Model::Node>    process_node(const aiNode* ai_node, const aiScene* ai_scene, Model::Node* parent);
+            Data::Mesh                      process_mesh(const aiMesh* ai_mesh, const aiScene* ai_scene);
+            Data::Image                     process_embedded_texture(const aiTexture* ai_texture, const aiScene* ai_scene);
+            Data::Material                  process_material(const aiMaterial* ai_material, const aiScene* ai_scene);
+            const Data::Image*              get_material_texture(const aiMaterial* ai_material, aiTextureType ai_texturetype,
+                                            const aiScene* ai_scene,
+                                            std::unordered_map<std::string, Data::Material::TextureType>& unloaded_textures);
         };
 
         Model::Model(AssetManager::Key, std::string_view filename)
@@ -393,17 +298,17 @@ namespace JAGE
             JAGE_MSG_TRACE("Model nodes processed.");
 
             if (ai_scene->mNumMeshes) JAGE_MSG_TRACE("Processing meshes.");
-            for (unsigned i {}; i < ai_scene->mNumMeshes; i++)
+            for (size_t i {}; i < ai_scene->mNumMeshes; i++)
             meshes.push_back(pimpl->process_mesh(ai_scene->mMeshes[i], ai_scene));
             if (ai_scene->mNumMeshes) JAGE_MSG_TRACE("Meshes processed.");
 
             if (ai_scene->mNumTextures) JAGE_MSG_TRACE("Processing embedded material textures.");
-            for (unsigned i {}; i < ai_scene->mNumTextures; i++)
+            for (size_t i {}; i < ai_scene->mNumTextures; i++)
             embedded_textures.push_back(pimpl->process_embedded_texture(ai_scene->mTextures[i], ai_scene));
             if (ai_scene->mNumTextures) JAGE_MSG_TRACE("Embedded material textures processed.");
 
             if (ai_scene->mNumMaterials) JAGE_MSG_TRACE("Processing materials.");
-            for (unsigned i {}; i < ai_scene->mNumMaterials; i++)
+            for (size_t i {}; i < ai_scene->mNumMaterials; i++)
             materials.push_back(pimpl->process_material(ai_scene->mMaterials[i], ai_scene));
             if (ai_scene->mNumMaterials) JAGE_MSG_TRACE("Materials processed.");
 
@@ -454,7 +359,7 @@ namespace JAGE
             JAGE_MSG_TRACE("Model information:");
 
             std::string vertices_count {};
-            for (unsigned i {}; i < ai_scene->mNumMeshes; i++)
+            for (size_t i {}; i < ai_scene->mNumMeshes; i++)
             vertices_count += " " + std::to_string(ai_scene->mMeshes[i]->mNumVertices) + ",";
             if (!vertices_count.empty()) vertices_count.back() = '.';
 
@@ -468,7 +373,7 @@ namespace JAGE
             JAGE_LOG_TRACE("    Model contains {} embedded texture(s).", ai_scene->mNumTextures);
 
             std::string matprop_count {};
-            for (unsigned i {}; i < ai_scene->mNumMaterials; i++)
+            for (size_t i {}; i < ai_scene->mNumMaterials; i++)
             matprop_count += " " + std::to_string(ai_scene->mMaterials[i]->mNumProperties) + ",";
             if (!matprop_count.empty()) matprop_count.back() = '.';
 
@@ -479,15 +384,15 @@ namespace JAGE
                 matprop_count
             );
 
-            #define VERBOSE
+            // #define VERBOSE
 
             // define the VERBOSE macro to print out each material property in each material
             #ifdef VERBOSE
             JAGE_MSG_TRACE("Material information:");
-            for (unsigned i {}; i < ai_scene->mNumMaterials; i++)
+            for (size_t i {}; i < ai_scene->mNumMaterials; i++)
             {
                 JAGE_LOG_TRACE("MATERIAL {}:", i);
-                for (unsigned j {}; j < ai_scene->mMaterials[i]->mNumProperties; j++)
+                for (size_t j {}; j < ai_scene->mMaterials[i]->mNumProperties; j++)
                 {
                     const aiMaterialProperty& matprop { *ai_scene->mMaterials[i]->mProperties[j] };
                     std::string array_str {};
@@ -498,21 +403,21 @@ namespace JAGE
                         break;
 
                         case aiPropertyTypeInfo::aiPTI_Integer:
-                            for (unsigned k {}; k < matprop.mDataLength; k++)
+                            for (size_t k {}; k < matprop.mDataLength; k++)
                             array_str += " " + std::to_string(reinterpret_cast<i32*>(matprop.mData)[k]) + ",";
                             if (!array_str.empty()) array_str.back() = '.';
                             JAGE_LOG_TRACE("    {}:{}", matprop.mKey.C_Str(), array_str);
                         break;
 
                         case aiPropertyTypeInfo::aiPTI_Float: 
-                            for (unsigned k {}; k < matprop.mDataLength; k++)
+                            for (size_t k {}; k < matprop.mDataLength; k++)
                             array_str += " " + std::to_string(reinterpret_cast<float*>(matprop.mData)[k]) + ",";
                             if (!array_str.empty()) array_str.back() = '.';
                             JAGE_LOG_TRACE("    {}:{}", matprop.mKey.C_Str(), array_str);
                         break;
 
                         case aiPropertyTypeInfo::aiPTI_Double:
-                            for (unsigned k {}; k < matprop.mDataLength; k++)
+                            for (size_t k {}; k < matprop.mDataLength; k++)
                             array_str += " " + std::to_string(reinterpret_cast<double*>(matprop.mData)[k]) + ",";
                             if (!array_str.empty()) array_str.back() = '.';
                             JAGE_LOG_TRACE("    {}:{}", matprop.mKey.C_Str(), array_str);
@@ -529,7 +434,7 @@ namespace JAGE
 
             aiMetadata metadata { *ai_scene->mMetaData };
 
-            for (unsigned i {}; i < metadata.mNumProperties; i++)
+            for (size_t i {}; i < metadata.mNumProperties; i++)
             {
                 switch (metadata.mValues[i].mType)
                 {
@@ -566,13 +471,13 @@ namespace JAGE
 
             model_node->name = ai_node->mName.C_Str();
 
-            for (unsigned i {}; i < 4; i++) for (unsigned j {}; j < 4; j++)
+            for (size_t i {}; i < 4; i++) for (unsigned j {}; j < 4; j++)
             model_node->transformation_matrix[i][j] = ai_node->mTransformation[j][i];
 
-            for (unsigned i {}; i < ai_node->mNumMeshes; i++)
+            for (size_t i {}; i < ai_node->mNumMeshes; i++)
             model_node->meshes_index.push_back(ai_node->mMeshes[i]);
 
-            for (unsigned i {}; i < ai_node->mNumChildren; i++)
+            for (size_t i {}; i < ai_node->mNumChildren; i++)
             model_node->children.push_back(process_node(ai_node->mChildren[i], ai_scene, model_node.get()));
 
             model_node->parent = parent;
@@ -602,17 +507,17 @@ namespace JAGE
             if (data.ptype != Data::Mesh::PrimitiveType::UNKNOWN)
             {
                 data.indices.reserve(ai_mesh->mNumVertices);
-                for (unsigned i {}; i < ai_mesh->mNumFaces; i++)
+                for (size_t i {}; i < ai_mesh->mNumFaces; i++)
                 {
                     aiFace face { ai_mesh->mFaces[i] };
 
-                    for (unsigned j {}; j < face.mNumIndices; j++)
+                    for (size_t j {}; j < face.mNumIndices; j++)
                     data.indices.push_back(face.mIndices[j]);
                 }
             }
 
             data.vertices.reserve(ai_mesh->mNumVertices);
-            for (unsigned i {}; i < ai_mesh->mNumVertices; i++)
+            for (size_t i {}; i < ai_mesh->mNumVertices; i++)
             {
                 Data::Mesh::Vertex vertex;
 
@@ -633,7 +538,7 @@ namespace JAGE
                     vertex.normal = glm::vec3{ aiv_normal.x, aiv_normal.y, aiv_normal.z };
                 }
 
-                for (unsigned j {}; j < vertex.uvcoords.max_size(); j++)
+                for (size_t j {}; j < vertex.uvcoords.max_size(); j++)
                 {
                     if (ai_mesh->HasTextureCoords(j))
                     {
@@ -642,7 +547,7 @@ namespace JAGE
                     }
                 }
 
-                for (unsigned j {}; j < vertex.colors.max_size(); j++)
+                for (size_t j {}; j < vertex.colors.max_size(); j++)
                 {
                     if (ai_mesh->HasVertexColors(j))
                     {
@@ -686,7 +591,7 @@ namespace JAGE
 
                     data.pixels.resize(width * height * 4);
 
-                    for (unsigned i {}; i < data.pixels.size(); i++) data.pixels[i] = loaded_data[i];
+                    for (size_t i {}; i < data.pixels.size(); i++) data.pixels[i] = loaded_data[i];
 
                     stbi_image_free(loaded_data);
                 }
@@ -702,7 +607,7 @@ namespace JAGE
 
                 aiTexel* ai_texels { ai_texture->pcData };
 
-                for (unsigned i {}; i < ai_texture->mWidth * ai_texture->mHeight; i++)
+                for (size_t i {}; i < ai_texture->mWidth * ai_texture->mHeight; i++)
                 {
                     data.pixels[i * 4 + 0] = ai_texels[i].r;
                     data.pixels[i * 4 + 1] = ai_texels[i].g;
@@ -728,7 +633,6 @@ namespace JAGE
                 data.albedo_color.b = diffuse_color.b;
                 data.albedo_color.a = diffuse_color.a;
             }
-
             data.albedo_map = get_material_texture(ai_material, aiTextureType::aiTextureType_DIFFUSE, ai_scene, data.unloaded_textures);
 
             data.normal_map = get_material_texture(ai_material, aiTextureType::aiTextureType_NORMALS, ai_scene, data.unloaded_textures);

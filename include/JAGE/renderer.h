@@ -21,7 +21,7 @@ namespace JAGE
      * be avoided and only get assets from `AssetManager`. Proper compile-time restrictions has been programmed in
      * place to avoid the user from accidentally instantiating `Asset` and classes that derive from it directly.
      */
-    // class JAGE_API Asset
+    // class JAGE_API ResourceBase
     // {
     // public:
     //     static fs::path dir_path();

@@ -544,43 +544,74 @@ namespace JAGE
  */
 namespace JAGE
 {
-    namespace URI
+    namespace Data
     {
-        std::string percent_encode(const std::string &input, const std::string &safe_chars = "");
-        std::string percent_decode(const std::string &input);
-
-        struct Data
+        struct URI
         {
-            std::string scheme;
-            std::string userinfo;
-            std::string host;
-            std::optional<u16> port;
-            std::string path;
-            std::string query;
-            std::string fragment;
+            enum class Scheme : u8 { UNDEFINED = 0, FILE, GPU };
 
-            std::unordered_map<std::string, std::string> query_params;
+            Scheme scheme {};
+            std::string userinfo {};
+            std::string host {};
+            std::optional<u16> port {};
+            std::string path {};
+            std::string query {};
+            std::string fragment {};
+
+            std::unordered_map<std::string, std::string> query_params {};
 
             bool has_authority() const { return !host.empty(); }
-            bool is_absolute() const { return !scheme.empty(); }
-            bool is_relative() const { return scheme.empty(); }
+            bool is_valid() const { return scheme != Scheme::UNDEFINED; }
 
             std::string to_string() const;
         };
+    }
+
+    namespace URI
+    {
+        class ParseError final : public std::runtime_error
+        {
+        public:
+            explicit ParseError(const std::string& msg);
+        };
+
+        std::string percent_encode(const std::string &input, std::string_view safe_chars = "");
+        std::string percent_decode(const std::string &input);
 
         class Parser
         {
         public:
-            static Data parse(const std::string &raw);
+            static Data::URI parse(const std::string &raw);
         private:
-            static std::string extract_scheme(const std::string &raw, size_t &pos);
-            static void extract_authority(const std::string &raw, size_t &pos, Data &out);
-            static std::string extract_path(const std::string &raw, size_t &pos);
-            static std::string extract_query(const std::string &raw, size_t &pos);
-            static std::string extract_fragment(const std::string &raw, size_t &pos);
-            static std::unordered_map<std::string, std::string> parse_query_params(const std::string &query);
             static bool is_valid_scheme_char(char c, bool first);
             static bool is_valid_host_char(char c);
+            static Data::URI::Scheme    extract_scheme      (const std::string &raw, size_t &pos);
+            static void                 extract_authority   (const std::string &raw, size_t &pos, Data::URI &out);
+            static std::string          extract_path        (const std::string &raw, size_t &pos);
+            static std::string          extract_query       (const std::string &raw, size_t &pos);
+            static std::string          extract_fragment    (const std::string &raw, size_t &pos);
+            static std::unordered_map<std::string, std::string> parse_query_params(const std::string &query);
+        };
+
+        class Builder
+        {
+        public:
+            Builder(Data::URI::Scheme scheme) { data.scheme = scheme; }
+
+            Builder& userinfo   (std::string_view u)    { data.userinfo     = u; return *this; }
+            Builder& host       (std::string_view h)    { data.host         = h; return *this; }
+            Builder& port       (u16 p)                 { data.port         = p; return *this; }
+            Builder& path       (std::string_view p)    { data.path         = p; return *this; }
+            Builder& query      (std::string_view q)    { data.query        = q; return *this; }
+            Builder& fragment   (std::string_view f)    { data.fragment     = f; return *this; }
+
+            Builder& add_query_param(const std::string& key, const std::string& value);
+
+            Data::URI build() const { return data; }
+            std::string to_string() const { return data.to_string(); }
+
+        private:
+            Data::URI data;
         };
     }
 }
@@ -677,13 +708,13 @@ namespace JAGE
  * It also includes expanding the static function `static_type()` which returns the event type for the event class it
  * is in.
  */
-#define EVENT_CLASS_TYPE(type) \
-    static EventType static_type() { return EventType::type; } \
+#define EVENT_CLASS_TYPE(TYPE) \
+    static EventType static_type() { return EventType::TYPE; } \
     virtual EventType event_type() const override { return static_type(); } \
-    virtual std::string_view name() const override { return #type; }
+    virtual std::string_view name() const override { return #TYPE; }
 
-#define EVENT_CLASS_CATEGORY(category) \
-    virtual int event_category_flags() const override { return static_cast<int>(category); }
+#define EVENT_CLASS_CATEGORY(CATEGORY) \
+    virtual int event_category_flags() const override { return static_cast<int>(CATEGORY); }
 
 /**
  * 

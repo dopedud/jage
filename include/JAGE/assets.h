@@ -9,13 +9,13 @@ namespace JAGE
     using AssetID = u64;
 
     /**
-     * @class Asset
+     * @class AssetBase
      * 
-     * @brief The `Asset` class that acts as a base class for all the different types of assets to derive from.
+     * @brief The `AssetBase` class that acts as a base class for all the different types of assets to derive from.
      * 
      * @note Assets could technically be instantiated directly from classes derived from `Asset`, but this should
      * be avoided and only get assets from `AssetManager`. Proper compile-time restrictions has been programmed in
-     * place to avoid the user from accidentally instantiating `Asset` and classes that derive from it directly.
+     * place to avoid the user from accidentally instantiating `AssetBase` and classes that derive from it directly.
      */
     class JAGE_API AssetBase
     {
@@ -28,6 +28,7 @@ namespace JAGE
         fs::path path() const;
         bool is_valid() const;
     protected:
+        Data::URI uri;
         fs::path m_path;
         bool m_is_valid;
     };
@@ -45,7 +46,7 @@ namespace JAGE
         T* m_asset;
     };
 
-    // forward declare TextAsset, ImageAsset, and ModelAsset class to be used by AssetManager` class
+    // forward declare Text, Image, and Model assets class to be used by AssetManager class
     namespace Asset
     {
         class JAGE_API Text;
@@ -92,6 +93,9 @@ namespace JAGE
         template<typename T> AssetHandle<T>     Get(std::string_view filename);
     private:
         AssetManager();
+
+        template<typename T> void               load(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename);
+        template<typename T> AssetHandle<T>     get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename);
 
         inline static std::unique_ptr<AssetManager> m_instance {};
         std::unordered_map<AssetID, std::unique_ptr<Asset::Text>> text_assets;
