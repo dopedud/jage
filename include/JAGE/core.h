@@ -581,15 +581,15 @@ namespace JAGE
         class Parser
         {
         public:
-            static Data::URI parse(const std::string &raw);
+            static Data::URI parse(const std::string& raw);
         private:
             static bool is_valid_scheme_char(char c, bool first);
             static bool is_valid_host_char(char c);
-            static Data::URI::Scheme    extract_scheme      (const std::string &raw, size_t &pos);
-            static void                 extract_authority   (const std::string &raw, size_t &pos, Data::URI &out);
-            static std::string          extract_path        (const std::string &raw, size_t &pos);
-            static std::string          extract_query       (const std::string &raw, size_t &pos);
-            static std::string          extract_fragment    (const std::string &raw, size_t &pos);
+            static Data::URI::Scheme    extract_scheme      (const std::string& raw, size_t &pos);
+            static void                 extract_authority   (const std::string& raw, size_t &pos, Data::URI &out);
+            static std::string          extract_path        (const std::string& raw, size_t &pos);
+            static std::string          extract_query       (const std::string& raw, size_t &pos);
+            static std::string          extract_fragment    (const std::string& raw, size_t &pos);
             static std::unordered_map<std::string, std::string> parse_query_params(const std::string &query);
         };
 

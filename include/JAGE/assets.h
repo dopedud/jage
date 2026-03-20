@@ -25,10 +25,11 @@ namespace JAGE
         AssetBase(fs::path path);
         virtual ~AssetBase() = default;
 
+        Data::URI uri() const;
         fs::path path() const;
         bool is_valid() const;
     protected:
-        Data::URI uri;
+        Data::URI m_uri;
         fs::path m_path;
         bool m_is_valid;
     };
@@ -87,7 +88,7 @@ namespace JAGE
 
         void Initialise();
 
-        AssetID path_to_ID(fs::path path);
+        AssetID str_to_ID(std::string_view str);
 
         template<typename T> void               Load(std::string_view filename);
         template<typename T> AssetHandle<T>     Get(std::string_view filename);

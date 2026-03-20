@@ -23,7 +23,9 @@ namespace JAGE
     fs::path AssetBase::dir_path() { return fs::current_path() / "assets"; }
 
     AssetBase::AssetBase(fs::path path)
-    : m_path { dir_path() / path }, m_is_valid {} {}
+    : m_uri { }
+    , m_path { dir_path() / path }
+    , m_is_valid {} {}
 
     fs::path AssetBase::path() const { return m_path; }
     bool AssetBase::is_valid() const { return m_is_valid; }
@@ -55,8 +57,9 @@ namespace JAGE
     template<typename T>
     void AssetManager::load(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
     {
+        // TODO: move the below line to each asset's constructor
         fs::path path { AssetBase::dir_path() / T::dir_path() / fs::path { filename } };
-        AssetID id { path_to_ID(path) };
+        AssetID id { str_to_ID(path.string()) };
 
         if (asset_map.find(id) != asset_map.end())
         {
@@ -72,7 +75,7 @@ namespace JAGE
     AssetHandle<T> AssetManager::get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
     {
         fs::path path { AssetBase::dir_path() / T::dir_path() / fs::path { filename } };
-        AssetID id { path_to_ID(path) };
+        AssetID id { str_to_ID(path.string()) };
 
         typename std::unordered_map<AssetID, std::unique_ptr<T>>::iterator assets_it { asset_map.find(id) };
 
@@ -149,8 +152,8 @@ namespace JAGE
 
     void AssetManager::release() { m_instance.release(); }
 
-    AssetID AssetManager::path_to_ID(fs::path path)
-    { return XXH3_64bits(path.string().c_str(), path.string().size()); }
+    AssetID AssetManager::str_to_ID(std::string_view str)
+    { return XXH3_64bits(str.data(), str.size()); }
 
     static Data::Material::TextureType aiTextureType_ToTextureType(aiTextureType ai_texturetype)
     {
