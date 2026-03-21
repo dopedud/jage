@@ -23,10 +23,11 @@ namespace JAGE
     fs::path AssetBase::dir_path() { return fs::current_path() / "assets"; }
 
     AssetBase::AssetBase(fs::path path)
-    : m_uri { }
+    : m_uri {}
     , m_path { dir_path() / path }
     , m_is_valid {} {}
 
+    Data::URI AssetBase::uri() const { return m_uri; }
     fs::path AssetBase::path() const { return m_path; }
     bool AssetBase::is_valid() const { return m_is_valid; }
 

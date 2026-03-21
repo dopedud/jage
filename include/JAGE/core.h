@@ -22,6 +22,7 @@
  * - LAYER DEFINITIONS
  * - GRAPHICS CONTEXT DEFINITIONS
  * - INPUT DEFINITIONS
+ * - LOGICAL PATH DEFINITIONS
  * - URI DEFINITIONS
  * - CORE EVENT DEFINITIONS
  * - MACRO FOR EVENTS DEFINITIONS
@@ -122,6 +123,7 @@ namespace JAGE
 {
     /**
      * @class AppLogger
+     * 
      * @brief The `AppLogger` class used to log game operations.
      *
      * Both JAGE and the game use `spdlog` as its logging backend. `spdlog` is templated, which means either the JAGE's
@@ -532,6 +534,56 @@ namespace JAGE
         #define JAGE_CURSOR_MODE_NORMAL     JAGE::Input::CursorMode::NORMAL
         #define JAGE_CURSOR_MODE_DISABLED   JAGE::Input::CursorMode::DISABLED
         #define JAGE_CURSOR_MODE_HIDDEN     JAGE::Input::CursorMode::HIDDEN
+    };
+}
+
+/**
+ * 
+ * 
+ * LOGICAL PATH DEFINITIONS
+ * 
+ * 
+ */
+namespace JAGE
+{
+    /**
+     * @class LogicalPath
+     * 
+     * @brief The `LogicalPath` class that represents any kind of path.
+     * 
+     * This class does not necessarily represent a file system path. Useful for DSLs, node graphs, config key
+     * hierarchies, or any segment-based addressing scheme.
+     */
+    class LogicalPath
+    {
+    public:
+        explicit LogicalPath(char delimiter = '/');
+        explicit LogicalPath(std::string_view raw, char delimiter = '/');
+
+        bool empty() const;
+        size_t depth() const;
+
+        const std::vector<std::string>& parts() const;
+        LogicalPath parent() const;
+        std::string_view stem() const;
+
+        LogicalPath& push(std::string_view segment);
+        std::string pop();
+        LogicalPath& append(const LogicalPath& other);
+
+        std::string string() const;
+
+        bool operator==(const LogicalPath& other) const;
+        bool operator!=(const LogicalPath& other) const;
+        friend LogicalPath& operator/(LogicalPath& lhs, std::string_view rhs);
+        friend LogicalPath& operator/(LogicalPath& lhs, const LogicalPath& rhs);
+        friend std::ostream& operator<<(std::ostream& os, const LogicalPath& path);
+    private:
+        char m_delim;
+        std::vector<std::string> m_segments;
+
+        void parse(std::string_view raw);
+        void validate_segment(std::string_view segment) const;
     };
 }
 
