@@ -579,7 +579,7 @@ namespace JAGE
         friend LogicalPath& operator/(LogicalPath& lhs, const LogicalPath& rhs);
         friend std::ostream& operator<<(std::ostream& os, const LogicalPath& path);
     private:
-        char m_delim;
+        char m_delimiter;
         std::vector<std::string> m_segments;
 
         void parse(std::string_view raw);
