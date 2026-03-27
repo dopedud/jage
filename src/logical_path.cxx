@@ -1,5 +1,7 @@
 #include "JAGE/core.h"
 
+#include "log.h"
+
 namespace JAGE
 {
     LogicalPath::LogicalPath(char delimiter) : m_delimiter { delimiter } {}
@@ -10,7 +12,7 @@ namespace JAGE
     {
         std::string token {};
 
-    for (char c : raw)
+        for (char c : raw)
         {
             if (c == m_delimiter)
             {
@@ -24,13 +26,22 @@ namespace JAGE
         if (!token.empty()) m_segments.push_back(std::move(token));
     }
 
-    void LogicalPath::validate_segment(std::string_view segment) const
+    bool LogicalPath::validate_segment(std::string_view segment) const
     {
         if (segment.empty())
-        throw std::invalid_argument("Path segment must not be empty");
+        {
+            JAGE_MSG_ERROR("JAGE logical path error: path segment must bot be empty.");
+            return false;
+        }
 
         if (segment.find(m_delimiter) != std::string_view::npos)
-        throw std::invalid_argument("Path segment must not contain the delimiter");
+        {
+
+            JAGE_MSG_ERROR("JAGE logical path error: path segment must not contain the delimiter.");
+            return false;
+        }
+
+        return true;
     }
 
     bool LogicalPath::empty() const { return m_segments.empty(); }
@@ -55,6 +66,35 @@ namespace JAGE
         return last.substr(0, dot);
     }
 
+    LogicalPath& LogicalPath::push(std::string_view segment)
+    {
+        validate_segment(segment);
+        m_segments.emplace_back(segment);
+        return *this;
+    }
+
+    std::string LogicalPath::pop()
+    {
+        if (m_segments.empty()) return ""s;
+        std::string last = std::move(m_segments.back());
+        m_segments.pop_back();
+        return last;
+    }
+
+    LogicalPath& LogicalPath::append(const LogicalPath& other)
+    {
+        if (other.m_delimiter != m_delimiter)
+        {
+            JAGE_MSG_ERROR("JAGE logical path error: cannot append paths with different delimiters.");
+            JAGE_MSG_ERROR("Cancelling appending path operation.");
+            return *this;
+        }
+
+        for (const auto& s : other.m_segments) m_segments.push_back(s);
+
+        return *this;
+    }
+
     std::string LogicalPath::string() const
     {
         if (m_segments.empty()) return std::string{};
@@ -67,11 +107,11 @@ namespace JAGE
         return oss.str();
     }
 
-    bool LogicalPath::operator==(const LogicalPath& o) const
-    { return m_delimiter == o.m_delimiter && m_segments == o.m_segments; }
+    bool LogicalPath::operator==(const LogicalPath& other) const
+    { return m_delimiter == other.m_delimiter && m_segments == other.m_segments; }
 
-    bool LogicalPath::operator!=(const LogicalPath& o) const
-    { return !(*this == o); }
+    bool LogicalPath::operator!=(const LogicalPath& other) const
+    { return !(*this == other); }
 
     LogicalPath operator/(LogicalPath lhs, std::string_view rhs)
     { return lhs.push(rhs); }

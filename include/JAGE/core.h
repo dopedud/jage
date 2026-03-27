@@ -583,7 +583,7 @@ namespace JAGE
         std::vector<std::string> m_segments;
 
         void parse(std::string_view raw);
-        void validate_segment(std::string_view segment) const;
+        bool validate_segment(std::string_view segment) const;
     };
 }
 
@@ -639,7 +639,7 @@ namespace JAGE
             static bool is_valid_host_char(char c);
             static Data::URI::Scheme    extract_scheme      (const std::string& raw, size_t &pos);
             static void                 extract_authority   (const std::string& raw, size_t &pos, Data::URI &out);
-            static std::string          extract_path        (const std::string& raw, size_t &pos);
+            static LogicalPath          extract_path        (const std::string& raw, size_t &pos);
             static std::string          extract_query       (const std::string& raw, size_t &pos);
             static std::string          extract_fragment    (const std::string& raw, size_t &pos);
             static std::unordered_map<std::string, std::string> parse_query_params(const std::string &query);
@@ -653,7 +653,7 @@ namespace JAGE
             Builder& userinfo   (std::string_view u)    { data.userinfo     = u; return *this; }
             Builder& host       (std::string_view h)    { data.host         = h; return *this; }
             Builder& port       (u16 p)                 { data.port         = p; return *this; }
-            Builder& path       (LogicalPath p)    { data.path         = p; return *this; }
+            Builder& path       (LogicalPath p)         { data.path         = p; return *this; }
             Builder& query      (std::string_view q)    { data.query        = q; return *this; }
             Builder& fragment   (std::string_view f)    { data.fragment     = f; return *this; }
 

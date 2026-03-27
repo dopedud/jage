@@ -187,7 +187,6 @@ namespace JAGE
                 m_content = sstream.str();
                 m_is_valid = true;
             }
-
             catch (const std::ifstream::failure& e)
             {
                 JAGE_LOG_ERROR("JAGE I/O error ({} - {}): {}.", e.code().value(), e.code().message(), e.what());

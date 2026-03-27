@@ -1,5 +1,7 @@
 #include "JAGE/core.h"
 
+#include "log.h"
+
 namespace JAGE
 {
     static bool is_unreserved(char c)
@@ -102,37 +104,51 @@ namespace JAGE
         }
 
         ParseError::ParseError(const std::string& msg)
-        : std::runtime_error("JAGE URI parser error: " + msg)
+        : std::runtime_error("JAGE URI parsing error: " + msg)
         {}
 
         Data::URI Parser::parse(const std::string& raw)
         {
-            if (raw.empty()) throw ParseError("input is empty.");
-
             Data::URI out {};
-            size_t pos {};
 
-            // 1. scheme
-            out.scheme = extract_scheme(raw, pos);
-
-            // 2. authority (present when next two chars are "//")
-            if (pos + 1 < raw.size() && raw[pos] == '/' && raw[pos + 1] == '/')
+            if (raw.empty())
             {
-                pos += 2; // skip "//"
-                extract_authority(raw, pos, out);
+                JAGE_MSG_ERROR("JAGE URI parsing error: input is empty.");
+                JAGE_MSG_ERROR("Returning empty URI.");
+                return out;
             }
 
-            // 3. path
-            out.path = extract_path(raw, pos);
+            size_t pos {};
 
-            // 4. query
-            out.query = extract_query(raw, pos);
+            try
+            {
+                // 1. scheme
+                out.scheme = extract_scheme(raw, pos);
 
-            // 5. fragment
-            out.fragment = extract_fragment(raw, pos);
+                // 2. authority (present when next two chars are "//")
+                if (pos + 1 < raw.size() && raw[pos] == '/' && raw[pos + 1] == '/')
+                {
+                    pos += 2; // skip "//"
+                    extract_authority(raw, pos, out);
+                }
 
-            // 6. parsed query params (convenience)
-            out.query_params = parse_query_params(out.query);
+                // 3. path
+                out.path = extract_path(raw, pos);
+
+                // 4. query
+                out.query = extract_query(raw, pos);
+
+                // 5. fragment
+                out.fragment = extract_fragment(raw, pos);
+
+                // 6. parsed query params (convenience)
+                out.query_params = parse_query_params(out.query);
+            }
+            catch(const ParseError& e)
+            {
+                JAGE_LOG_ERROR("JAGE URI parsing error : {}.", e.what());
+                JAGE_MSG_ERROR("Returning empty contents.");
+            }
 
             return out;
         }
@@ -233,7 +249,7 @@ namespace JAGE
             }
         }
 
-        std::string Parser::extract_path(const std::string& raw, size_t& pos)
+        LogicalPath Parser::extract_path(const std::string& raw, size_t& pos)
         {
             size_t end { raw.find_first_of("?#", pos) };
             if (end == std::string::npos) end = raw.size();
