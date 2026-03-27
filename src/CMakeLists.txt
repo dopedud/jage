@@ -5,6 +5,7 @@ set(CORE_SRC
     jgpch.cxx
     init.cxx
     uri.cxx
+    logical_path.cxx
     log.cxx
     event.cxx
     input.cxx

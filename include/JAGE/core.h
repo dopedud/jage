@@ -561,7 +561,7 @@ namespace JAGE
         explicit LogicalPath(std::string_view raw, char delimiter = '/');
 
         bool empty() const;
-        size_t depth() const;
+        std::size_t depth() const;
 
         const std::vector<std::string>& parts() const;
         LogicalPath parent() const;
@@ -602,20 +602,20 @@ namespace JAGE
         {
             enum class Scheme : u8 { UNDEFINED = 0, FILE, GPU };
 
-            Scheme scheme {};
-            std::string userinfo {};
-            std::string host {};
-            std::optional<u16> port {};
-            LogicalPath path {};
-            std::string query {};
-            std::string fragment {};
+            Scheme              scheme      {};
+            std::string         userinfo    {};
+            std::string         host        {};
+            std::optional<u16>  port        {};
+            LogicalPath         path        {};
+            std::string         query       {};
+            std::string         fragment    {};
 
             std::unordered_map<std::string, std::string> query_params {};
 
             bool has_authority() const { return !host.empty(); }
             bool is_valid() const { return scheme != Scheme::UNDEFINED; }
 
-            std::string to_string() const;
+            std::string string() const;
         };
     }
 
@@ -637,11 +637,11 @@ namespace JAGE
         private:
             static bool is_valid_scheme_char(char c, bool first);
             static bool is_valid_host_char(char c);
-            static Data::URI::Scheme    extract_scheme      (const std::string& raw, size_t &pos);
-            static void                 extract_authority   (const std::string& raw, size_t &pos, Data::URI &out);
-            static LogicalPath          extract_path        (const std::string& raw, size_t &pos);
-            static std::string          extract_query       (const std::string& raw, size_t &pos);
-            static std::string          extract_fragment    (const std::string& raw, size_t &pos);
+            static Data::URI::Scheme    extract_scheme      (const std::string& raw, std::size_t &pos);
+            static void                 extract_authority   (const std::string& raw, std::size_t &pos, Data::URI &out);
+            static LogicalPath          extract_path        (const std::string& raw, std::size_t &pos);
+            static std::string          extract_query       (const std::string& raw, std::size_t &pos);
+            static std::string          extract_fragment    (const std::string& raw, std::size_t &pos);
             static std::unordered_map<std::string, std::string> parse_query_params(const std::string &query);
         };
 
@@ -660,7 +660,7 @@ namespace JAGE
             Builder& add_query_param(const std::string& key, const std::string& value);
 
             Data::URI build() const { return data; }
-            std::string to_string() const { return data.to_string(); }
+            std::string to_string() const { return data.string(); }
 
         private:
             Data::URI data;
@@ -709,7 +709,7 @@ namespace JAGE
         virtual std::string_view name() const = 0;
         virtual EventType event_type() const = 0;
         virtual int event_category_flags() const = 0;
-        virtual std::string_view to_string() const;
+        virtual std::string string() const;
 
         bool is_category(EventCategory category) const { return event_category_flags() & static_cast<int>(category); }
 
@@ -717,10 +717,9 @@ namespace JAGE
         void set_handled(bool handled) const { m_handled = handled; }
     protected:
         mutable bool m_handled {};
-        mutable std::string m_to_string {};
     };
 
-    inline std::ostream& operator<<(std::ostream& os, const Event& e) { return os << e.to_string(); }
+    inline std::ostream& operator<<(std::ostream& os, const Event& e) { return os << e.string(); }
 
     /**
      * @class EventDispatcher
@@ -797,7 +796,7 @@ namespace JAGE
         unsigned width() const { return m_width; }
         unsigned height() const { return m_height; }
 
-        std::string_view to_string() const override;
+        std::string string() const override;
 
         EVENT_CLASS_TYPE(WindowResize)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
@@ -812,7 +811,7 @@ namespace JAGE
 
         bool focused() const { return m_focused; }
 
-        std::string_view to_string() const override;
+        std::string string() const override;
 
         EVENT_CLASS_TYPE(WindowFocus)
         EVENT_CLASS_CATEGORY(EventCategory::Application)
@@ -843,7 +842,7 @@ namespace JAGE
         Input::Action   action()    const { return m_action; }
         int             mods()      const { return m_mods; }
 
-        std::string_view to_string() const override;
+        std::string string() const override;
 
         EVENT_CLASS_TYPE(Key)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
@@ -861,7 +860,7 @@ namespace JAGE
 
         unsigned codepoint() const { return m_codepoint; }
 
-        std::string_view to_string() const override;
+        std::string string() const override;
 
         EVENT_CLASS_TYPE(Char)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Keyboard)
@@ -892,7 +891,7 @@ namespace JAGE
         Input::Action       action()    const { return m_action; }
         int                 mods()      const { return m_mods; }
 
-        std::string_view to_string() const override;
+        std::string string() const override;
 
         EVENT_CLASS_TYPE(MouseButton)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
@@ -909,7 +908,7 @@ namespace JAGE
 
         int entered() const { return m_entered; }
 
-        std::string_view to_string() const override;
+        std::string string() const override;
 
         EVENT_CLASS_TYPE(MouseEnter)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
@@ -925,7 +924,7 @@ namespace JAGE
         float mouseX() const { return m_mouseX; }
         float mouseY() const { return m_mouseY; }
 
-        std::string_view to_string() const override;
+        std::string string() const override;
 
         EVENT_CLASS_TYPE(MouseMoved)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)
@@ -942,7 +941,7 @@ namespace JAGE
         float offsetX() const { return m_offsetX; }
         float offsetY() const { return m_offsetY; }
 
-        std::string_view to_string() const override;
+        std::string string() const override;
 
         EVENT_CLASS_TYPE(MouseScrolled)
         EVENT_CLASS_CATEGORY(EventCategory::Input | EventCategory::Mouse)

@@ -25,11 +25,11 @@ namespace JAGE
     AssetBase::AssetBase(fs::path path)
     : m_uri {}
     , m_path { dir_path() / path }
-    , m_is_valid {} {}
+    , m_valid {} {}
 
     Data::URI AssetBase::uri() const { return m_uri; }
     fs::path AssetBase::path() const { return m_path; }
-    bool AssetBase::is_valid() const { return m_is_valid; }
+    bool AssetBase::is_valid() const { return m_valid; }
 
     template<typename T>
     AssetHandle<T>::AssetHandle(AssetID id, T* asset)
@@ -185,14 +185,14 @@ namespace JAGE
                 sstream << file.rdbuf();
                 file.close();
                 m_content = sstream.str();
-                m_is_valid = true;
+                m_valid = true;
             }
             catch (const std::ifstream::failure& e)
             {
                 JAGE_LOG_ERROR("JAGE I/O error ({} - {}): {}.", e.code().value(), e.code().message(), e.what());
                 JAGE_MSG_ERROR("Returning empty contents.");
                 m_content = "";
-                m_is_valid = false;
+                m_valid = false;
             }
         }
 
@@ -215,7 +215,7 @@ namespace JAGE
                 JAGE_LOG_ERROR("JAGE I/O error: {}", stbi_failure_reason());
                 JAGE_MSG_ERROR("Returning pink black checkerbox image.");
                 m_data = *Data::Image::pink_black_checkerbox();
-                m_is_valid = false;
+                m_valid = false;
                 return;
             }
 
@@ -232,13 +232,13 @@ namespace JAGE
 
             stbi_image_free(loaded_data);
 
-            m_is_valid = true;
+            m_valid = true;
             JAGE_LOG_TRACE("ImageAsset \"{}\" loaded.", filename);
         }
 
         const Data::Image* Image::data() const
         { 
-            if (m_is_valid) return &m_data;
+            if (m_valid) return &m_data;
             else return Data::Image::pink_black_checkerbox();
         }
 
@@ -290,7 +290,7 @@ namespace JAGE
             {
                 JAGE_LOG_ERROR("JAGE I/O error: {}", importer.GetErrorString());
                 JAGE_MSG_ERROR("Returning empty contents.");
-                m_is_valid = false;
+                m_valid = false;
                 return;
             }
 
@@ -315,7 +315,7 @@ namespace JAGE
             materials.push_back(pimpl->process_material(ai_scene->mMaterials[i], ai_scene));
             if (ai_scene->mNumMaterials) JAGE_MSG_TRACE("Materials processed.");
 
-            m_is_valid = true;
+            m_valid = true;
             JAGE_LOG_TRACE("ModelAsset \"{}\" loaded.", filename);
         }
 

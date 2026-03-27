@@ -31,7 +31,7 @@ namespace JAGE
     protected:
         Data::URI m_uri;
         fs::path m_path;
-        bool m_is_valid;
+        bool m_valid;
     };
 
     template<typename T>

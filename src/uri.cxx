@@ -22,7 +22,7 @@ namespace JAGE
 
     namespace Data
     {
-        std::string URI::to_string() const
+        std::string URI::string() const
         {
             std::ostringstream ss;
 
@@ -82,7 +82,7 @@ namespace JAGE
             std::string out;
             out.reserve(input.size());
 
-            for (size_t i {}; i < input.size(); i++)
+            for (std::size_t i {}; i < input.size(); i++)
             {
                 if (input[i] == '%')
                 {
@@ -118,7 +118,7 @@ namespace JAGE
                 return out;
             }
 
-            size_t pos {};
+            std::size_t pos {};
 
             try
             {
@@ -166,10 +166,10 @@ namespace JAGE
                 || c == '-' || c == '.' || c == '[' || c == ']' || c == ':'; // IPv6 brackets
         }
 
-        Data::URI::Scheme Parser::extract_scheme(const std::string& raw, size_t& pos)
+        Data::URI::Scheme Parser::extract_scheme(const std::string& raw, std::size_t& pos)
         {
             // scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) ":"
-            size_t i {};
+            std::size_t i {};
             for (; i < raw.size() && raw[i] != ':' && raw[i] != '/' && raw[i] != '?' && raw[i] != '#'; i++)
             if (!is_valid_scheme_char(raw[i], i == 0)) return Data::URI::Scheme::UNDEFINED;
 
@@ -186,17 +186,17 @@ namespace JAGE
             else return Data::URI::Scheme::UNDEFINED;
         }
 
-        void Parser::extract_authority(const std::string& raw, size_t& pos, Data::URI& out)
+        void Parser::extract_authority(const std::string& raw, std::size_t& pos, Data::URI& out)
         {
             // authority = [ userinfo "@" ] host [ ":" port ]
-            size_t end { raw.find_first_of("/?#", pos) };
+            std::size_t end { raw.find_first_of("/?#", pos) };
             if (end == std::string::npos) end = raw.size();
             std::string authority { raw.substr(pos, end - pos) };
             pos = end;
 
             // userinfo
-            size_t at { authority.find('@') };
-            size_t host_start {};
+            std::size_t at { authority.find('@') };
+            std::size_t host_start {};
 
             if (at != std::string::npos)
             {
@@ -207,7 +207,7 @@ namespace JAGE
             // IPv6 literal host e.g. [::1]
             if (host_start < authority.size() && authority[host_start] == '[')
             {
-                size_t close { authority.find(']', host_start) };
+                std::size_t close { authority.find(']', host_start) };
 
                 if (close == std::string::npos)
                 throw ParseError("unterminated IPv6 address in authority in string \"" + raw + "\".");
@@ -218,9 +218,9 @@ namespace JAGE
             
             else
             {
-                size_t colon { authority.find(':', host_start) };
+                std::size_t colon { authority.find(':', host_start) };
                 // watch out: colon inside IPv6 literal is already handled above
-                size_t host_end { (colon != std::string::npos) ? colon : authority.size() };
+                std::size_t host_end { (colon != std::string::npos) ? colon : authority.size() };
                 out.host = authority.substr(host_start, host_end - host_start);
                 // normalise host to lowercase
                 std::transform(out.host.begin(), out.host.end(), out.host.begin(),
@@ -249,27 +249,27 @@ namespace JAGE
             }
         }
 
-        LogicalPath Parser::extract_path(const std::string& raw, size_t& pos)
+        LogicalPath Parser::extract_path(const std::string& raw, std::size_t& pos)
         {
-            size_t end { raw.find_first_of("?#", pos) };
+            std::size_t end { raw.find_first_of("?#", pos) };
             if (end == std::string::npos) end = raw.size();
-            std::string path { raw.substr(pos, end - pos) };
+            std::string path_str { raw.substr(pos, end - pos) };
             pos = end;
-            return path; // deliberately NOT percent-decoded – paths may have encoded slashes
+            return LogicalPath{ path_str }; // deliberately NOT percent-decoded – paths may have encoded slashes
         }
 
-        std::string Parser::extract_query(const std::string& raw, size_t& pos)
+        std::string Parser::extract_query(const std::string& raw, std::size_t& pos)
         {
             if (pos >= raw.size() || raw[pos] != '?') return "";
             ++pos; // skip '?'
-            size_t end { raw.find('#', pos) };
+            std::size_t end { raw.find('#', pos) };
             if (end == std::string::npos) end = raw.size();
             std::string q { raw.substr(pos, end - pos) };
             pos = end;
             return q;
         }
 
-        std::string Parser::extract_fragment(const std::string& raw, size_t& pos)
+        std::string Parser::extract_fragment(const std::string& raw, std::size_t& pos)
         {
             if (pos >= raw.size() || raw[pos] != '#') return "";
             ++pos; // skip '#'
@@ -287,7 +287,7 @@ namespace JAGE
             while (std::getline(ss, token, '&'))
             {
                 if (token.empty()) continue;
-                size_t eq { token.find('=') };
+                std::size_t eq { token.find('=') };
                 std::string key, val;
                 if (eq == std::string::npos) key = percent_decode(token);
                 else
