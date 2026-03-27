@@ -575,8 +575,8 @@ namespace JAGE
 
         bool operator==(const LogicalPath& other) const;
         bool operator!=(const LogicalPath& other) const;
-        friend LogicalPath& operator/(LogicalPath& lhs, std::string_view rhs);
-        friend LogicalPath& operator/(LogicalPath& lhs, const LogicalPath& rhs);
+        friend LogicalPath operator/(LogicalPath lhs, std::string_view rhs);
+        friend LogicalPath operator/(LogicalPath lhs, const LogicalPath& rhs);
         friend std::ostream& operator<<(std::ostream& os, const LogicalPath& path);
     private:
         char m_delimiter;
@@ -606,7 +606,7 @@ namespace JAGE
             std::string userinfo {};
             std::string host {};
             std::optional<u16> port {};
-            std::string path {};
+            LogicalPath path {};
             std::string query {};
             std::string fragment {};
 
@@ -653,7 +653,7 @@ namespace JAGE
             Builder& userinfo   (std::string_view u)    { data.userinfo     = u; return *this; }
             Builder& host       (std::string_view h)    { data.host         = h; return *this; }
             Builder& port       (u16 p)                 { data.port         = p; return *this; }
-            Builder& path       (std::string_view p)    { data.path         = p; return *this; }
+            Builder& path       (LogicalPath p)    { data.path         = p; return *this; }
             Builder& query      (std::string_view q)    { data.query        = q; return *this; }
             Builder& fragment   (std::string_view f)    { data.fragment     = f; return *this; }
 
