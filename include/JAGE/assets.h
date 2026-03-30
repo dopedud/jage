@@ -8,32 +8,6 @@ namespace JAGE
     namespace fs = std::filesystem;
     using AssetID = u64;
 
-    /**
-     * @class AssetBase
-     * 
-     * @brief The `AssetBase` class that acts as a base class for all the different types of assets to derive from.
-     * 
-     * @note Assets could technically be instantiated directly from classes derived from `Asset`, but this should
-     * be avoided and only get assets from `AssetManager`. Proper compile-time restrictions has been programmed in
-     * place to avoid the user from accidentally instantiating `AssetBase` and classes that derive from it directly.
-     */
-    class JAGE_API AssetBase
-    {
-    public:
-        static fs::path dir_path();
-
-        AssetBase(fs::path path);
-        virtual ~AssetBase() = default;
-
-        Data::URI uri() const;
-        fs::path path() const;
-        bool is_valid() const;
-    protected:
-        Data::URI m_uri;
-        fs::path m_path;
-        bool m_valid;
-    };
-
     template<typename T>
     class AssetHandle
     {
@@ -188,13 +162,38 @@ namespace JAGE
 
     namespace Asset
     {
+        /**
 
-        class JAGE_API Text final : public AssetBase
+        * @class AssetBase
+        * 
+        * @brief The `AssetBase` class that acts as a base class for all the different types of assets to derive from.
+        * 
+        * @note Assets could technically be instantiated directly from classes derived from `Asset`, but this should
+        * be avoided and only get assets from `AssetManager`. Proper compile-time restrictions has been programmed in
+        * place to avoid the user from accidentally instantiating `AssetBase` and classes that derive from it directly.
+        */
+        class JAGE_API Base
         {
         public:
-            static fs::path dir_path();
+            static LogicalPath dir_path();
 
-            explicit Text(AssetManager::Key, std::string_view filename);
+            Base(Data::URI uri);
+            virtual ~Base() = default;
+
+            Data::URI uri() const;
+            bool is_valid() const;
+        protected:
+            Data::URI m_uri;
+            bool m_valid;
+        };
+
+
+        class JAGE_API Text final : public Base
+        {
+        public:
+            static LogicalPath dir_path();
+
+            explicit Text(AssetManager::Key, Data::URI uri);
             ~Text() = default;
 
             std::string_view content() const;
@@ -202,24 +201,24 @@ namespace JAGE
             std::string m_content;
         };
 
-        class JAGE_API Image final : public AssetBase
+        class JAGE_API Image final : public Base
         {
         public:
-            static fs::path dir_path();
+            static LogicalPath dir_path();
 
-            explicit Image(AssetManager::Key, std::string_view filename);
+            explicit Image(AssetManager::Key, Data::URI uri);
 
             const Data::Image* data() const;
         private:
             Data::Image m_data;
         };
 
-        class JAGE_API Model final : public AssetBase
+        class JAGE_API Model final : public Base
         {
         public:
-            static fs::path dir_path();
+            static LogicalPath dir_path();
 
-            explicit Model(AssetManager::Key, std::string_view filename);
+            explicit Model(AssetManager::Key, Data::URI uri);
             ~Model();
 
             struct JAGE_API Node

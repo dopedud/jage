@@ -20,17 +20,6 @@ DISABLE_WARNING_POP
 
 namespace JAGE
 {
-    fs::path AssetBase::dir_path() { return fs::current_path() / "assets"; }
-
-    AssetBase::AssetBase(fs::path path)
-    : m_uri {}
-    , m_path { dir_path() / path }
-    , m_valid {} {}
-
-    Data::URI AssetBase::uri() const { return m_uri; }
-    fs::path AssetBase::path() const { return m_path; }
-    bool AssetBase::is_valid() const { return m_valid; }
-
     template<typename T>
     AssetHandle<T>::AssetHandle(AssetID id, T* asset)
     : m_id { id }, m_asset { asset } {}
@@ -58,32 +47,32 @@ namespace JAGE
     template<typename T>
     void AssetManager::load(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
     {
-        // TODO: move the below line to each asset's constructor
-        fs::path path { AssetBase::dir_path() / T::dir_path() / fs::path { filename } };
-        AssetID id { str_to_ID(path.string()) };
+        LogicalPath path { Asset::Base::dir_path() / T::dir_path() / filename };
+        Data::URI uri { URI::Builder{ URI::Scheme::FILE }.path(path).build() };
+        AssetID id { str_to_ID(uri.string()) };
 
         if (asset_map.find(id) != asset_map.end())
         {
-            JAGE_LOG_WARN("JAGE asset warning: asset with file name \"{}\" already loaded.", filename);
+            JAGE_LOG_WARN("JAGE asset warning: asset with file path \"{}\" already loaded.", path.string());
             return;
         }
 
-        std::unique_ptr<T> asset { std::make_unique<T>(Key{}, filename) };
+        std::unique_ptr<T> asset { std::make_unique<T>(Key{}, uri) };
         asset_map.emplace(id, std::move(asset));
     }
 
     template<typename T>
     AssetHandle<T> AssetManager::get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
     {
-        fs::path path { AssetBase::dir_path() / T::dir_path() / fs::path { filename } };
-        AssetID id { str_to_ID(path.string()) };
+        LogicalPath path { Asset::Base::dir_path() / T::dir_path() / filename };
+        Data::URI uri { URI::Builder{ URI::Scheme::FILE }.path(path).build() };
+        AssetID id { str_to_ID(uri.string()) };
 
         typename std::unordered_map<AssetID, std::unique_ptr<T>>::iterator assets_it { asset_map.find(id) };
 
         if (assets_it == asset_map.end())
         { 
-            fs::path truncated_path { T::dir_path() / fs::path{ filename } };
-            JAGE_LOG_ERROR("JAGE asset error: no asset with file name \"{}\".", truncated_path.string());
+            JAGE_LOG_ERROR("JAGE asset error: no asset with file path \"{}\".", path.string());
             JAGE_MSG_ERROR("Returning null asset.");
             return AssetHandle<T>{ id, nullptr };
         }
@@ -105,7 +94,7 @@ namespace JAGE
     {
         JAGE_MSG_INFO("Loading assets...");
 
-        try { fs::directory_iterator{ AssetBase::dir_path() }; }
+        try { fs::directory_iterator{ fs::current_path() / Asset::Base::dir_path() }; }
         catch (const fs::filesystem_error& e)
         {
             JAGE_LOG_ERROR("JAGE I/O error ({} - {}) at path \"{}\" and \"{}\": {}.",
@@ -113,11 +102,13 @@ namespace JAGE
             return;
         }
 
-        for (const fs::directory_entry& entry : fs::directory_iterator{ AssetBase::dir_path() / Asset::Text::dir_path() })
+        for (const fs::directory_entry& entry : fs::directory_iterator{ fs::current_path() / Asset::Base::dir_path() / Asset::Text::dir_path() })
         Load<Asset::Text>(entry.path().filename().string());
-        for (const fs::directory_entry& entry : fs::directory_iterator{ AssetBase::dir_path() / Asset::Image::dir_path() })
+
+        for (const fs::directory_entry& entry : fs::directory_iterator{ fs::current_path() / Asset::Base::dir_path() / Asset::Image::dir_path() })
         Load<Asset::Image>(entry.path().filename().string());
-        for (const fs::directory_entry& entry : fs::directory_iterator{ AssetBase::dir_path() / Asset::Model::dir_path() })
+
+        for (const fs::directory_entry& entry : fs::directory_iterator{ fs::current_path() / Asset::Base::dir_path() / Asset::Model::dir_path() })
         Load<Asset::Model>(entry.path().filename().string());
 
         for (const std::pair<const AssetID, std::unique_ptr<Asset::Model>>& asset : model_assets)
@@ -169,18 +160,27 @@ namespace JAGE
 
     namespace Asset
     {
-        fs::path Text::dir_path() { return "shaders"; }
-        fs::path Image::dir_path() { return "images"; }
-        fs::path Model::dir_path() { return "models"; }
+        Base::Base(Data::URI uri)
+        : m_uri { uri }
+        , m_valid {}
+        {}
 
-        Text::Text(AssetManager::Key, std::string_view filename)
-        : AssetBase{ dir_path() / fs::path{ filename } }, m_content {}
+        Data::URI Base::uri() const { return m_uri; }
+        bool Base::is_valid() const { return m_valid; }
+
+        LogicalPath Base::dir_path() { return LogicalPath{ "assets" }; }
+        LogicalPath Text::dir_path() { return LogicalPath{ "shaders" }; }
+        LogicalPath Image::dir_path() { return LogicalPath{ "images" }; }
+        LogicalPath Model::dir_path() { return LogicalPath{ "models" }; }
+
+        Text::Text(AssetManager::Key, Data::URI uri)
+        : Base{ uri }, m_content {}
         {
             std::ifstream file {};
             file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
             try
             {
-                file.open(m_path);
+                file.open(fs::current_path() / m_uri.path);
                 std::stringstream sstream {};
                 sstream << file.rdbuf();
                 file.close();
@@ -198,15 +198,17 @@ namespace JAGE
 
         std::string_view Text::content() const { return m_content; }
 
-        Image::Image(AssetManager::Key, std::string_view filename)
-        : AssetBase{ dir_path() / fs::path{ filename } }, m_data {}
+        Image::Image(AssetManager::Key, Data::URI uri)
+        : Base{ uri }, m_data {}
         {
-            JAGE_LOG_TRACE("Loading ImageAsset named \"{}\".", filename);
+            JAGE_LOG_TRACE("Loading ImageAsset named \"{}\".", m_uri.path.stem());
+
+            fs::path path { fs::current_path() / m_uri.path };
 
             int width {}, height {};
             u8* loaded_data
             { 
-                stbi_load(m_path.string().c_str(),
+                stbi_load(path.string().c_str(),
                 &width, &height, nullptr, STBI_rgb_alpha)
             };
 
@@ -233,7 +235,7 @@ namespace JAGE
             stbi_image_free(loaded_data);
 
             m_valid = true;
-            JAGE_LOG_TRACE("ImageAsset \"{}\" loaded.", filename);
+            JAGE_LOG_TRACE("ImageAsset named \"{}\" loaded.", m_uri.path.stem());
         }
 
         const Data::Image* Image::data() const
@@ -256,16 +258,18 @@ namespace JAGE
                                             std::unordered_map<std::string, Data::Material::TextureType>& unloaded_textures);
         };
 
-        Model::Model(AssetManager::Key, std::string_view filename)
-        : AssetBase{ dir_path() / fs::path{ filename } }
+        Model::Model(AssetManager::Key, Data::URI uri)
+        : Base{ uri }
         , meshes {}
         , embedded_textures {}
         , materials {}
         , pimpl { std::make_unique<Impl>() }
         {
-            JAGE_LOG_TRACE("Loading ModelAsset named \"{}\".", filename);
+            JAGE_LOG_TRACE("Loading ModelAsset named \"{}\".", m_uri.path.stem());
 
             pimpl->embedded_textures = &embedded_textures;
+
+            fs::path path { fs::current_path() / m_uri.path };
 
             // TODO: transform FBX models so that it matches engine's coordinate system
             // Somehow a FBX model is rotated 90 degrees along the X-axis upon import.
@@ -275,7 +279,7 @@ namespace JAGE
             {
                 importer.ReadFile
                 (
-                    m_path.string(),
+                    path.string(),
                     aiProcess_MakeLeftHanded |
                     // might need to disable Assimp's flip UVs post-processing step after importing a model, or disable
                     // stb_image's flip images vertically upon loading
@@ -316,7 +320,7 @@ namespace JAGE
             if (ai_scene->mNumMaterials) JAGE_MSG_TRACE("Materials processed.");
 
             m_valid = true;
-            JAGE_LOG_TRACE("ModelAsset \"{}\" loaded.", filename);
+            JAGE_LOG_TRACE("ModelAsset named \"{}\" loaded.", m_uri.path.stem());
         }
 
         Model::~Model() = default;
@@ -331,7 +335,7 @@ namespace JAGE
                 (
                     "JAGE asset error: index out of bounds "s +
                     "for number of meshes in ModelAsset named \"{}\"."s,
-                    m_path.filename().string()
+                    m_uri.path.stem()
                 );
                 JAGE_MSG_ERROR("Returning nullptr.");
                 return nullptr;
@@ -348,7 +352,7 @@ namespace JAGE
                 (
                     "JAGE asset error: index out of bounds "s +
                     "for number of materials in ModelAsset named \"{}\"."s,
-                    m_path.filename().string()
+                    m_uri.path.stem()
                 );
                 JAGE_MSG_ERROR("Returning nullptr.");
                 return nullptr;

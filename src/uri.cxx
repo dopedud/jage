@@ -28,15 +28,15 @@ namespace JAGE
 
             switch (scheme)
             {
-                case Scheme::UNDEFINED:
+                case ::JAGE::URI::Scheme::UNDEFINED:
                     ss << "undef" << ':';
                 break;
 
-                case Scheme::FILE:
+                case ::JAGE::URI::Scheme::FILE:
                     ss << "file" << ':';
                 break;
 
-                case Scheme::GPU:
+                case ::JAGE::URI::Scheme::GPU:
                     ss << "gpu" << ':';
                 break;
             }
@@ -166,14 +166,14 @@ namespace JAGE
                 || c == '-' || c == '.' || c == '[' || c == ']' || c == ':'; // IPv6 brackets
         }
 
-        Data::URI::Scheme Parser::extract_scheme(const std::string& raw, std::size_t& pos)
+        Scheme Parser::extract_scheme(const std::string& raw, std::size_t& pos)
         {
             // scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) ":"
             std::size_t i {};
             for (; i < raw.size() && raw[i] != ':' && raw[i] != '/' && raw[i] != '?' && raw[i] != '#'; i++)
-            if (!is_valid_scheme_char(raw[i], i == 0)) return Data::URI::Scheme::UNDEFINED;
+            if (!is_valid_scheme_char(raw[i], i == 0)) return Scheme::UNDEFINED;
 
-            if (i == 0 || i >= raw.size() || raw[i] != ':') return Data::URI::Scheme::UNDEFINED;
+            if (i == 0 || i >= raw.size() || raw[i] != ':') return Scheme::UNDEFINED;
             std::string scheme { raw.substr(0, i) };
 
             // schemes are case-insensitive – normalise to lowercase
@@ -181,9 +181,9 @@ namespace JAGE
             [](unsigned char c){ return std::tolower(c); });
 
             pos = i + 1; // skip ':'
-            if (scheme == "file") return Data::URI::Scheme::FILE;
-            if (scheme == "gpu") return Data::URI::Scheme::GPU;
-            else return Data::URI::Scheme::UNDEFINED;
+            if (scheme == "file") return Scheme::FILE;
+            if (scheme == "gpu") return Scheme::GPU;
+            else return Scheme::UNDEFINED;
         }
 
         void Parser::extract_authority(const std::string& raw, std::size_t& pos, Data::URI& out)

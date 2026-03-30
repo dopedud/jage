@@ -45,7 +45,7 @@ namespace JAGE
     }
 
     bool LogicalPath::empty() const { return m_segments.empty(); }
-    size_t LogicalPath::depth() const { return m_segments.size(); }
+    std::size_t LogicalPath::depth() const { return m_segments.size(); }
 
     const std::vector<std::string>& LogicalPath::parts() const { return m_segments; }
 
@@ -60,10 +60,7 @@ namespace JAGE
     std::string_view LogicalPath::stem() const
     {
         if (m_segments.empty()) return "";
-        std::string_view last { m_segments.back() };
-        size_t dot { last.rfind('.') };
-        if (dot == std::string::npos) return last;
-        return last.substr(0, dot);
+        return m_segments.back();
     }
 
     LogicalPath& LogicalPath::push(std::string_view segment)
@@ -99,7 +96,7 @@ namespace JAGE
     {
         if (m_segments.empty()) return std::string{};
         std::ostringstream oss {};
-        for (size_t i {}; i < m_segments.size(); i++)
+        for (std::size_t i {}; i < m_segments.size(); i++)
         {
             if (i) oss << m_delimiter;
             oss << m_segments[i];
@@ -121,4 +118,7 @@ namespace JAGE
 
     std::ostream& operator<<(std::ostream& os, const LogicalPath& path)
     { return os << path.string(); }
+
+    std::filesystem::path operator/(std::filesystem::path lhs, LogicalPath rhs)
+    { return lhs / rhs.string(); }
 }

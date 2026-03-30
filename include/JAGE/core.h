@@ -575,9 +575,6 @@ namespace JAGE
 
         bool operator==(const LogicalPath& other) const;
         bool operator!=(const LogicalPath& other) const;
-        friend LogicalPath operator/(LogicalPath lhs, std::string_view rhs);
-        friend LogicalPath operator/(LogicalPath lhs, const LogicalPath& rhs);
-        friend std::ostream& operator<<(std::ostream& os, const LogicalPath& path);
     private:
         char m_delimiter;
         std::vector<std::string> m_segments;
@@ -585,6 +582,12 @@ namespace JAGE
         void parse(std::string_view raw);
         bool validate_segment(std::string_view segment) const;
     };
+
+    LogicalPath operator/(LogicalPath lhs, std::string_view rhs);
+    LogicalPath operator/(LogicalPath lhs, const LogicalPath& rhs);
+    std::ostream& operator<<(std::ostream& os, const LogicalPath& path);
+
+    std::filesystem::path operator/(std::filesystem::path lhs, LogicalPath rhs);
 }
 
 /**
@@ -596,24 +599,27 @@ namespace JAGE
  */
 namespace JAGE
 {
+    namespace URI { enum class Scheme : u8 { UNDEFINED = 0, FILE, GPU }; }
+}
+
+namespace JAGE
+{
     namespace Data
     {
         struct URI
         {
-            enum class Scheme : u8 { UNDEFINED = 0, FILE, GPU };
-
-            Scheme              scheme      {};
-            std::string         userinfo    {};
-            std::string         host        {};
-            std::optional<u16>  port        {};
-            LogicalPath         path        {};
-            std::string         query       {};
-            std::string         fragment    {};
+            ::JAGE::URI::Scheme     scheme      {};
+            std::string             userinfo    {};
+            std::string             host        {};
+            std::optional<u16>      port        {};
+            LogicalPath             path        {};
+            std::string             query       {};
+            std::string             fragment    {};
 
             std::unordered_map<std::string, std::string> query_params {};
 
             bool has_authority() const { return !host.empty(); }
-            bool is_valid() const { return scheme != Scheme::UNDEFINED; }
+            bool is_valid() const { return scheme != ::JAGE::URI::Scheme::UNDEFINED; }
 
             std::string string() const;
         };
@@ -637,7 +643,7 @@ namespace JAGE
         private:
             static bool is_valid_scheme_char(char c, bool first);
             static bool is_valid_host_char(char c);
-            static Data::URI::Scheme    extract_scheme      (const std::string& raw, std::size_t &pos);
+            static Scheme               extract_scheme      (const std::string& raw, std::size_t &pos);
             static void                 extract_authority   (const std::string& raw, std::size_t &pos, Data::URI &out);
             static LogicalPath          extract_path        (const std::string& raw, std::size_t &pos);
             static std::string          extract_query       (const std::string& raw, std::size_t &pos);
@@ -648,7 +654,7 @@ namespace JAGE
         class Builder
         {
         public:
-            Builder(Data::URI::Scheme scheme) { data.scheme = scheme; }
+            Builder(Scheme scheme) : data {} { data.scheme = scheme; }
 
             Builder& userinfo   (std::string_view u)    { data.userinfo     = u; return *this; }
             Builder& host       (std::string_view h)    { data.host         = h; return *this; }
