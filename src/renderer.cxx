@@ -7,6 +7,19 @@ namespace JAGE
 {
     GraphicsContext::GraphicsContext(Window* window) : m_window { window } {}
 
+    namespace Resource
+    {
+        LogicalPath Base::dir_path() { return LogicalPath{ "resources" }; }
+
+        Base::Base(Data::URI uri)
+        : m_uri { uri }
+        , m_valid {}
+        {}
+
+        Data::URI Base::uri() const { return m_uri; }
+        bool Base::is_valid() const { return m_valid; }
+    }
+
     std::unique_ptr<Shader> Shader::Create
     (
         std::string_view vertex_str,
@@ -53,11 +66,13 @@ namespace JAGE
         m_albedo_texture = Texture::Create(materialdata->albedo_map);
     }
 
-    Shader* Material::shader() const { return m_shader; }
-    const Data::Material* Material::materialdata() const { return m_materialdata; }
-    Texture* Material::albedo_texture() const { return m_albedo_texture.get(); }
-    Material::FaceCullingMode Material::face_culling_mode() const { return m_face_culling_mode; }
-    void Material::set_face_culling_mode(Material::FaceCullingMode mode) { m_face_culling_mode = mode; }
+    Material Material::Create(Shader* shader, const Data::Material* materialdata) { return Material{ shader, materialdata }; }
+
+    Shader*                     Material::shader() const                                            { return m_shader; }
+    const Data::Material*       Material::materialdata() const                                      { return m_materialdata; }
+    Texture*                    Material::albedo_texture() const                                    { return m_albedo_texture.get(); }
+    Material::FaceCullingMode   Material::face_culling_mode() const                                 { return m_face_culling_mode; }
+    void                        Material::set_face_culling_mode(Material::FaceCullingMode mode)     { m_face_culling_mode = mode; }
 
     Mesh::Mesh(const Data::Mesh* meshdata) : m_meshdata { meshdata } {} 
 

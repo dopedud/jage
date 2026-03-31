@@ -15,20 +15,20 @@ namespace JAGE
         renderer = Renderer::Create(m_window);
         debug_renderer = DebugRenderer::Create(m_window);
 
-        AssetHandle<Asset::Image> image { AssetManager::instance().Get<Asset::Image>("image.jpg") };
-        AssetHandle<Asset::Text> vertex_shader { AssetManager::instance().Get<Asset::Text>("default.vs") };
-        AssetHandle<Asset::Text> fragment_shader { AssetManager::instance().Get<Asset::Text>("default.fs") };
-        AssetHandle<Asset::Model> model1 { AssetManager::instance().Get<Asset::Model>("potted_plant_3.fbx") };
-        AssetHandle<Asset::Model> model2 { AssetManager::instance().Get<Asset::Model>("z4.fbx") };
+        Asset::Handle<Asset::Image> image { AssetManager::instance().Get<Asset::Image>("image.jpg") };
+        Asset::Handle<Asset::Text> vertex_shader { AssetManager::instance().Get<Asset::Text>("default.vs") };
+        Asset::Handle<Asset::Text> fragment_shader { AssetManager::instance().Get<Asset::Text>("default.fs") };
+        Asset::Handle<Asset::Model> model1 { AssetManager::instance().Get<Asset::Model>("potted_plant_3.fbx") };
+        Asset::Handle<Asset::Model> model2 { AssetManager::instance().Get<Asset::Model>("z4.fbx") };
 
         texture = Texture::Create(image.asset()->data());
         shader = Shader::Create(vertex_shader.asset()->content(), fragment_shader.asset()->content());
         mesh1 = Mesh::Create(model1.asset()->meshdata(0));
         mesh2 = Mesh::Create(model2.asset()->meshdata(0));
-        mat1 = std::make_unique<Material>(shader.get(), model1.asset()->materialdata(0));
-        mat2 = std::make_unique<Material>(shader.get(), model2.asset()->materialdata(0));
-        mat1->set_face_culling_mode(Material::FaceCullingMode::NONE);
-        mat2->set_face_culling_mode(Material::FaceCullingMode::NONE);
+        mat1 = Material::Create(shader.get(), model1.asset()->materialdata(0));
+        mat2 = Material::Create(shader.get(), model2.asset()->materialdata(0));
+        mat1.set_face_culling_mode(Material::FaceCullingMode::NONE);
+        mat2.set_face_culling_mode(Material::FaceCullingMode::NONE);
 
         World::ApplicationContext app_ctx;
         app_ctx.window = m_window;
@@ -46,11 +46,11 @@ namespace JAGE
         object2.AddComponent<Transform>();
         MeshRenderer mesh_renderer1 {};
         mesh_renderer1.mesh = mesh1.get();
-        mesh_renderer1.material = mat1.get();
+        mesh_renderer1.material = &mat1;
         object1.AddComponent<MeshRenderer>(mesh_renderer1);
         MeshRenderer mesh_renderer2 {};
         mesh_renderer2.mesh = mesh2.get();
-        mesh_renderer2.material = mat2.get();
+        mesh_renderer2.material = &mat2;
         object2.AddComponent<MeshRenderer>(mesh_renderer2);
 
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");

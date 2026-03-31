@@ -132,7 +132,7 @@ namespace JAGE
         static unsigned counter {};
         if (name == "")
         {
-            realname = "GameObject" + std::to_string(counter);
+            realname = "Entity" + std::to_string(counter);
             counter++;
         } else realname = name;
 
@@ -156,14 +156,15 @@ namespace JAGE
 
         glm::mat4 tm { node->transformation_matrix };
         Transform transform;
-        glm::vec3 skew;
-        glm::vec4 perspective;
+        glm::vec3 skew; // ignored
+        glm::vec4 perspective; // ignored
         glm::decompose(tm, transform.scale, transform.orientation, transform.position, skew, perspective);
 
         entity.AddComponent<Transform>(transform);
 
         for (unsigned mesh_index : node->meshes_index)
         {
+            // m_app_ctx->renderer.Get<Mesh>();
             MeshRenderer mesh_renderer;
         }
 

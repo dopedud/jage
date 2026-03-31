@@ -9,32 +9,38 @@ namespace JAGE
     using ResourceID = u64;
 
     /**
-     * @class Resource
+     * @namespace Resource
      * 
-     * @brief The `Resource` class that acts as a base class for all the different types of GPU resources to derive from.
+     * @brief The `Resource` namespace that contains representations of different GPU resources.
      * 
      * "Resource" in the context of game engines can refer to a wide variety of meaning, including memory resources and
-     * persistent resources (files that live on the hard disk), but in JAGE "Resource" specifically means GPU
-     * resource, which are data that is uploaded from CPU to GPU, and stay in GPU memory.
-     * 
-     * @note Assets could technically be instantiated directly from classes derived from `Asset`, but this should
-     * be avoided and only get assets from `AssetManager`. Proper compile-time restrictions has been programmed in
-     * place to avoid the user from accidentally instantiating `Asset` and classes that derive from it directly.
+     * persistent resources (files that live on the hard disk), however in JAGE specifically, "Resource" means GPU
+     * resource, which are data that is uploaded from CPU to GPU, and stay in GPU memory. It could also represent
+     * graphics resources that are not directly associated with living on the GPU, such as materials.
      */
-    // class JAGE_API ResourceBase
-    // {
-    // public:
-    //     static fs::path dir_path();
+    namespace Resource
+    {
+        /**
+         * @class Resource::Base
+         * 
+         * @brief The `Resource::Base` class that acts as a base class for all the different types of GPU resources to derive from.
+         * 
+         */
+        class JAGE_API Base
+        {
+        public:
+            static LogicalPath dir_path();
 
-    //     Asset(fs::path path);
-    //     virtual ~Asset() = default;
+            Base(Data::URI uri);
+            virtual ~Base() = default;
 
-    //     fs::path path() const;
-    //     bool is_valid() const;
-    // protected:
-    //     fs::path m_path;
-    //     bool m_is_valid;
-    // };
+            Data::URI uri() const;
+            bool is_valid() const;
+        protected:
+            Data::URI m_uri;
+            bool m_valid;
+        };
+    }
 
     class JAGE_API Shader
     {
@@ -86,8 +92,9 @@ namespace JAGE
     public:
         enum class FaceCullingMode : u8 { NONE = 0, BACK, FRONT };
 
-        Material(Shader* shader, const Data::Material* materialdata);
         Material();
+
+        static Material Create(Shader* shader, const Data::Material* materialdata);
 
         Shader* shader() const;
         const Data::Material* materialdata() const;
@@ -96,6 +103,8 @@ namespace JAGE
         FaceCullingMode face_culling_mode() const;
         void set_face_culling_mode(FaceCullingMode mode);
     private:
+        Material(Shader* shader, const Data::Material* materialdata);
+
         Shader* m_shader;
         const Data::Material* m_materialdata;
         std::unique_ptr<Texture> m_albedo_texture;

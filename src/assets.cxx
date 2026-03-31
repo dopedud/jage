@@ -20,17 +20,6 @@ DISABLE_WARNING_POP
 
 namespace JAGE
 {
-    template<typename T>
-    AssetHandle<T>::AssetHandle(AssetID id, T* asset)
-    : m_id { id }, m_asset { asset } {}
-
-    template<typename T> AssetID AssetHandle<T>::id() const { return m_id; }
-    template<typename T> const T* AssetHandle<T>::asset() const { return m_asset; }
-
-    template class AssetHandle<Asset::Text>;
-    template class AssetHandle<Asset::Image>;
-    template class AssetHandle<Asset::Model>;
-
     AssetManager::AssetManager()
     : text_assets {}
     , image_assets {}
@@ -62,7 +51,7 @@ namespace JAGE
     }
 
     template<typename T>
-    AssetHandle<T> AssetManager::get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
+    Asset::Handle<T> AssetManager::get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
     {
         LogicalPath path { Asset::Base::dir_path() / T::dir_path() / filename };
         Data::URI uri { URI::Builder{ URI::Scheme::FILE }.path(path).build() };
@@ -74,19 +63,19 @@ namespace JAGE
         { 
             JAGE_LOG_ERROR("JAGE asset error: no asset with file path \"{}\".", path.string());
             JAGE_MSG_ERROR("Returning null asset.");
-            return AssetHandle<T>{ id, nullptr };
+            return Asset::Handle<T>{ id, nullptr };
         }
 
         T* asset { assets_it->second.get() };
-        return AssetHandle<T>{ id, asset };
+        return Asset::Handle<T>{ id, asset };
     }
 
     template<> void                         AssetManager::Load<Asset::Text>(std::string_view filename)      { load<Asset::Text>(text_assets, filename); }
     template<> void                         AssetManager::Load<Asset::Image>(std::string_view filename)     { load<Asset::Image>(image_assets, filename); }
     template<> void                         AssetManager::Load<Asset::Model>(std::string_view filename)     { load<Asset::Model>(model_assets, filename); }
-    template<> AssetHandle<Asset::Text>     AssetManager::Get<Asset::Text>(std::string_view filename)       { return get<Asset::Text>(text_assets, filename); }
-    template<> AssetHandle<Asset::Image>    AssetManager::Get<Asset::Image>(std::string_view filename)      { return get<Asset::Image>(image_assets, filename); }
-    template<> AssetHandle<Asset::Model>    AssetManager::Get<Asset::Model>(std::string_view filename)      { return get<Asset::Model>(model_assets, filename); }
+    template<> Asset::Handle<Asset::Text>   AssetManager::Get<Asset::Text>(std::string_view filename)       { return get<Asset::Text>(text_assets, filename); }
+    template<> Asset::Handle<Asset::Image>  AssetManager::Get<Asset::Image>(std::string_view filename)      { return get<Asset::Image>(image_assets, filename); }
+    template<> Asset::Handle<Asset::Model>  AssetManager::Get<Asset::Model>(std::string_view filename)      { return get<Asset::Model>(model_assets, filename); }
 
     // END TEMPLATE SPECIALISATIONS
 
@@ -160,6 +149,22 @@ namespace JAGE
 
     namespace Asset
     {
+        template<typename T>
+        Handle<T>::Handle(AssetID id, T* asset)
+        : m_id { id }, m_asset { asset } {}
+
+        template<typename T> AssetID Handle<T>::id() const { return m_id; }
+        template<typename T> const T* Handle<T>::asset() const { return m_asset; }
+
+        template class Handle<Asset::Text>;
+        template class Handle<Asset::Image>;
+        template class Handle<Asset::Model>;
+
+        LogicalPath Base::dir_path() { return LogicalPath{ "assets" }; }
+        LogicalPath Text::dir_path() { return LogicalPath{ "shaders" }; }
+        LogicalPath Image::dir_path() { return LogicalPath{ "images" }; }
+        LogicalPath Model::dir_path() { return LogicalPath{ "models" }; }
+
         Base::Base(Data::URI uri)
         : m_uri { uri }
         , m_valid {}
@@ -167,11 +172,6 @@ namespace JAGE
 
         Data::URI Base::uri() const { return m_uri; }
         bool Base::is_valid() const { return m_valid; }
-
-        LogicalPath Base::dir_path() { return LogicalPath{ "assets" }; }
-        LogicalPath Text::dir_path() { return LogicalPath{ "shaders" }; }
-        LogicalPath Image::dir_path() { return LogicalPath{ "images" }; }
-        LogicalPath Model::dir_path() { return LogicalPath{ "models" }; }
 
         Text::Text(AssetManager::Key, Data::URI uri)
         : Base{ uri }, m_content {}

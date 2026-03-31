@@ -8,22 +8,27 @@ namespace JAGE
     namespace fs = std::filesystem;
     using AssetID = u64;
 
-    template<typename T>
-    class AssetHandle
-    {
-    public:
-        AssetHandle(AssetID id, T* asset);
-
-        AssetID id() const;
-        const T* asset() const;
-    private:
-        AssetID m_id;
-        T* m_asset;
-    };
-
-    // forward declare Text, Image, and Model assets class to be used by AssetManager class
+    /**
+     * @namespace Asset
+     * 
+     * @brief The `Asset` namespace that contains representations of different game assets.
+     */
     namespace Asset
     {
+        template<typename T>
+        class Handle
+        {
+        public:
+            Handle(AssetID id, T* asset);
+
+            AssetID id() const;
+            const T* asset() const;
+        private:
+            AssetID m_id;
+            T* m_asset;
+        };
+
+        // forward declare Text, Image, and Model assets class to be used by AssetManager class
         class JAGE_API Text;
         class JAGE_API Image;
         class JAGE_API Model;
@@ -65,12 +70,12 @@ namespace JAGE
         AssetID str_to_ID(std::string_view str);
 
         template<typename T> void               Load(std::string_view filename);
-        template<typename T> AssetHandle<T>     Get(std::string_view filename);
+        template<typename T> Asset::Handle<T>   Get(std::string_view filename);
     private:
         AssetManager();
 
         template<typename T> void               load(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename);
-        template<typename T> AssetHandle<T>     get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename);
+        template<typename T> Asset::Handle<T>   get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename);
 
         inline static std::unique_ptr<AssetManager> m_instance {};
         std::unordered_map<AssetID, std::unique_ptr<Asset::Text>> text_assets;
@@ -163,10 +168,9 @@ namespace JAGE
     namespace Asset
     {
         /**
-
-        * @class AssetBase
+        * @class Asset::Base
         * 
-        * @brief The `AssetBase` class that acts as a base class for all the different types of assets to derive from.
+        * @brief The `Asset::Base` class that acts as a base class for all the different types of assets to derive from.
         * 
         * @note Assets could technically be instantiated directly from classes derived from `Asset`, but this should
         * be avoided and only get assets from `AssetManager`. Proper compile-time restrictions has been programmed in
@@ -187,7 +191,6 @@ namespace JAGE
             bool m_valid;
         };
 
-
         class JAGE_API Text final : public Base
         {
         public:
@@ -207,6 +210,7 @@ namespace JAGE
             static LogicalPath dir_path();
 
             explicit Image(AssetManager::Key, Data::URI uri);
+            ~Image() = default;
 
             const Data::Image* data() const;
         private:
