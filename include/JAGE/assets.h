@@ -6,82 +6,6 @@
 namespace JAGE
 {
     namespace fs = std::filesystem;
-    using AssetID = u64;
-
-    /**
-     * @namespace Asset
-     * 
-     * @brief The `Asset` namespace that contains representations of different game assets.
-     */
-    namespace Asset
-    {
-        template<typename T>
-        class Handle
-        {
-        public:
-            Handle(AssetID id, T* asset);
-
-            AssetID id() const;
-            const T* asset() const;
-        private:
-            AssetID m_id;
-            T* m_asset;
-        };
-
-        // forward declare Text, Image, and Model assets class to be used by AssetManager class
-        class JAGE_API Text;
-        class JAGE_API Image;
-        class JAGE_API Model;
-    }
-
-    class JAGE_API AssetManager
-    {
-    public:
-        /**
-         * @class Key
-         * 
-         * @brief The `Key` class that classes that are derived from `Asset` receives as a constructor argument.
-         * 
-         * The `Key` class is the compile-time restriction to prevent the user from instantiating `Asset` and its
-         * derived classes directly. It can only be used by `AssetManager`.
-         */
-        class Key
-        {
-            Key() = default;
-            friend class AssetManager;
-        };
-
-        static AssetManager& instance();
-        static void release();
-
-        ~AssetManager() = default;
-
-        /**
-         * `AssetManager` is a singleton, which means it cannot be copied.
-         * 
-         * @{
-         */
-        AssetManager(const AssetManager&) = delete;
-        AssetManager &operator=(const AssetManager&) = delete;
-        /** @} */
-
-        void Initialise();
-
-        AssetID str_to_ID(std::string_view str);
-
-        template<typename T> void               Load(std::string_view filename);
-        template<typename T> Asset::Handle<T>   Get(std::string_view filename);
-    private:
-        AssetManager();
-
-        template<typename T> void               load(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename);
-        template<typename T> Asset::Handle<T>   get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename);
-
-        inline static std::unique_ptr<AssetManager> m_instance {};
-        std::unordered_map<AssetID, std::unique_ptr<Asset::Text>> text_assets;
-        std::unordered_map<AssetID, std::unique_ptr<Asset::Image>> image_assets;
-        std::unordered_map<AssetID, std::unique_ptr<Asset::Model>> model_assets;
-    };
 
     namespace Data
     {
@@ -164,6 +88,83 @@ namespace JAGE
             std::unordered_map<std::string, TextureType> unloaded_textures {};
         };
     }
+
+    /**
+     * @namespace Asset
+     * 
+     * @brief The `Asset` namespace that contains representations of different game assets.
+     */
+    namespace Asset
+    {
+        using ID = u64;
+
+        template<typename T>
+        class Handle
+        {
+        public:
+            Handle(ID id, T* asset);
+
+            ID id() const;
+            const T* asset() const;
+        private:
+            ID m_id;
+            T* m_asset;
+        };
+
+        // forward declare Text, Image, and Model assets class to be used by AssetManager class
+        class JAGE_API Text;
+        class JAGE_API Image;
+        class JAGE_API Model;
+    }
+
+    class JAGE_API AssetManager
+    {
+    public:
+        /**
+         * @class Key
+         * 
+         * @brief The `Key` class that classes that are derived from `Asset` receives as a constructor argument.
+         * 
+         * The `Key` class is the compile-time restriction to prevent the user from instantiating `Asset` and its
+         * derived classes directly. They can only be instantiated by `AssetManager`.
+         */
+        class Key
+        {
+            Key() = default;
+            friend class AssetManager;
+        };
+
+        static AssetManager& instance();
+        static void release();
+
+        ~AssetManager() = default;
+
+        /**
+         * `AssetManager` is a singleton, which means it cannot be copied.
+         * 
+         * @{
+         */
+        AssetManager(const AssetManager&) = delete;
+        AssetManager &operator=(const AssetManager&) = delete;
+        /** @} */
+
+        void Initialise();
+
+        Asset::ID str_to_ID(std::string_view str);
+
+        template<typename T> void               Load(std::string_view filename);
+        template<typename T> Asset::Handle<T>   Get(std::string_view filename);
+    private:
+        AssetManager();
+
+        template<typename T> void               load(std::unordered_map<Asset::ID, std::unique_ptr<T>>& asset_map, std::string_view filename);
+        template<typename T> Asset::Handle<T>   get(std::unordered_map<Asset::ID, std::unique_ptr<T>>& asset_map, std::string_view filename);
+
+        inline static std::unique_ptr<AssetManager> m_instance {};
+        std::unordered_map<Asset::ID, std::unique_ptr<Asset::Text>> text_assets;
+        std::unordered_map<Asset::ID, std::unique_ptr<Asset::Image>> image_assets;
+        std::unordered_map<Asset::ID, std::unique_ptr<Asset::Model>> model_assets;
+    };
 
     namespace Asset
     {
@@ -250,7 +251,7 @@ namespace JAGE
              * Bad fucking design, but is needed to access `materials` (to load unloaded material textures) without
              * exposing it as a public API.
              */
-            friend class ::JAGE::AssetManager;
+            friend class JAGE::AssetManager;
         };
     }
 }

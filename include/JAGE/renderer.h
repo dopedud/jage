@@ -6,24 +6,38 @@
 
 namespace JAGE
 {
-    using ResourceID = u64;
-
     /**
      * @namespace Resource
      * 
      * @brief The `Resource` namespace that contains representations of different GPU resources.
      * 
      * "Resource" in the context of game engines can refer to a wide variety of meaning, including memory resources and
-     * persistent resources (files that live on the hard disk), however in JAGE specifically, "Resource" means GPU
+     * persistent resources (files that live on the hard disk). However in JAGE specifically, "Resource" means GPU
      * resource, which are data that is uploaded from CPU to GPU, and stay in GPU memory. It could also represent
-     * graphics resources that are not directly associated with living on the GPU, such as materials.
+     * graphics resources that are not directly associated with memory on the GPU, such as materials.
      */
     namespace Resource
     {
+        using ID = u64;
+
+        template<typename T>
+        class Handle
+        {
+        public:
+            Handle(ID id, T* resource);
+
+            ID id() const;
+            const T* resource() const;
+        private:
+            ID m_id;
+            T* m_resource;
+        };
+
         /**
          * @class Resource::Base
          * 
-         * @brief The `Resource::Base` class that acts as a base class for all the different types of GPU resources to derive from.
+         * @brief The `Resource::Base` class that acts as a base class for all the different types of GPU resources to
+         * derive from.
          * 
          */
         class JAGE_API Base
@@ -40,42 +54,70 @@ namespace JAGE
             Data::URI m_uri;
             bool m_valid;
         };
-    }
 
-    class JAGE_API Shader
-    {
-    public:
-        enum class DataType : u8
+        class JAGE_API Shader : public Base
         {
-            None = 0,
-            Float, Float2, Float3, Float4,
-            Int, Int2, Int3, Int4,
-            Mat3, Mat4,
-            Bool
+        public:
+            static LogicalPath dir_path();
+
+            enum class DataType : u8
+            {
+                None = 0,
+                Float, Float2, Float3, Float4,
+                Int, Int2, Int3, Int4,
+                Mat3, Mat4,
+                Bool
+            };
+
+            static unsigned datatype_size(DataType datatype);
+
+            static std::unique_ptr<Shader> Create
+            (
+                std::string_view vertex_str,
+                std::string_view fragment_str,
+                std::string_view geometry_str = ""
+            );
+            virtual ~Shader() = default;
+
+            virtual void bind() const = 0;
+            virtual void unbind() const = 0;
+
+            virtual void set_uniform_bool       (std::string_view name, bool value) = 0;
+            virtual void set_uniform_uint       (std::string_view name, unsigned value) = 0;
+            virtual void set_uniform_int        (std::string_view name, int value) = 0;
+            virtual void set_uniform_float      (std::string_view name, float value) = 0;
+            virtual void set_uniform_float2     (std::string_view name, const glm::vec2& value) = 0;
+            virtual void set_uniform_float3     (std::string_view name, const glm::vec3& value) = 0;
+            virtual void set_uniform_float4     (std::string_view name, const glm::vec4& value) = 0;
+            virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value) = 0;
         };
 
-        static unsigned datatype_size(DataType datatype);
+        class JAGE_API Material : public Base
+        {
+        public:
+            static LogicalPath dir_path();
 
-        static std::unique_ptr<Shader> Create
-        (
-            std::string_view vertex_str,
-            std::string_view fragment_str,
-            std::string_view geometry_str = ""
-        );
-        virtual ~Shader() = default;
+            enum class FaceCullingMode : u8 { NONE = 0, BACK, FRONT };
 
-        virtual void bind() const = 0;
-        virtual void unbind() const = 0;
+            Material();
 
-        virtual void set_uniform_bool       (std::string_view name, bool value) = 0;
-        virtual void set_uniform_uint       (std::string_view name, unsigned value) = 0;
-        virtual void set_uniform_int        (std::string_view name, int value) = 0;
-        virtual void set_uniform_float      (std::string_view name, float value) = 0;
-        virtual void set_uniform_float2     (std::string_view name, const glm::vec2& value) = 0;
-        virtual void set_uniform_float3     (std::string_view name, const glm::vec3& value) = 0;
-        virtual void set_uniform_float4     (std::string_view name, const glm::vec4& value) = 0;
-        virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value) = 0;
-    };
+            static Material Create(Shader* shader, const Data::Material* materialdata);
+
+            Shader* shader() const;
+            const Data::Material* materialdata() const;
+            Texture* albedo_texture() const;
+
+            FaceCullingMode face_culling_mode() const;
+            void set_face_culling_mode(FaceCullingMode mode);
+        private:
+            Material(Shader* shader, const Data::Material* materialdata);
+
+            Shader* m_shader;
+            const Data::Material* m_materialdata;
+            std::unique_ptr<Texture> m_albedo_texture;
+            FaceCullingMode m_face_culling_mode;
+        };
+    }
 
     class JAGE_API Texture
     {
@@ -87,30 +129,6 @@ namespace JAGE
         virtual void unbind() const = 0;
     };
 
-    class JAGE_API Material
-    {
-    public:
-        enum class FaceCullingMode : u8 { NONE = 0, BACK, FRONT };
-
-        Material();
-
-        static Material Create(Shader* shader, const Data::Material* materialdata);
-
-        Shader* shader() const;
-        const Data::Material* materialdata() const;
-        Texture* albedo_texture() const;
-
-        FaceCullingMode face_culling_mode() const;
-        void set_face_culling_mode(FaceCullingMode mode);
-    private:
-        Material(Shader* shader, const Data::Material* materialdata);
-
-        Shader* m_shader;
-        const Data::Material* m_materialdata;
-        std::unique_ptr<Texture> m_albedo_texture;
-        FaceCullingMode m_face_culling_mode;
-    };
-
     class JAGE_API Mesh
     {
     public:
@@ -118,7 +136,7 @@ namespace JAGE
         Mesh(const Data::Mesh* meshdata);
         virtual ~Mesh() = default;
 
-        virtual void render(const Material* material) = 0;
+        virtual void render(const Resource::Material* material) = 0;
     protected:
         const Data::Mesh* m_meshdata;
     };
@@ -171,14 +189,14 @@ namespace JAGE
 
     struct JAGE_API BufferElement
     {
-        Shader::DataType shader_datatype;
+        Resource::Shader::DataType shader_datatype;
         std::string name;
         unsigned size;
         unsigned offset;
         bool normalized;
 
         BufferElement() = default;
-        BufferElement(Shader::DataType shader_datatype, std::string_view name, bool normalized = false);
+        BufferElement(Resource::Shader::DataType shader_datatype, std::string_view name, bool normalized = false);
 
         unsigned component_count() const;
     };

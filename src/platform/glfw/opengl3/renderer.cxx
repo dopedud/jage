@@ -285,20 +285,20 @@ namespace JAGE
 
         BufferLayout layout
         {
-            { Shader::DataType::Float3, "v_position" },
-            { Shader::DataType::Float3, "v_normal" },
+            { Resource::Shader::DataType::Float3, "v_position" },
+            { Resource::Shader::DataType::Float3, "v_normal" },
 
             // the number of vertex UV coordinates used should follow the size of the MeshData::Vertex::uvcoords array
-            { Shader::DataType::Float2, "v_uvcoord0" },
-            { Shader::DataType::Float2, "v_uvcoord1" },
-            { Shader::DataType::Float2, "v_uvcoord2" },
-            { Shader::DataType::Float2, "v_uvcoord3" },
+            { Resource::Shader::DataType::Float2, "v_uvcoord0" },
+            { Resource::Shader::DataType::Float2, "v_uvcoord1" },
+            { Resource::Shader::DataType::Float2, "v_uvcoord2" },
+            { Resource::Shader::DataType::Float2, "v_uvcoord3" },
 
             // the number of vertex colors used should follow the size of the MeshData::Vertex::colors array
-            { Shader::DataType::Float4, "v_color0" },
-            { Shader::DataType::Float4, "v_color1" },
-            { Shader::DataType::Float4, "v_color2" },
-            { Shader::DataType::Float4, "v_color3" },
+            { Resource::Shader::DataType::Float4, "v_color0" },
+            { Resource::Shader::DataType::Float4, "v_color1" },
+            { Resource::Shader::DataType::Float4, "v_color2" },
+            { Resource::Shader::DataType::Float4, "v_color3" },
         };
 
         const std::vector<BufferElement>& elements { layout.elements() };
@@ -318,9 +318,9 @@ namespace JAGE
         glBindVertexArray(0);
     }
 
-    void OpenGLMesh::render(const Material* material)
+    void OpenGLMesh::render(const Resource::Material* material)
     {
-        Shader* shader { material->shader() };
+        Resource::Shader* shader { material->shader() };
         Texture* albedo_texture { material->albedo_texture() };
 
         shader->bind();
@@ -330,12 +330,12 @@ namespace JAGE
 
         switch (material->face_culling_mode())
         {
-            case Material::FaceCullingMode::NONE: glDisable(GL_CULL_FACE); break;
-            case Material::FaceCullingMode::BACK:
+            case Resource::Material::FaceCullingMode::NONE: glDisable(GL_CULL_FACE); break;
+            case Resource::Material::FaceCullingMode::BACK:
                 glEnable(GL_CULL_FACE);
                 glCullFace(GL_BACK);
             break;
-            case Material::FaceCullingMode::FRONT:
+            case Resource::Material::FaceCullingMode::FRONT:
                 glEnable(GL_CULL_FACE);
                 glCullFace(GL_FRONT);
             break;
@@ -419,7 +419,8 @@ namespace JAGE
             {
                 color = vec4(normalize(f_position), 1.0);
             }
-        )", ""
+        )",
+        ""
     }
     {
         glGenVertexArrays(1, &grid_vao);

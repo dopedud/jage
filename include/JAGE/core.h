@@ -600,15 +600,12 @@ namespace JAGE
 namespace JAGE
 {
     namespace URI { enum class Scheme : u8 { UNDEFINED = 0, FILE, GPU }; }
-}
 
-namespace JAGE
-{
     namespace Data
     {
         struct URI
         {
-            ::JAGE::URI::Scheme     scheme      {};
+            JAGE::URI::Scheme       scheme      {};
             std::string             userinfo    {};
             std::string             host        {};
             std::optional<u16>      port        {};
@@ -619,7 +616,7 @@ namespace JAGE
             std::unordered_map<std::string, std::string> query_params {};
 
             bool has_authority() const { return !host.empty(); }
-            bool is_valid() const { return scheme != ::JAGE::URI::Scheme::UNDEFINED; }
+            bool is_valid() const { return scheme != JAGE::URI::Scheme::UNDEFINED; }
 
             std::string string() const;
         };

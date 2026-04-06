@@ -42,7 +42,7 @@ namespace JAGE
     struct JAGE_API MeshRenderer
     {
         Mesh* mesh {};
-        Material* material {};
+        Resource::Material* material {};
     };
 
     void CameraMovementSystem_OnMouseScrolled(ecs_iter_t* it);
@@ -106,8 +106,7 @@ namespace JAGE
 
         Entity CreateEntity(std::string_view name = "");
 
-        Entity EntityFromModelAsset(const Asset::Model* model_asset);
-        Entity EntityFromModelAsset(const Asset::Model* model_asset, const Asset::Model::Node* node);
+        Entity EntityFromModelAsset(Asset::Handle<Asset::Model> model_assethandle);
     private:
         /**
          * @var m_world
@@ -123,6 +122,8 @@ namespace JAGE
         std::unique_ptr<ApplicationContext> m_app_ctx;
 
         void release();
+
+        Entity EntityFromModelAsset(const Asset::Model* model_asset, const Asset::Model::Node* node);
     };
 
     /**

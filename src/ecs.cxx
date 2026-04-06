@@ -147,8 +147,12 @@ namespace JAGE
         return entity;
     }
 
-    Entity World::EntityFromModelAsset(const Asset::Model* model_asset)
-    { return EntityFromModelAsset(model_asset, model_asset->root()); }
+    Entity World::EntityFromModelAsset(Asset::Handle<Asset::Model> model_assethandle)
+    {
+        const Asset::Model* model_asset { model_assethandle.asset() };
+        return EntityFromModelAsset(model_asset, model_asset->root());
+
+    }
 
     Entity World::EntityFromModelAsset(const Asset::Model* model_asset, const Asset::Model::Node* node)
     {
@@ -164,7 +168,10 @@ namespace JAGE
 
         for (unsigned mesh_index : node->meshes_index)
         {
-            // m_app_ctx->renderer.Get<Mesh>();
+            // m_app_ctx->renderer->Get<Resource::Mesh>();
+            // m_app_ctx->renderer->Get<Resource::Material>();
+            // m_app_ctx->renderer->CreateMesh(meshdata);
+            // m_app_ctx->renderer->CreateMaterial(shader, materialdata);
             MeshRenderer mesh_renderer;
         }
 
@@ -240,7 +247,7 @@ namespace JAGE
             Transform& t { transform[i] };
             MeshRenderer& mr { mesh_renderer[i] };
 
-            Shader* shader { mr.material->shader() };
+            Resource::Shader* shader { mr.material->shader() };
 
             shader->bind();
             shader->set_uniform_mat4("model", t.transformation_matrix);

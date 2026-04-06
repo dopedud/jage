@@ -34,11 +34,11 @@ namespace JAGE
     // NOTE: Template specialisations are put here early in this file because other code down below depends on it.
 
     template<typename T>
-    void AssetManager::load(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
+    void AssetManager::load(std::unordered_map<Asset::ID, std::unique_ptr<T>>& asset_map, std::string_view filename)
     {
         LogicalPath path { Asset::Base::dir_path() / T::dir_path() / filename };
         Data::URI uri { URI::Builder{ URI::Scheme::FILE }.path(path).build() };
-        AssetID id { str_to_ID(uri.string()) };
+        Asset::ID id { str_to_ID(uri.string()) };
 
         if (asset_map.find(id) != asset_map.end())
         {
@@ -51,13 +51,13 @@ namespace JAGE
     }
 
     template<typename T>
-    Asset::Handle<T> AssetManager::get(std::unordered_map<AssetID, std::unique_ptr<T>>& asset_map, std::string_view filename)
+    Asset::Handle<T> AssetManager::get(std::unordered_map<Asset::ID, std::unique_ptr<T>>& asset_map, std::string_view filename)
     {
         LogicalPath path { Asset::Base::dir_path() / T::dir_path() / filename };
         Data::URI uri { URI::Builder{ URI::Scheme::FILE }.path(path).build() };
-        AssetID id { str_to_ID(uri.string()) };
+        Asset::ID id { str_to_ID(uri.string()) };
 
-        typename std::unordered_map<AssetID, std::unique_ptr<T>>::iterator assets_it { asset_map.find(id) };
+        typename std::unordered_map<Asset::ID, std::unique_ptr<T>>::iterator assets_it { asset_map.find(id) };
 
         if (assets_it == asset_map.end())
         { 
@@ -100,7 +100,7 @@ namespace JAGE
         for (const fs::directory_entry& entry : fs::directory_iterator{ fs::current_path() / Asset::Base::dir_path() / Asset::Model::dir_path() })
         Load<Asset::Model>(entry.path().filename().string());
 
-        for (const std::pair<const AssetID, std::unique_ptr<Asset::Model>>& asset : model_assets)
+        for (const std::pair<const Asset::ID, std::unique_ptr<Asset::Model>>& asset : model_assets)
         {
             Asset::Model* model_asset { asset.second.get() };
             for (Data::Material& material : model_asset->materials)
@@ -133,7 +133,7 @@ namespace JAGE
 
     void AssetManager::release() { m_instance.release(); }
 
-    AssetID AssetManager::str_to_ID(std::string_view str)
+    Asset::ID AssetManager::str_to_ID(std::string_view str)
     { return XXH3_64bits(str.data(), str.size()); }
 
     static Data::Material::TextureType aiTextureType_ToTextureType(aiTextureType ai_texturetype)
@@ -150,20 +150,20 @@ namespace JAGE
     namespace Asset
     {
         template<typename T>
-        Handle<T>::Handle(AssetID id, T* asset)
+        Handle<T>::Handle(ID id, T* asset)
         : m_id { id }, m_asset { asset } {}
 
-        template<typename T> AssetID Handle<T>::id() const { return m_id; }
+        template<typename T> ID Handle<T>::id() const { return m_id; }
         template<typename T> const T* Handle<T>::asset() const { return m_asset; }
 
-        template class Handle<Asset::Text>;
-        template class Handle<Asset::Image>;
-        template class Handle<Asset::Model>;
+        template class Handle<Text>;
+        template class Handle<Image>;
+        template class Handle<Model>;
 
-        LogicalPath Base::dir_path() { return LogicalPath{ "assets" }; }
-        LogicalPath Text::dir_path() { return LogicalPath{ "shaders" }; }
-        LogicalPath Image::dir_path() { return LogicalPath{ "images" }; }
-        LogicalPath Model::dir_path() { return LogicalPath{ "models" }; }
+        LogicalPath Base::dir_path()    { return LogicalPath{ "assets" }; }
+        LogicalPath Text::dir_path()    { return LogicalPath{ "shaders" }; }
+        LogicalPath Image::dir_path()   { return LogicalPath{ "images" }; }
+        LogicalPath Model::dir_path()   { return LogicalPath{ "models" }; }
 
         Base::Base(Data::URI uri)
         : m_uri { uri }

@@ -53,13 +53,6 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 
-# build files
-build
-build.log
-
-# install directory
-installs
-
 # CMake dependencies directory
 _deps
 
@@ -67,6 +60,16 @@ _deps
 CMakeUserPresets.json
 
 ### Miscellaneous
+# log files
+*.log
+
+# build files
+build
+build.log
+
+# install directory
+installs
+
 # VSCode configuration directory
 .vscode
 

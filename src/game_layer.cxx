@@ -22,13 +22,13 @@ namespace JAGE
         Asset::Handle<Asset::Model> model2 { AssetManager::instance().Get<Asset::Model>("z4.fbx") };
 
         texture = Texture::Create(image.asset()->data());
-        shader = Shader::Create(vertex_shader.asset()->content(), fragment_shader.asset()->content());
+        shader = Resource::Shader::Create(vertex_shader.asset()->content(), fragment_shader.asset()->content());
         mesh1 = Mesh::Create(model1.asset()->meshdata(0));
         mesh2 = Mesh::Create(model2.asset()->meshdata(0));
-        mat1 = Material::Create(shader.get(), model1.asset()->materialdata(0));
-        mat2 = Material::Create(shader.get(), model2.asset()->materialdata(0));
-        mat1.set_face_culling_mode(Material::FaceCullingMode::NONE);
-        mat2.set_face_culling_mode(Material::FaceCullingMode::NONE);
+        mat1 = Resource::Material::Create(shader.get(), model1.asset()->materialdata(0));
+        mat2 = Resource::Material::Create(shader.get(), model2.asset()->materialdata(0));
+        mat1.set_face_culling_mode(Resource::Material::FaceCullingMode::NONE);
+        mat2.set_face_culling_mode(Resource::Material::FaceCullingMode::NONE);
 
         World::ApplicationContext app_ctx;
         app_ctx.window = m_window;

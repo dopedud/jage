@@ -7,9 +7,25 @@ namespace JAGE
 {
     GraphicsContext::GraphicsContext(Window* window) : m_window { window } {}
 
+    // template<typename T>
+    // static function
+
     namespace Resource
     {
+        template<typename T>
+        Handle<T>::Handle(ID id, T* resource)
+        : m_id { id }, m_resource { resource } {}
+
+        template<typename T> ID Handle<T>::id() const { return m_id; }
+        template<typename T> const T* Handle<T>::resource() const { return m_resource; }
+
+        template class Handle<Shader>;
+
         LogicalPath Base::dir_path() { return LogicalPath{ "resources" }; }
+        LogicalPath Shader::dir_path() { return LogicalPath{ "shaders" }; }
+        LogicalPath Material::dir_path() { return LogicalPath{ "materials" }; }
+        // LogicalPath Texture::dir_path() { return LogicalPath{ "textures" }; }
+        // LogicalPath Mesh::dir_path() { return LogicalPath{ "meshes" }; }
 
         Base::Base(Data::URI uri)
         : m_uri { uri }
@@ -18,61 +34,63 @@ namespace JAGE
 
         Data::URI Base::uri() const { return m_uri; }
         bool Base::is_valid() const { return m_valid; }
-    }
 
-    std::unique_ptr<Shader> Shader::Create
-    (
-        std::string_view vertex_str,
-        std::string_view fragment_str,
-        std::string_view geometry_str
-    )
-    { return std::make_unique<OpenGLShader>(vertex_str, fragment_str, geometry_str); }
+        std::unique_ptr<Shader> Shader::Create
+        (
+            std::string_view vertex_str,
+            std::string_view fragment_str,
+            std::string_view geometry_str
+        )
+        { return std::make_unique<OpenGLShader>(vertex_str, fragment_str, geometry_str); }
 
-    unsigned Shader::datatype_size(Shader::DataType datatype)
-    {
-        switch (datatype)
+        unsigned Shader::datatype_size(Shader::DataType datatype)
         {
-            case DataType::None:      return 0;
-            case DataType::Float:     return 4;
-            case DataType::Float2:    return 4 * 2;
-            case DataType::Float3:    return 4 * 3;
-            case DataType::Float4:    return 4 * 4;
-            case DataType::Int:       return 4;
-            case DataType::Int2:      return 4 * 2;
-            case DataType::Int3:      return 4 * 3;
-            case DataType::Int4:      return 4 * 4;
-            case DataType::Mat3:      return 4 * 3 * 3;
-            case DataType::Mat4:      return 4 * 4 * 4;
-            case DataType::Bool:      return 1;
+            switch (datatype)
+            {
+                case DataType::None:      return 0;
+                case DataType::Float:     return 4;
+                case DataType::Float2:    return 4 * 2;
+                case DataType::Float3:    return 4 * 3;
+                case DataType::Float4:    return 4 * 4;
+                case DataType::Int:       return 4;
+                case DataType::Int2:      return 4 * 2;
+                case DataType::Int3:      return 4 * 3;
+                case DataType::Int4:      return 4 * 4;
+                case DataType::Mat3:      return 4 * 3 * 3;
+                case DataType::Mat4:      return 4 * 4 * 4;
+                case DataType::Bool:      return 1;
+            }
+
+            JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
+
+            return 0;
         }
 
-        JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning size 0.");
+        Material::Material()
+        : m_shader {}
+        , m_materialdata {}
+        , m_albedo_texture {}
+        {}
 
-        return 0;
+        Material::Material(Shader* shader, const Data::Material* materialdata)
+        : m_shader { shader }
+        , m_materialdata { materialdata }
+        {
+            m_albedo_texture = Texture::Create(materialdata->albedo_map);
+        }
+
+        Material Material::Create(Shader* shader, const Data::Material* materialdata) { return Material{ shader, materialdata }; }
+
+        Shader*                     Material::shader() const                                            { return m_shader; }
+        const Data::Material*       Material::materialdata() const                                      { return m_materialdata; }
+        Texture*                    Material::albedo_texture() const                                    { return m_albedo_texture.get(); }
+        Material::FaceCullingMode   Material::face_culling_mode() const                                 { return m_face_culling_mode; }
+        void                        Material::set_face_culling_mode(Material::FaceCullingMode mode)     { m_face_culling_mode = mode; }
     }
+
 
     std::unique_ptr<Texture> Texture::Create(const Data::Image* imagedata)
     { return std::make_unique<OpenGLTexture>(imagedata); }
-
-    Material::Material()
-    : m_shader {}
-    , m_materialdata {}
-    , m_albedo_texture {}
-    {}
-
-    Material::Material(Shader* shader, const Data::Material* materialdata)
-    : m_shader { shader }, m_materialdata { materialdata }
-    {
-        m_albedo_texture = Texture::Create(materialdata->albedo_map);
-    }
-
-    Material Material::Create(Shader* shader, const Data::Material* materialdata) { return Material{ shader, materialdata }; }
-
-    Shader*                     Material::shader() const                                            { return m_shader; }
-    const Data::Material*       Material::materialdata() const                                      { return m_materialdata; }
-    Texture*                    Material::albedo_texture() const                                    { return m_albedo_texture.get(); }
-    Material::FaceCullingMode   Material::face_culling_mode() const                                 { return m_face_culling_mode; }
-    void                        Material::set_face_culling_mode(Material::FaceCullingMode mode)     { m_face_culling_mode = mode; }
 
     Mesh::Mesh(const Data::Mesh* meshdata) : m_meshdata { meshdata } {} 
 
@@ -98,28 +116,28 @@ namespace JAGE
     void DebugRenderer::set_vp(glm::mat4 view, glm::mat4 projection)
     { m_view = view; m_projection = projection; }
 
-    BufferElement::BufferElement(Shader::DataType shader_datatype, std::string_view name, bool normalized)
+    BufferElement::BufferElement(Resource::Shader::DataType shader_datatype, std::string_view name, bool normalized)
     : shader_datatype   { shader_datatype }
     , name              { name }
-    , size              { Shader::datatype_size(shader_datatype) }
+    , size              { Resource::Shader::datatype_size(shader_datatype) }
     , normalized        { normalized } {}
 
     unsigned BufferElement::component_count() const
     {
         switch (shader_datatype)
         {
-            case Shader::DataType::None:    return 0;
-            case Shader::DataType::Float:   return 1;
-            case Shader::DataType::Float2:  return 2;
-            case Shader::DataType::Float3:  return 3;
-            case Shader::DataType::Float4:  return 4;
-            case Shader::DataType::Int:     return 1;
-            case Shader::DataType::Int2:    return 2;
-            case Shader::DataType::Int3:    return 3;
-            case Shader::DataType::Int4:    return 4;
-            case Shader::DataType::Mat3:    return 3 * 3;
-            case Shader::DataType::Mat4:    return 4 * 4;
-            case Shader::DataType::Bool:    return 1;
+            case Resource::Shader::DataType::None:    return 0;
+            case Resource::Shader::DataType::Float:   return 1;
+            case Resource::Shader::DataType::Float2:  return 2;
+            case Resource::Shader::DataType::Float3:  return 3;
+            case Resource::Shader::DataType::Float4:  return 4;
+            case Resource::Shader::DataType::Int:     return 1;
+            case Resource::Shader::DataType::Int2:    return 2;
+            case Resource::Shader::DataType::Int3:    return 3;
+            case Resource::Shader::DataType::Int4:    return 4;
+            case Resource::Shader::DataType::Mat3:    return 3 * 3;
+            case Resource::Shader::DataType::Mat4:    return 4 * 4;
+            case Resource::Shader::DataType::Bool:    return 1;
         }
 
         JAGE_MSG_ERROR("Shader error: unknown shader data type. Returning count 0.");

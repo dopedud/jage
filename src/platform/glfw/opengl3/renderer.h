@@ -17,7 +17,7 @@ namespace JAGE
         virtual void SwapBuffers() override;
     };
 
-    class OpenGLShader final : public Shader
+    class OpenGLShader final : public Resource::Shader
     {
     public:
         static GLenum to_opengl_type(DataType datatype);
@@ -62,7 +62,7 @@ namespace JAGE
     public:
         OpenGLMesh(const Data::Mesh* meshdata);
 
-        virtual void render(const Material* material) override;
+        virtual void render(const Resource::Material* material) override;
     private:
         unsigned vao, vbo, ebo;
     };
