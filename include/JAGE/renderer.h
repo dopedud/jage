@@ -90,6 +90,9 @@ namespace JAGE
             virtual void set_uniform_float3     (std::string_view name, const glm::vec3& value) = 0;
             virtual void set_uniform_float4     (std::string_view name, const glm::vec4& value) = 0;
             virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value) = 0;
+
+        private:
+            friend class Renderer;
         };
 
         class JAGE_API Material : public Base
@@ -116,30 +119,10 @@ namespace JAGE
             const Data::Material* m_materialdata;
             std::unique_ptr<Texture> m_albedo_texture;
             FaceCullingMode m_face_culling_mode;
+            
+            friend class Renderer;
         };
     }
-
-    class JAGE_API Texture
-    {
-    public:
-        static std::unique_ptr<Texture> Create(const Data::Image* imagedata);
-        virtual ~Texture() = default;
-
-        virtual void bind(unsigned unit) const = 0;
-        virtual void unbind() const = 0;
-    };
-
-    class JAGE_API Mesh
-    {
-    public:
-        static std::unique_ptr<Mesh> Create(const Data::Mesh* meshdata);
-        Mesh(const Data::Mesh* meshdata);
-        virtual ~Mesh() = default;
-
-        virtual void render(const Resource::Material* material) = 0;
-    protected:
-        const Data::Mesh* m_meshdata;
-    };
 
     class JAGE_API Renderer
     {
@@ -152,10 +135,19 @@ namespace JAGE
 
         const glm::mat4& view() const;
         const glm::mat4& projection() const;
+
+        Resource::Handle<Resource::Shader> CreateShader
+        (
+            std::string_view vertex_str,
+            std::string_view fragment_str,
+            std::string_view geometry_str = ""
+        );
     protected:
         Window* m_window;
 
         glm::mat4 m_view, m_projection;
+
+        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Shader>> shader_resources;
     };
 
     class JAGE_API DebugRenderer
@@ -185,6 +177,28 @@ namespace JAGE
         Window* m_window;
 
         glm::mat4 m_view, m_projection;
+    };
+
+    class JAGE_API Texture
+    {
+    public:
+        static std::unique_ptr<Texture> Create(const Data::Image* imagedata);
+        virtual ~Texture() = default;
+
+        virtual void bind(unsigned unit) const = 0;
+        virtual void unbind() const = 0;
+    };
+
+    class JAGE_API Mesh
+    {
+    public:
+        static std::unique_ptr<Mesh> Create(const Data::Mesh* meshdata);
+        Mesh(const Data::Mesh* meshdata);
+        virtual ~Mesh() = default;
+
+        virtual void render(const Resource::Material* material) = 0;
+    protected:
+        const Data::Mesh* m_meshdata;
     };
 
     struct JAGE_API BufferElement

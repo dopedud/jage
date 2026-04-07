@@ -42,7 +42,7 @@ namespace JAGE
         virtual void set_uniform_float4     (std::string_view name, const glm::vec4& value) override;
         virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value) override;
     private:
-        unsigned shaderID;
+        unsigned id;
     };
 
     class OpenGLTexture final : public Texture
@@ -54,7 +54,7 @@ namespace JAGE
         virtual void bind(unsigned unit) const override;
         virtual void unbind() const override;
     private:
-        unsigned textureID;
+        unsigned id;
     };
 
     class OpenGLMesh final : public Mesh

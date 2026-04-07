@@ -112,26 +112,26 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Initialising shader program.");
 
-        GLuint shaderID { glCreateProgram() };
+        GLuint id { glCreateProgram() };
         GLint linked {};
 
         // coerce all received arguments to be of type GLuint
         GLuint subshaders_array[] { subshaders... };
 
-        for (GLuint subshader : subshaders_array) glAttachShader(shaderID, subshader);
+        for (GLuint subshader : subshaders_array) glAttachShader(id, subshader);
 
-        glLinkProgram(shaderID);
+        glLinkProgram(id);
 
         glGetProgramiv(shaderID, GL_LINK_STATUS, &linked);
         if (linked == GL_FALSE)
         {
             GLint max_length {};
-            glGetProgramiv(shaderID, GL_INFO_LOG_LENGTH, &max_length);
+            glGetProgramiv(id, GL_INFO_LOG_LENGTH, &max_length);
 
             GLchar infoLog[max_length];
-            glGetProgramInfoLog(shaderID, max_length, &max_length, &infoLog[0]);
+            glGetProgramInfoLog(id, max_length, &max_length, &infoLog[0]);
 
-            glDeleteProgram(shaderID);
+            glDeleteProgram(id);
             for (GLuint subshader : subshaders_array) glDeleteShader(subshader);
 
             JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
@@ -140,11 +140,11 @@ namespace JAGE
             return 0;
         }
 
-        for (GLuint subshader : subshaders_array) glDetachShader(shaderID, subshader);
+        for (GLuint subshader : subshaders_array) glDetachShader(id, subshader);
 
         JAGE_MSG_TRACE("Shader program initialised.");
 
-        return shaderID;
+        return id;
     }
 
     DISABLE_WARNING_POP
@@ -187,69 +187,69 @@ namespace JAGE
         if (!geometry_str.empty())
         {
             GLuint geometry_shader { CreateSubShader(geometry_str.data(), GL_GEOMETRY_SHADER) };
-            shaderID = CreateShaderProgram(vertex_shader, fragment_shader, geometry_shader);
-        } else shaderID = CreateShaderProgram(vertex_shader, fragment_shader);
+            id = CreateShaderProgram(vertex_shader, fragment_shader, geometry_shader);
+        } else id = CreateShaderProgram(vertex_shader, fragment_shader);
 
         JAGE_MSG_TRACE("OpenGL shader initialised.");
     }
 
-    OpenGLShader::~OpenGLShader() { glDeleteProgram(shaderID); }
+    OpenGLShader::~OpenGLShader() { glDeleteProgram(id); }
 
-    void OpenGLShader::bind() const { glUseProgram(shaderID); }
+    void OpenGLShader::bind() const { glUseProgram(id); }
     void OpenGLShader::unbind() const { glUseProgram(0); }
 
     void OpenGLShader::set_uniform_bool(std::string_view name, bool value)
     {
-        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        GLint loc { glGetUniformLocation(id, name.data()) };
         glUniform1ui(loc, static_cast<int>(value));
     }
 
     void OpenGLShader::set_uniform_uint(std::string_view name, unsigned value)
     {
-        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        GLint loc { glGetUniformLocation(id, name.data()) };
         glUniform1ui(loc, value);
     }
 
     void OpenGLShader::set_uniform_int(std::string_view name, int value)
     {
-        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        GLint loc { glGetUniformLocation(id, name.data()) };
         glUniform1i(loc, value);
     }
 
     void OpenGLShader::set_uniform_float(std::string_view name, float value)
     {
-        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        GLint loc { glGetUniformLocation(id, name.data()) };
         glUniform1f(loc, value);
     }
 
     void OpenGLShader::set_uniform_float2(std::string_view name, const glm::vec2& value)
     {
-        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        GLint loc { glGetUniformLocation(id, name.data()) };
         glUniform2f(loc, value.x, value.y);
     }
 
     void OpenGLShader::set_uniform_float3(std::string_view name, const glm::vec3& value)
     {
-        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        GLint loc { glGetUniformLocation(id, name.data()) };
         glUniform3f(loc, value.x, value.y, value.z);
     }
 
     void OpenGLShader::set_uniform_float4(std::string_view name, const glm::vec4& value)
     {
-        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        GLint loc { glGetUniformLocation(id, name.data()) };
         glUniform4f(loc, value.x, value.y, value.z, value.w);
     }
 
     void OpenGLShader::set_uniform_mat4(std::string_view name, const glm::mat4& value)
     {
-        GLint loc { glGetUniformLocation(shaderID, name.data()) };
+        GLint loc { glGetUniformLocation(id, name.data()) };
         glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
     }
 
     OpenGLTexture::OpenGLTexture(const Data::Image* imagedata)
     {
-        glGenTextures(1, &textureID);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        glGenTextures(1, &id);
+        glBindTexture(GL_TEXTURE_2D, id);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imagedata->width, imagedata->height,
             0, GL_RGBA, GL_UNSIGNED_BYTE, imagedata->pixels.data());
@@ -263,9 +263,9 @@ namespace JAGE
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &textureID); }
+    OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &id); }
 
-    void OpenGLTexture::bind(unsigned unit) const { glActiveTexture(GL_TEXTURE0 + unit); glBindTexture(GL_TEXTURE_2D, textureID); }
+    void OpenGLTexture::bind(unsigned unit) const { glActiveTexture(GL_TEXTURE0 + unit); glBindTexture(GL_TEXTURE_2D, id); }
     void OpenGLTexture::unbind() const { glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, 0); }
 
     OpenGLMesh::OpenGLMesh(const Data::Mesh* meshdata)

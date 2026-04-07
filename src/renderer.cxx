@@ -108,6 +108,16 @@ namespace JAGE
     const glm::mat4& Renderer::view() const { return m_view; }
     const glm::mat4& Renderer::projection() const { return m_projection; }
 
+    Resource::Handle<Resource::Shader> CreateShader
+    (
+        std::string_view vertex_str,
+        std::string_view fragment_str,
+        std::string_view geometry_str = ""
+    )
+    {
+        return Resource::Handle<Resource::Shader>{ 0, nullptr };
+    }
+
     DebugRenderer::DebugRenderer(Window* window) : m_window { window } {}
 
     std::unique_ptr<DebugRenderer> DebugRenderer::Create(Window* window)
