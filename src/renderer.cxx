@@ -67,13 +67,20 @@ namespace JAGE
         }
 
         Material::Material()
-        : m_shader {}
+        : Base{}
+        , m_shader {}
         , m_materialdata {}
         , m_albedo_texture {}
         {}
 
         Material::Material(Shader* shader, const Data::Material* materialdata)
-        : m_shader { shader }
+        : Base
+        { 
+            URI::Builder{ URI::Scheme::GPU }
+            .path(Base::dir_path() / Material::dir_path() / "material1")
+            .build()
+        }
+        , m_shader { shader }
         , m_materialdata { materialdata }
         {
             m_albedo_texture = Texture::Create(materialdata->albedo_map);
