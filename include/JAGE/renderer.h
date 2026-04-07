@@ -71,12 +71,6 @@ namespace JAGE
 
             static unsigned datatype_size(DataType datatype);
 
-            static std::unique_ptr<Shader> Create
-            (
-                std::string_view vertex_str,
-                std::string_view fragment_str,
-                std::string_view geometry_str = ""
-            );
             virtual ~Shader() = default;
 
             virtual void bind() const = 0;
@@ -92,7 +86,15 @@ namespace JAGE
             virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value) = 0;
 
         private:
-            friend class Renderer;
+            static std::unique_ptr<Shader> Create
+            (
+                Data::URI uri,
+                std::string_view vertex_str,
+                std::string_view fragment_str,
+                std::string_view geometry_str = ""
+            );
+
+            friend class JAGE::Renderer;
         };
 
         class JAGE_API Material : public Base
@@ -119,8 +121,6 @@ namespace JAGE
             const Data::Material* m_materialdata;
             std::unique_ptr<Texture> m_albedo_texture;
             FaceCullingMode m_face_culling_mode;
-            
-            friend class Renderer;
         };
     }
 

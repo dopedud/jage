@@ -67,7 +67,7 @@ namespace JAGE
         }
 
         Material::Material()
-        : Base{}
+        : Base{ URI::undefined() }
         , m_shader {}
         , m_materialdata {}
         , m_albedo_texture {}
@@ -115,14 +115,24 @@ namespace JAGE
     const glm::mat4& Renderer::view() const { return m_view; }
     const glm::mat4& Renderer::projection() const { return m_projection; }
 
-    Resource::Handle<Resource::Shader> CreateShader
+    Resource::Handle<Resource::Shader> Renderer::CreateShader
     (
         std::string_view vertex_str,
         std::string_view fragment_str,
         std::string_view geometry_str = ""
     )
     {
-        return Resource::Handle<Resource::Shader>{ 0, nullptr };
+        std::unique_ptr<Resource::Shader> resource
+        { 
+            Resource::Shader::Create
+            (
+                URI::undefined(),
+                vertex_str,
+                fragment_str,
+                geometry_str
+            )
+        };
+        return Resource::Handle<Resource::Shader>{ 0, std::move(resource) };
     }
 
     DebugRenderer::DebugRenderer(Window* window) : m_window { window } {}

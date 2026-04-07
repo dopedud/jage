@@ -315,5 +315,10 @@ namespace JAGE
             data.query = ss.str();
             return *this;
         }
+
+        Data::URI undefined()
+        {
+            return Builder{ URI::Scheme::UNDEFINED }.build();
+        }
     }
 }

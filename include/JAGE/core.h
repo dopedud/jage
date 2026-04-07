@@ -103,10 +103,10 @@ namespace JAGE
         constexpr u64 SECONDS_TO_MILLI { 1000 };
         constexpr u64 MILLI_TO_NANO { 1000000 };
 
-        void JAGE_API SetTargetFPS(unsigned fps);
+        JAGE_API void SetTargetFPS(unsigned fps);
 
-        float JAGE_API ElapsedTime();
-        float JAGE_API DeltaTime();
+        JAGE_API float ElapsedTime();
+        JAGE_API float DeltaTime();
     }
 }
 
@@ -668,6 +668,8 @@ namespace JAGE
         private:
             Data::URI data;
         };
+
+        Data::URI undefined();
     }
 }
 
