@@ -316,9 +316,6 @@ namespace JAGE
             return *this;
         }
 
-        Data::URI undefined()
-        {
-            return Builder{ URI::Scheme::UNDEFINED }.build();
-        }
+        Data::URI undefined() { return Builder{ URI::Scheme::UNDEFINED }.build(); }
     }
 }

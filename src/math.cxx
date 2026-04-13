@@ -4,8 +4,14 @@
 
 #include <glm/glm.hpp>
 
+#define XXH_INLINE_ALL
+#include <xxhash.h>
+
 namespace JAGE
 {
+    u64 str_to_ID(std::string_view str)
+    { return XXH3_64bits(str.data(), str.size()); }
+
     namespace Math
     {
         SHA1::SHA1()

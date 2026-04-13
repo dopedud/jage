@@ -102,13 +102,16 @@ namespace JAGE
         class Handle
         {
         public:
+            Handle() = default;
             Handle(ID id, T* asset);
 
             ID id() const;
             const T* asset() const;
+
+            bool is_valid() const;
         private:
-            ID m_id;
-            T* m_asset;
+            ID m_id {};
+            T* m_asset {};
         };
 
         // forward declare Text, Image, and Model assets class to be used by AssetManager class
@@ -150,8 +153,6 @@ namespace JAGE
 
         void Initialise();
 
-        Asset::ID str_to_ID(std::string_view str);
-
         template<typename T> void               Load(std::string_view filename);
         template<typename T> Asset::Handle<T>   Get(std::string_view filename);
     private:
@@ -183,6 +184,7 @@ namespace JAGE
             static LogicalPath dir_path();
 
             Base(Data::URI uri);
+            Base() = default;
             virtual ~Base() = default;
 
             Data::URI uri() const;
@@ -198,7 +200,6 @@ namespace JAGE
             static LogicalPath dir_path();
 
             explicit Text(AssetManager::Key, Data::URI uri);
-            ~Text() = default;
 
             std::string_view content() const;
         private:
@@ -211,7 +212,6 @@ namespace JAGE
             static LogicalPath dir_path();
 
             explicit Image(AssetManager::Key, Data::URI uri);
-            ~Image() = default;
 
             const Data::Image* data() const;
         private:

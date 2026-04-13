@@ -25,35 +25,36 @@ namespace JAGE
         OpenGLShader
         (
             Data::URI uri,
-            std::string_view vertex_str,
-            std::string_view fragment_str,
-            std::string_view geometry_str
+            std::string_view vertex_shader_str,
+            std::string_view fragment_shader_str,
+            std::string_view geometry_shader_str
         );
+
         ~OpenGLShader();
 
-        virtual void bind() const override;
-        virtual void unbind() const override;
+        virtual void bind()     const override;
+        virtual void unbind()   const override;
 
-        virtual void set_uniform_bool       (std::string_view name, bool value) override;
-        virtual void set_uniform_uint       (std::string_view name, unsigned value) override;
-        virtual void set_uniform_int        (std::string_view name, int value) override;
-        virtual void set_uniform_float      (std::string_view name, float value) override;
-        virtual void set_uniform_float2     (std::string_view name, const glm::vec2& value) override;
-        virtual void set_uniform_float3     (std::string_view name, const glm::vec3& value) override;
-        virtual void set_uniform_float4     (std::string_view name, const glm::vec4& value) override;
-        virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value) override;
+        virtual void set_uniform_bool       (std::string_view name, bool value)                 override;
+        virtual void set_uniform_uint       (std::string_view name, unsigned value)             override;
+        virtual void set_uniform_int        (std::string_view name, int value)                  override;
+        virtual void set_uniform_float      (std::string_view name, float value)                override;
+        virtual void set_uniform_float2     (std::string_view name, const glm::vec2& value)     override;
+        virtual void set_uniform_float3     (std::string_view name, const glm::vec3& value)     override;
+        virtual void set_uniform_float4     (std::string_view name, const glm::vec4& value)     override;
+        virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value)     override;
     private:
         unsigned id;
     };
 
-    class OpenGLTexture final : public Texture
+    class OpenGLTexture final : public Resource::Texture
     {
     public:
-        OpenGLTexture(const Data::Image* imagedata);
+        OpenGLTexture(Data::URI uri, const Data::Image* imagedata);
         ~OpenGLTexture();
 
-        virtual void bind(unsigned unit) const override;
-        virtual void unbind() const override;
+        virtual void bind(unsigned texture_unit)    const override;
+        virtual void unbind()                       const override;
     private:
         unsigned id;
     };
@@ -63,7 +64,7 @@ namespace JAGE
     public:
         OpenGLMesh(const Data::Mesh* meshdata);
 
-        virtual void render(const Resource::Material* material) override;
+        virtual void render(Resource::Material* material) override;
     private:
         unsigned vao, vbo, ebo;
     };

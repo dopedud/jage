@@ -74,7 +74,7 @@ namespace JAGE
     DISABLE_WARNING_PUSH
     DISABLE_WARNING_GCC_CLANG("-Wvla")
 
-    GLuint CreateSubShader(const GLchar* source, unsigned subshader_type)
+    static GLuint CreateSubShader(const GLchar* source, unsigned subshader_type)
     {
         JAGE_MSG_TRACE("Initialising subshader.");
 
@@ -108,7 +108,7 @@ namespace JAGE
     }
 
     template<typename... SubShaders>
-    GLuint CreateShaderProgram(SubShaders... subshaders)
+    static GLuint CreateShaderProgram(SubShaders... subshaders)
     {
         JAGE_MSG_TRACE("Initialising shader program.");
 
@@ -147,6 +147,15 @@ namespace JAGE
         return id;
     }
 
+    static GLuint CreateShader
+    (
+        std::string_view vertex_shader_str,
+        std::string_view fragment_shader_str,
+        std::string_view geometry_shader_str
+    )
+    {
+    }
+
     DISABLE_WARNING_POP
 
     GLenum OpenGLShader::to_opengl_type(Shader::DataType datatype)
@@ -175,21 +184,21 @@ namespace JAGE
     OpenGLShader::OpenGLShader
     (
         Data::URI uri,
-        std::string_view vertex_str,
-        std::string_view fragment_str,
-        std::string_view geometry_str
-    ) : Base { uri }
+        std::string_view vertex_shader_str,
+        std::string_view fragment_shader_str,
+        std::string_view geometry_shader_str
+    ) : Shader{ uri }
     {
         JAGE_MSG_TRACE("Initialising an OpenGL shader.");
 
-        GLuint vertex_shader { CreateSubShader(vertex_str.data(), GL_VERTEX_SHADER) };
-        GLuint fragment_shader { CreateSubShader(fragment_str.data(), GL_FRAGMENT_SHADER) };
+        GLuint vertex_shader_id { CreateSubShader(vertex_shader_str.data(), GL_VERTEX_SHADER) };
+        GLuint fragment_shader_id { CreateSubShader(fragment_shader_str.data(), GL_FRAGMENT_SHADER) };
 
-        if (!geometry_str.empty())
+        if (!geometry_shader_str.empty())
         {
-            GLuint geometry_shader { CreateSubShader(geometry_str.data(), GL_GEOMETRY_SHADER) };
-            id = CreateShaderProgram(vertex_shader, fragment_shader, geometry_shader);
-        } else id = CreateShaderProgram(vertex_shader, fragment_shader);
+            GLuint geometry_shader_id { CreateSubShader(geometry_shader_str.data(), GL_GEOMETRY_SHADER) };
+            id = CreateShaderProgram(vertex_shader_id, fragment_shader_id, geometry_shader_id);
+        } else id = CreateShaderProgram(vertex_shader_id, fragment_shader_id);
 
         JAGE_MSG_TRACE("OpenGL shader initialised.");
     }
@@ -247,7 +256,7 @@ namespace JAGE
         glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
     }
 
-    OpenGLTexture::OpenGLTexture(const Data::Image* imagedata)
+    OpenGLTexture::OpenGLTexture(Data::URI uri, const Data::Image* imagedata) : Texture{ uri }
     {
         glGenTextures(1, &id);
         glBindTexture(GL_TEXTURE_2D, id);
@@ -266,7 +275,7 @@ namespace JAGE
 
     OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &id); }
 
-    void OpenGLTexture::bind(unsigned unit) const { glActiveTexture(GL_TEXTURE0 + unit); glBindTexture(GL_TEXTURE_2D, id); }
+    void OpenGLTexture::bind(unsigned texture_unit) const { glActiveTexture(GL_TEXTURE0 + texture_unit); glBindTexture(GL_TEXTURE_2D, id); }
     void OpenGLTexture::unbind() const { glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, 0); }
 
     OpenGLMesh::OpenGLMesh(const Data::Mesh* meshdata)
@@ -319,10 +328,10 @@ namespace JAGE
         glBindVertexArray(0);
     }
 
-    void OpenGLMesh::render(const Resource::Material* material)
+    void OpenGLMesh::render(Resource::Material* material)
     {
         Resource::Shader* shader { material->shader() };
-        Texture* albedo_texture { material->albedo_texture() };
+        Resource::Texture* albedo_texture { material->albedo_texture() };
 
         shader->bind();
         albedo_texture->bind(0);
@@ -332,10 +341,12 @@ namespace JAGE
         switch (material->face_culling_mode())
         {
             case Resource::Material::FaceCullingMode::NONE: glDisable(GL_CULL_FACE); break;
+
             case Resource::Material::FaceCullingMode::BACK:
                 glEnable(GL_CULL_FACE);
                 glCullFace(GL_BACK);
             break;
+
             case Resource::Material::FaceCullingMode::FRONT:
                 glEnable(GL_CULL_FACE);
                 glCullFace(GL_FRONT);
@@ -356,6 +367,7 @@ namespace JAGE
     : DebugRenderer{ window }
     , grid_shader
     {
+        URI::undefined(),
         R"(
             #version 460 core
             layout (location = 0) in vec3 v_position;
@@ -389,10 +401,11 @@ namespace JAGE
             {
                 color = vec4(0.5, 0.5, 0.5, 0.5);
             }
-        )", ""
+        )", ""sv
     }
     , axes_shader
     {
+        URI::undefined(),
         R"(
             #version 460 core
             layout (location = 0) in vec3 v_position;
@@ -420,8 +433,7 @@ namespace JAGE
             {
                 color = vec4(normalize(f_position), 1.0);
             }
-        )",
-        ""
+        )", ""sv
     }
     {
         glGenVertexArrays(1, &grid_vao);

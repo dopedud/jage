@@ -6,6 +6,8 @@
 
 namespace JAGE
 {
+    class JAGE_API Renderer;
+
     /**
      * @namespace Resource
      * 
@@ -24,13 +26,15 @@ namespace JAGE
         class Handle
         {
         public:
+            Handle() = default;
             Handle(ID id, T* resource);
 
             ID id() const;
-            const T* resource() const;
+            T* resource() const;
+            bool is_valid() const;
         private:
-            ID m_id;
-            T* m_resource;
+            ID m_id {};
+            T* m_resource {};
         };
 
         /**
@@ -71,28 +75,43 @@ namespace JAGE
 
             static unsigned datatype_size(DataType datatype);
 
-            virtual ~Shader() = default;
+            Shader(Data::URI uri);
 
-            virtual void bind() const = 0;
-            virtual void unbind() const = 0;
+            virtual void bind()     const = 0;
+            virtual void unbind()   const = 0;
 
-            virtual void set_uniform_bool       (std::string_view name, bool value) = 0;
-            virtual void set_uniform_uint       (std::string_view name, unsigned value) = 0;
-            virtual void set_uniform_int        (std::string_view name, int value) = 0;
-            virtual void set_uniform_float      (std::string_view name, float value) = 0;
-            virtual void set_uniform_float2     (std::string_view name, const glm::vec2& value) = 0;
-            virtual void set_uniform_float3     (std::string_view name, const glm::vec3& value) = 0;
-            virtual void set_uniform_float4     (std::string_view name, const glm::vec4& value) = 0;
-            virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value) = 0;
+            virtual void set_uniform_bool       (std::string_view name, bool value)                 = 0;
+            virtual void set_uniform_uint       (std::string_view name, unsigned value)             = 0;
+            virtual void set_uniform_int        (std::string_view name, int value)                  = 0;
+            virtual void set_uniform_float      (std::string_view name, float value)                = 0;
+            virtual void set_uniform_float2     (std::string_view name, const glm::vec2& value)     = 0;
+            virtual void set_uniform_float3     (std::string_view name, const glm::vec3& value)     = 0;
+            virtual void set_uniform_float4     (std::string_view name, const glm::vec4& value)     = 0;
+            virtual void set_uniform_mat4       (std::string_view name, const glm::mat4& value)     = 0;
 
         private:
             static std::unique_ptr<Shader> Create
             (
                 Data::URI uri,
-                std::string_view vertex_str,
-                std::string_view fragment_str,
-                std::string_view geometry_str = ""
+                std::string_view vertex_shader_str,
+                std::string_view fragment_shader_str,
+                std::string_view geometry_shader_str = ""sv
             );
+
+            friend class JAGE::Renderer;
+        };
+
+        class JAGE_API Texture : public Base
+        {
+        public:
+            static LogicalPath dir_path();
+
+            Texture(Data::URI uri);
+
+            virtual void bind(unsigned texture_unit)    const = 0;
+            virtual void unbind()                       const = 0;
+        private:
+            static std::unique_ptr<Texture> Create(Data::URI uri, const Data::Image* imagedata);
 
             friend class JAGE::Renderer;
         };
@@ -104,23 +123,29 @@ namespace JAGE
 
             enum class FaceCullingMode : u8 { NONE = 0, BACK, FRONT };
 
-            Material();
-
-            static Material Create(Shader* shader, const Data::Material* materialdata);
-
             Shader* shader() const;
             const Data::Material* materialdata() const;
+
             Texture* albedo_texture() const;
+            void set_albedo_texture(Texture* albedo_texture);
 
             FaceCullingMode face_culling_mode() const;
             void set_face_culling_mode(FaceCullingMode mode);
         private:
-            Material(Shader* shader, const Data::Material* materialdata);
+            Material(Data::URI uri, Shader* shader, const Data::Material* materialdata);
+            static std::unique_ptr<Material> Create
+            (
+                Data::URI uri,
+                Shader* shader,
+                const Data::Material* materialdata
+            );
 
             Shader* m_shader;
             const Data::Material* m_materialdata;
-            std::unique_ptr<Texture> m_albedo_texture;
+            Texture* m_albedo_texture;
             FaceCullingMode m_face_culling_mode;
+
+            friend class JAGE::Renderer;
         };
     }
 
@@ -138,9 +163,18 @@ namespace JAGE
 
         Resource::Handle<Resource::Shader> CreateShader
         (
-            std::string_view vertex_str,
-            std::string_view fragment_str,
-            std::string_view geometry_str = ""
+            Asset::Handle<Asset::Text> vertex_shader,
+            Asset::Handle<Asset::Text> fragment_shader,
+            Asset::Handle<Asset::Text> geometry_shader = Asset::Handle<Asset::Text>{}
+        );
+
+        Resource::Handle<Resource::Texture> CreateTexture(Asset::Handle<Asset::Image> image);
+
+        Resource::Handle<Resource::Material> CreateMaterial
+        (
+            Resource::Handle<Resource::Shader> shader,
+            Asset::Handle<Asset::Model> model,
+            unsigned mat_index
         );
     protected:
         Window* m_window;
@@ -148,6 +182,8 @@ namespace JAGE
         glm::mat4 m_view, m_projection;
 
         std::unordered_map<Resource::ID, std::unique_ptr<Resource::Shader>> shader_resources;
+        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Texture>> texture_resources;
+        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Material>> material_resources;
     };
 
     class JAGE_API DebugRenderer
@@ -179,16 +215,6 @@ namespace JAGE
         glm::mat4 m_view, m_projection;
     };
 
-    class JAGE_API Texture
-    {
-    public:
-        static std::unique_ptr<Texture> Create(const Data::Image* imagedata);
-        virtual ~Texture() = default;
-
-        virtual void bind(unsigned unit) const = 0;
-        virtual void unbind() const = 0;
-    };
-
     class JAGE_API Mesh
     {
     public:
@@ -196,7 +222,7 @@ namespace JAGE
         Mesh(const Data::Mesh* meshdata);
         virtual ~Mesh() = default;
 
-        virtual void render(const Resource::Material* material) = 0;
+        virtual void render(Resource::Material* material) = 0;
     protected:
         const Data::Mesh* m_meshdata;
     };

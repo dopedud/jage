@@ -13,9 +13,6 @@ DISABLE_WARNING_GCC_CLANG("-Wmissing-field-initializers")
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#define XXH_INLINE_ALL
-#include <xxhash.h>
-
 DISABLE_WARNING_POP
 
 namespace JAGE
@@ -133,9 +130,6 @@ namespace JAGE
 
     void AssetManager::release() { m_instance.release(); }
 
-    Asset::ID AssetManager::str_to_ID(std::string_view str)
-    { return XXH3_64bits(str.data(), str.size()); }
-
     static Data::Material::TextureType aiTextureType_ToTextureType(aiTextureType ai_texturetype)
     {
         switch (ai_texturetype)
@@ -150,11 +144,11 @@ namespace JAGE
     namespace Asset
     {
         template<typename T>
-        Handle<T>::Handle(ID id, T* asset)
-        : m_id { id }, m_asset { asset } {}
+        Handle<T>::Handle(ID id, T* asset) : m_id { id }, m_asset { asset } {}
 
         template<typename T> ID Handle<T>::id() const { return m_id; }
         template<typename T> const T* Handle<T>::asset() const { return m_asset; }
+        template<typename T> bool Handle<T>::is_valid() const { return m_asset != nullptr; }
 
         template class Handle<Text>;
         template class Handle<Image>;
