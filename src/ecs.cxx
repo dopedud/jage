@@ -247,7 +247,7 @@ namespace JAGE
             Transform& t { transform[i] };
             MeshRenderer& mr { mesh_renderer[i] };
 
-            Resource::Shader* shader { mr.material->shader() };
+            Resource::Shader* shader { mr.material.resource()->shader().resource() };
 
             shader->bind();
             shader->set_uniform_mat4("model", t.transformation_matrix);

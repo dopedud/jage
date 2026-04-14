@@ -738,6 +738,4 @@ namespace JAGE
             return &data;
         }
     }
-
-
 }

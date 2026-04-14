@@ -20,9 +20,9 @@ namespace JAGE
         std::unique_ptr<DebugRenderer> debug_renderer;
 
         Resource::Handle<Resource::Shader> shader;
-        Resource::Material mat1;
-        Resource::Material mat2;
-        std::unique_ptr<Texture> texture;
+        Resource::Handle<Resource::Material> mat1;
+        Resource::Handle<Resource::Material> mat2;
+        Resource::Handle<Resource::Texture> texture;
         std::unique_ptr<Mesh> mesh1;
         std::unique_ptr<Mesh> mesh2;
 

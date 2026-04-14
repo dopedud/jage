@@ -93,9 +93,9 @@ namespace JAGE
             static std::unique_ptr<Shader> Create
             (
                 Data::URI uri,
-                std::string_view vertex_shader_str,
-                std::string_view fragment_shader_str,
-                std::string_view geometry_shader_str = ""sv
+                std::string_view vs_str,
+                std::string_view fs_str,
+                std::string_view gs_str = ""sv
             );
 
             friend class JAGE::Renderer;
@@ -123,29 +123,42 @@ namespace JAGE
 
             enum class FaceCullingMode : u8 { NONE = 0, BACK, FRONT };
 
-            Shader* shader() const;
+            Handle<Shader> shader() const;
             const Data::Material* materialdata() const;
 
-            Texture* albedo_texture() const;
-            void set_albedo_texture(Texture* albedo_texture);
+            Handle<Texture> albedo_texture() const;
+            void set_albedo_texture(Handle<Texture> albedo_texture);
 
             FaceCullingMode face_culling_mode() const;
             void set_face_culling_mode(FaceCullingMode mode);
         private:
-            Material(Data::URI uri, Shader* shader, const Data::Material* materialdata);
+            Material(Data::URI uri, Handle<Shader> shader, const Data::Material* materialdata);
             static std::unique_ptr<Material> Create
             (
                 Data::URI uri,
-                Shader* shader,
+                Handle<Shader> shader,
                 const Data::Material* materialdata
             );
 
-            Shader* m_shader;
+            Handle<Shader> m_shader;
             const Data::Material* m_materialdata;
-            Texture* m_albedo_texture;
+            Handle<Texture> m_albedo_texture;
             FaceCullingMode m_face_culling_mode;
 
             friend class JAGE::Renderer;
+        };
+
+        class JAGE_API Mesh : public Base
+        {
+        public:
+            virtual ~Mesh() = default;
+
+            virtual void render(Handle<Material> material) = 0;
+        protected:
+            static std::unique_ptr<Mesh> Create(Data::URI uri, const Data::Mesh* meshdata);
+            Mesh(Data::URI uri, const Data::Mesh* meshdata);
+
+            const Data::Mesh* m_meshdata;
         };
     }
 
@@ -163,17 +176,17 @@ namespace JAGE
 
         Resource::Handle<Resource::Shader> CreateShader
         (
-            Asset::Handle<Asset::Text> vertex_shader,
-            Asset::Handle<Asset::Text> fragment_shader,
-            Asset::Handle<Asset::Text> geometry_shader = Asset::Handle<Asset::Text>{}
+            Asset::Handle<Asset::Text> vs_asset,
+            Asset::Handle<Asset::Text> fs_asset,
+            Asset::Handle<Asset::Text> gs_asset = Asset::Handle<Asset::Text>{}
         );
 
-        Resource::Handle<Resource::Texture> CreateTexture(Asset::Handle<Asset::Image> image);
+        Resource::Handle<Resource::Texture> CreateTexture(Asset::Handle<Asset::Image> image_asset);
 
         Resource::Handle<Resource::Material> CreateMaterial
         (
             Resource::Handle<Resource::Shader> shader,
-            Asset::Handle<Asset::Model> model,
+            Asset::Handle<Asset::Model> model_asset,
             unsigned mat_index
         );
     protected:
@@ -213,18 +226,6 @@ namespace JAGE
         Window* m_window;
 
         glm::mat4 m_view, m_projection;
-    };
-
-    class JAGE_API Mesh
-    {
-    public:
-        static std::unique_ptr<Mesh> Create(const Data::Mesh* meshdata);
-        Mesh(const Data::Mesh* meshdata);
-        virtual ~Mesh() = default;
-
-        virtual void render(Resource::Material* material) = 0;
-    protected:
-        const Data::Mesh* m_meshdata;
     };
 
     struct JAGE_API BufferElement

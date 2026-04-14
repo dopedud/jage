@@ -25,9 +25,9 @@ namespace JAGE
         OpenGLShader
         (
             Data::URI uri,
-            std::string_view vertex_shader_str,
-            std::string_view fragment_shader_str,
-            std::string_view geometry_shader_str
+            std::string_view vs_str,
+            std::string_view fs_str,
+            std::string_view gs_str
         );
 
         ~OpenGLShader();
@@ -59,12 +59,12 @@ namespace JAGE
         unsigned id;
     };
 
-    class OpenGLMesh final : public Mesh
+    class OpenGLMesh final : public Resource::Mesh
     {
     public:
         OpenGLMesh(const Data::Mesh* meshdata);
 
-        virtual void render(Resource::Material* material) override;
+        virtual void render(Resource::Handle<Resource::Material> material) override;
     private:
         unsigned vao, vbo, ebo;
     };

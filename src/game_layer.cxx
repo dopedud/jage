@@ -21,15 +21,14 @@ namespace JAGE
         Asset::Handle<Asset::Model> model1 { AssetManager::instance().Get<Asset::Model>("potted_plant_3.fbx") };
         Asset::Handle<Asset::Model> model2 { AssetManager::instance().Get<Asset::Model>("z4.fbx") };
 
-        texture = Texture::Create(image.asset()->data());
-        // shader = Resource::Shader::Create(vertex_shader.asset()->content(), fragment_shader.asset()->content());
+        texture = renderer->CreateTexture(image);
         shader = renderer->CreateShader(vertex_shader, fragment_shader);
         mesh1 = Mesh::Create(model1.asset()->meshdata(0));
         mesh2 = Mesh::Create(model2.asset()->meshdata(0));
-        mat1 = Resource::Material::Create(shader.resource(), model1.asset()->materialdata(0));
-        mat2 = Resource::Material::Create(shader.resource(), model2.asset()->materialdata(0));
-        mat1.set_face_culling_mode(Resource::Material::FaceCullingMode::NONE);
-        mat2.set_face_culling_mode(Resource::Material::FaceCullingMode::NONE);
+        mat1 = renderer->CreateMaterial(shader, model1, 0);
+        mat2 = renderer->CreateMaterial(shader, model2, 0);
+        mat1.resource()->set_face_culling_mode(Resource::Material::FaceCullingMode::NONE);
+        mat2.resource()->set_face_culling_mode(Resource::Material::FaceCullingMode::NONE);
 
         World::ApplicationContext app_ctx;
         app_ctx.window = m_window;
@@ -47,11 +46,11 @@ namespace JAGE
         object2.AddComponent<Transform>();
         MeshRenderer mesh_renderer1 {};
         mesh_renderer1.mesh = mesh1.get();
-        mesh_renderer1.material = &mat1;
+        mesh_renderer1.material = mat1;
         object1.AddComponent<MeshRenderer>(mesh_renderer1);
         MeshRenderer mesh_renderer2 {};
         mesh_renderer2.mesh = mesh2.get();
-        mesh_renderer2.material = &mat2;
+        mesh_renderer2.material = mat2;
         object2.AddComponent<MeshRenderer>(mesh_renderer2);
 
         JAGE_MSG_TRACE("Attached Game layer to layer stack.");
@@ -60,8 +59,6 @@ namespace JAGE
     void GameLayer::OnDetach()
     {
         JAGE_MSG_TRACE("Detaching Game layer from layer stack.");
-
-        texture.reset();
 
         JAGE_MSG_TRACE("Detached Game layer from layer stack.");
     }

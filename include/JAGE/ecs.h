@@ -42,7 +42,7 @@ namespace JAGE
     struct JAGE_API MeshRenderer
     {
         Mesh* mesh {};
-        Resource::Material* material {};
+        Resource::Handle<Resource::Material> material {};
     };
 
     void CameraMovementSystem_OnMouseScrolled(ecs_iter_t* it);

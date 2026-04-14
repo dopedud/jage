@@ -63,38 +63,37 @@ namespace JAGE
         std::unique_ptr<Shader> Shader::Create
         (
             Data::URI uri,
-            std::string_view vertex_shader_str,
-            std::string_view fragment_shader_str,
-            std::string_view geometry_shader_str
+            std::string_view vs_str,
+            std::string_view fs_str,
+            std::string_view gs_str
         )
-        { return std::make_unique<OpenGLShader>(uri, vertex_shader_str, fragment_shader_str, geometry_shader_str); }
+        { return std::make_unique<OpenGLShader>(uri, vs_str, fs_str, gs_str); }
 
         Texture::Texture(Data::URI uri) : Base{ uri } {}
 
         std::unique_ptr<Texture> Texture::Create(Data::URI uri, const Data::Image* imagedata)
         { return std::make_unique<OpenGLTexture>(uri, imagedata); }
 
-        Material::Material(Data::URI uri, Shader* shader, const Data::Material* materialdata)
+        Material::Material(Data::URI uri, Handle<Shader> shader, const Data::Material* materialdata)
         : Base{ uri }
         , m_shader { shader }
         , m_materialdata { materialdata }
         , m_albedo_texture {} {}
 
-        std::unique_ptr<Material> Material::Create(Data::URI uri, Shader* shader, const Data::Material* materialdata)
+        std::unique_ptr<Material> Material::Create(Data::URI uri, Handle<Shader> shader, const Data::Material* materialdata)
         { return std::make_unique<Material>(uri, shader, materialdata); }
 
-        Shader*                     Material::shader() const                                            { return m_shader; }
+        Handle<Shader>              Material::shader() const                                            { return m_shader; }
         const Data::Material*       Material::materialdata() const                                      { return m_materialdata; }
-        Texture*                    Material::albedo_texture() const                                    { return m_albedo_texture; }
+        Handle<Texture>             Material::albedo_texture() const                                    { return m_albedo_texture; }
         Material::FaceCullingMode   Material::face_culling_mode() const                                 { return m_face_culling_mode; }
         void                        Material::set_face_culling_mode(Material::FaceCullingMode mode)     { m_face_culling_mode = mode; }
+
+        Mesh::Mesh(Data::URI uri, const Data::Mesh* meshdata) : Base{ uri }, m_meshdata { meshdata } {} 
+
+        std::unique_ptr<Mesh> Mesh::Create(Data::URI uri, const Data::Mesh* meshdata)
+        { return std::make_unique<OpenGLMesh>(uri, meshdata); }
     }
-
-
-    Mesh::Mesh(const Data::Mesh* meshdata) : m_meshdata { meshdata } {} 
-
-    std::unique_ptr<Mesh> Mesh::Create(const Data::Mesh* meshdata)
-    { return std::make_unique<OpenGLMesh>(meshdata); }
 
     Renderer::Renderer(Window* window) : m_window { window } {}
 
@@ -109,29 +108,23 @@ namespace JAGE
 
     Resource::Handle<Resource::Shader> Renderer::CreateShader
     (
-        Asset::Handle<Asset::Text> vertex_shader,
-        Asset::Handle<Asset::Text> fragment_shader,
-        Asset::Handle<Asset::Text> geometry_shader
+        Asset::Handle<Asset::Text> vs_asset,
+        Asset::Handle<Asset::Text> fs_asset,
+        Asset::Handle<Asset::Text> gs_asset
     )
     {
         LogicalPath path { Resource::Base::dir_path() / Resource::Shader::dir_path() / ("shader" + instance_counter<Resource::Shader>()) };
         Data::URI uri { URI::Builder{ URI::Scheme::GPU }.path(path).build() };
         Resource::ID id { str_to_ID(uri.string()) };
 
-        std::string_view vertex_shader_str { vertex_shader.asset()->content() };
-        std::string_view fragment_shader_str { fragment_shader.asset()->content() };
-        std::string_view geometry_shader_str {};
-        if (geometry_shader.is_valid()) geometry_shader_str = geometry_shader.asset()->content();
+        std::string_view vs_str { vs_asset.asset()->content() };
+        std::string_view fs_str { fs_asset.asset()->content() };
+        std::string_view gs_str {};
+        if (gs_asset.is_valid()) gs_str = gs_asset.asset()->content();
 
         std::unique_ptr<Resource::Shader> resource
         { 
-            Resource::Shader::Create
-            (
-                uri,
-                vertex_shader_str,
-                fragment_shader_str,
-                geometry_shader_str
-            )
+            Resource::Shader::Create(uri, vs_str, fs_str, gs_str)
         };
 
         Resource::Shader* raw { resource.get() };
@@ -139,13 +132,13 @@ namespace JAGE
         return Resource::Handle<Resource::Shader>{ id, raw };
     }
 
-    Resource::Handle<Resource::Texture> Renderer::CreateTexture(Asset::Handle<Asset::Image> image)
+    Resource::Handle<Resource::Texture> Renderer::CreateTexture(Asset::Handle<Asset::Image> image_asset)
     {
         LogicalPath path { Resource::Base::dir_path() / Resource::Texture::dir_path() / ("texture" + instance_counter<Resource::Texture>()) };
         Data::URI uri { URI::Builder{ URI::Scheme::GPU }.path(path).build() };
         Resource::ID id { str_to_ID(uri.string()) };
 
-        std::unique_ptr<Resource::Texture> resource { Resource::Texture::Create(uri, image.asset()->data()) };
+        std::unique_ptr<Resource::Texture> resource { Resource::Texture::Create(uri, image_asset.asset()->data()) };
 
         Resource::Texture* raw { resource.get() };
         texture_resources.emplace(id, std::move(resource));
@@ -155,7 +148,7 @@ namespace JAGE
     Resource::Handle<Resource::Material> Renderer::CreateMaterial
     (
         Resource::Handle<Resource::Shader> shader,
-        Asset::Handle<Asset::Model> model,
+        Asset::Handle<Asset::Model> model_asset,
         unsigned mat_index
     )
     {
@@ -163,7 +156,10 @@ namespace JAGE
         Data::URI uri { URI::Builder{ URI::Scheme::GPU }.path(path).build() };
         Resource::ID id { str_to_ID(uri.string()) };
 
-        std::unique_ptr<Resource::Material> resource { Resource::Material::Create(uri, shader.resource(), model.asset()->materialdata(mat_index)) };
+        std::unique_ptr<Resource::Material> resource
+        {
+            Resource::Material::Create(uri, shader, model_asset.asset()->materialdata(mat_index))
+        };
 
         Resource::Material* raw { resource.get() };
         material_resources.emplace(id, std::move(resource));
