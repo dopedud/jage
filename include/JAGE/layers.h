@@ -23,8 +23,8 @@ namespace JAGE
         Resource::Handle<Resource::Material> mat1;
         Resource::Handle<Resource::Material> mat2;
         Resource::Handle<Resource::Texture> texture;
-        std::unique_ptr<Mesh> mesh1;
-        std::unique_ptr<Mesh> mesh2;
+        Resource::Handle<Resource::Mesh> mesh1;
+        Resource::Handle<Resource::Mesh> mesh2;
 
         World world;
         Entity camera;

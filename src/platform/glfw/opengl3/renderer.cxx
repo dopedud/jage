@@ -122,7 +122,7 @@ namespace JAGE
 
         glLinkProgram(id);
 
-        glGetProgramiv(shaderID, GL_LINK_STATUS, &linked);
+        glGetProgramiv(id, GL_LINK_STATUS, &linked);
         if (linked == GL_FALSE)
         {
             GLint max_length {};
@@ -145,15 +145,6 @@ namespace JAGE
         JAGE_MSG_TRACE("Shader program initialised.");
 
         return id;
-    }
-
-    static GLuint CreateShader
-    (
-        std::string_view vertex_shader_str,
-        std::string_view fragment_shader_str,
-        std::string_view geometry_shader_str
-    )
-    {
     }
 
     DISABLE_WARNING_POP
@@ -278,8 +269,8 @@ namespace JAGE
     void OpenGLTexture::bind(unsigned texture_unit) const { glActiveTexture(GL_TEXTURE0 + texture_unit); glBindTexture(GL_TEXTURE_2D, id); }
     void OpenGLTexture::unbind() const { glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, 0); }
 
-    OpenGLMesh::OpenGLMesh(const Data::Mesh* meshdata)
-    : Mesh{ meshdata }
+    OpenGLMesh::OpenGLMesh(Data::URI uri, const Data::Mesh* meshdata)
+    : Mesh{ uri, meshdata }
     {
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
@@ -328,17 +319,24 @@ namespace JAGE
         glBindVertexArray(0);
     }
 
-    void OpenGLMesh::render(Resource::Material* material)
+    OpenGLMesh::~OpenGLMesh()
     {
-        Resource::Shader* shader { material->shader() };
-        Resource::Texture* albedo_texture { material->albedo_texture() };
+        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(1, &vbo);
+        glDeleteBuffers(1, &ebo);
+    }
+
+    void OpenGLMesh::render(Resource::Handle<Resource::Material> material)
+    {
+        Resource::Shader* shader { material.resource()->shader().resource() };
+        Resource::Texture* albedo_texture { material.resource()->albedo_texture().resource() };
 
         shader->bind();
         albedo_texture->bind(0);
         shader->set_uniform_int("texture_albedo", 0);
         glBindVertexArray(vao);
 
-        switch (material->face_culling_mode())
+        switch (material.resource()->face_culling_mode())
         {
             case Resource::Material::FaceCullingMode::NONE: glDisable(GL_CULL_FACE); break;
 
@@ -361,7 +359,6 @@ namespace JAGE
     }
 
     OpenGLRenderer::OpenGLRenderer(Window* window) : Renderer{ window } {}
-    OpenGLRenderer::~OpenGLRenderer() {}
 
     OpenGLDebugRenderer::OpenGLDebugRenderer(Window* window)
     : DebugRenderer{ window }
@@ -437,10 +434,11 @@ namespace JAGE
     }
     {
         glGenVertexArrays(1, &grid_vao);
-        glGenVertexArrays(1, &axes_vao);
         glGenBuffers(1, &grid_vbo);
-        glGenBuffers(1, &axes_vbo);
         glGenBuffers(1, &grid_ebo);
+
+        glGenVertexArrays(1, &axes_vao);
+        glGenBuffers(1, &axes_vbo);
         glGenBuffers(1, &axes_ebo);
     }
 
@@ -449,6 +447,10 @@ namespace JAGE
         glDeleteVertexArrays(1, &grid_vao);
         glDeleteBuffers(1, &grid_vbo);
         glDeleteBuffers(1, &grid_ebo);
+
+        glDeleteVertexArrays(1, &axes_vao);
+        glDeleteBuffers(1, &axes_vbo);
+        glDeleteBuffers(1, &axes_ebo);
     }
 
     void OpenGLDebugRenderer::RenderGridLines(unsigned slices, float spacing)

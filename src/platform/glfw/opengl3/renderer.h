@@ -62,7 +62,8 @@ namespace JAGE
     class OpenGLMesh final : public Resource::Mesh
     {
     public:
-        OpenGLMesh(const Data::Mesh* meshdata);
+        OpenGLMesh(Data::URI uri, const Data::Mesh* meshdata);
+        ~OpenGLMesh();
 
         virtual void render(Resource::Handle<Resource::Material> material) override;
     private:
@@ -73,7 +74,6 @@ namespace JAGE
     {
     public:
         OpenGLRenderer(Window* window);
-        ~OpenGLRenderer();
     };
 
     class OpenGLDebugRenderer final : public DebugRenderer

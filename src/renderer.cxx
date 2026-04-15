@@ -8,7 +8,7 @@ namespace JAGE
     GraphicsContext::GraphicsContext(Window* window) : m_window { window } {}
 
     template<typename T>
-    static u64 instance_counter() { static u64 counter; return counter++; }
+    static std::string instance_counter() { static u64 counter {}; return std::to_string(counter++); }
 
     namespace Resource
     {
@@ -20,12 +20,15 @@ namespace JAGE
         template<typename T> bool Handle<T>::is_valid() const { return m_resource != nullptr; }
 
         template class Handle<Shader>;
+        template class Handle<Texture>;
+        template class Handle<Material>;
+        template class Handle<Mesh>;
 
         LogicalPath Base::dir_path()        { return LogicalPath{ "resources" }; }
         LogicalPath Shader::dir_path()      { return LogicalPath{ "shaders" }; }
         LogicalPath Texture::dir_path()     { return LogicalPath{ "textures" }; }
         LogicalPath Material::dir_path()    { return LogicalPath{ "materials" }; }
-        // LogicalPath Mesh::dir_path() { return LogicalPath{ "meshes" }; }
+        LogicalPath Mesh::dir_path()        { return LogicalPath{ "meshes" }; }
 
         Base::Base(Data::URI uri)
         : m_uri { uri }
@@ -86,6 +89,7 @@ namespace JAGE
         Handle<Shader>              Material::shader() const                                            { return m_shader; }
         const Data::Material*       Material::materialdata() const                                      { return m_materialdata; }
         Handle<Texture>             Material::albedo_texture() const                                    { return m_albedo_texture; }
+        void                        Material::set_albedo_texture(Handle<Texture> texture)               { m_albedo_texture = texture; }
         Material::FaceCullingMode   Material::face_culling_mode() const                                 { return m_face_culling_mode; }
         void                        Material::set_face_culling_mode(Material::FaceCullingMode mode)     { m_face_culling_mode = mode; }
 
@@ -164,6 +168,22 @@ namespace JAGE
         Resource::Material* raw { resource.get() };
         material_resources.emplace(id, std::move(resource));
         return Resource::Handle<Resource::Material>{ id, raw };
+    }
+
+    Resource::Handle<Resource::Mesh> Renderer::CreateMesh(Asset::Handle<Asset::Model> model_asset, unsigned mesh_index)
+    {
+        LogicalPath path { Resource::Base::dir_path() / Resource::Mesh::dir_path() / ("mesh" + instance_counter<Resource::Mesh>()) };
+        Data::URI uri { URI::Builder{ URI::Scheme::GPU }.path(path).build() };
+        Resource::ID id { str_to_ID(uri.string()) };
+
+        std::unique_ptr<Resource::Mesh> resource
+        {
+            Resource::Mesh::Create(uri, model_asset.asset()->meshdata(mesh_index))
+        };
+
+        Resource::Mesh* raw { resource.get() };
+        mesh_resources.emplace(id, std::move(resource));
+        return Resource::Handle<Resource::Mesh>{ id, raw };
     }
 
     DebugRenderer::DebugRenderer(Window* window) : m_window { window } {}

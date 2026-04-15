@@ -62,8 +62,6 @@ namespace JAGE
         class JAGE_API Shader : public Base
         {
         public:
-            static LogicalPath dir_path();
-
             enum class DataType : u8
             {
                 None = 0,
@@ -72,6 +70,8 @@ namespace JAGE
                 Mat3, Mat4,
                 Bool
             };
+
+            static LogicalPath dir_path();
 
             static unsigned datatype_size(DataType datatype);
 
@@ -119,20 +119,21 @@ namespace JAGE
         class JAGE_API Material : public Base
         {
         public:
+            enum class FaceCullingMode : u8 { NONE = 0, BACK, FRONT };
+
             static LogicalPath dir_path();
 
-            enum class FaceCullingMode : u8 { NONE = 0, BACK, FRONT };
+            Material(Data::URI uri, Handle<Shader> shader, const Data::Material* materialdata);
 
             Handle<Shader> shader() const;
             const Data::Material* materialdata() const;
 
             Handle<Texture> albedo_texture() const;
-            void set_albedo_texture(Handle<Texture> albedo_texture);
+            void set_albedo_texture(Handle<Texture> texture);
 
             FaceCullingMode face_culling_mode() const;
             void set_face_culling_mode(FaceCullingMode mode);
         private:
-            Material(Data::URI uri, Handle<Shader> shader, const Data::Material* materialdata);
             static std::unique_ptr<Material> Create
             (
                 Data::URI uri,
@@ -151,14 +152,17 @@ namespace JAGE
         class JAGE_API Mesh : public Base
         {
         public:
-            virtual ~Mesh() = default;
+            static LogicalPath dir_path();
+
+            Mesh(Data::URI uri, const Data::Mesh* meshdata);
 
             virtual void render(Handle<Material> material) = 0;
         protected:
-            static std::unique_ptr<Mesh> Create(Data::URI uri, const Data::Mesh* meshdata);
-            Mesh(Data::URI uri, const Data::Mesh* meshdata);
-
             const Data::Mesh* m_meshdata;
+        private:
+            static std::unique_ptr<Mesh> Create(Data::URI uri, const Data::Mesh* meshdata);
+
+            friend class JAGE::Renderer;
         };
     }
 
@@ -189,14 +193,17 @@ namespace JAGE
             Asset::Handle<Asset::Model> model_asset,
             unsigned mat_index
         );
+
+        Resource::Handle<Resource::Mesh> CreateMesh(Asset::Handle<Asset::Model> model_asset, unsigned mesh_index);
     protected:
         Window* m_window;
 
         glm::mat4 m_view, m_projection;
 
-        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Shader>> shader_resources;
-        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Texture>> texture_resources;
-        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Material>> material_resources;
+        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Shader>>     shader_resources;
+        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Texture>>    texture_resources;
+        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Material>>   material_resources;
+        std::unordered_map<Resource::ID, std::unique_ptr<Resource::Mesh>>       mesh_resources;
     };
 
     class JAGE_API DebugRenderer

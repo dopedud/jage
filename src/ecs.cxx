@@ -248,6 +248,7 @@ namespace JAGE
             MeshRenderer& mr { mesh_renderer[i] };
 
             Resource::Shader* shader { mr.material.resource()->shader().resource() };
+            Resource::Mesh* mesh { mr.mesh.resource() };
 
             shader->bind();
             shader->set_uniform_mat4("model", t.transformation_matrix);
@@ -255,7 +256,7 @@ namespace JAGE
             shader->set_uniform_mat4("projection", renderer->projection());
             shader->unbind();
 
-            mr.mesh->render(mr.material);
+            mesh->render(mr.material);
         }
     }
 

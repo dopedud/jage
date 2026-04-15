@@ -41,7 +41,7 @@ namespace JAGE
 
     struct JAGE_API MeshRenderer
     {
-        Mesh* mesh {};
+        Resource::Handle<Resource::Mesh> mesh {};
         Resource::Handle<Resource::Material> material {};
     };
 
