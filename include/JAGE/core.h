@@ -19,9 +19,6 @@
  * - INITIALISATION/DESTRUCTION DEFINITIONS
  * - TIMING DEFINITIONS
  * - LOGGER DEFINITIONS
- * - WINDOW DEFINITIONS
- * - LAYER DEFINITIONS
- * - GRAPHICS CONTEXT DEFINITIONS
  * - INPUT DEFINITIONS
  * - LOGICAL PATH DEFINITIONS
  * - URI DEFINITIONS
@@ -191,65 +188,6 @@ namespace JAGE
     #define APP_LOG_WARN(LOG, ...)      JAGE::AppLogger::Warn(LOG, __VA_ARGS__)
     #define APP_LOG_ERROR(LOG, ...)     JAGE::AppLogger::Error(LOG, __VA_ARGS__)
     #define APP_LOG_CRITICAL(LOG, ...)  JAGE::AppLogger::Critical(LOG, __VA_ARGS__); std::abort()
-}
-
-/**
- * 
- * 
- * WINDOW DEFINITIONS
- * 
- * 
- */
-
-/**
- * 
- * 
- * LAYER DEFINITIONS
- * 
- * 
- */
-namespace JAGE
-{
-    class JAGE_API Layer
-    {
-    public:
-        Layer(Window* window, std::string_view name = "Unnamed Layer");
-        virtual ~Layer() = default;
-
-        virtual void OnAttach() = 0;
-        virtual void OnDetach() = 0;
-
-        virtual void OnUpdate() = 0;
-
-        virtual void OnEvent(const Event& e) = 0;
-
-        std::string_view name() const { return m_name; }
-    protected:
-        Window* m_window;
-        const std::string m_name;
-    };
-}
-
-/**
- * 
- * 
- * GRAPHICS CONTEXT DEFINITIONS
- * 
- * 
- */
-namespace JAGE
-{
-    class JAGE_API GraphicsContext
-    {
-    public:
-        GraphicsContext(Window* window);
-        virtual ~GraphicsContext() = default;
-
-        virtual void Clear() = 0;
-        virtual void SwapBuffers() = 0;
-    protected:
-        Window* m_window;
-    };
 }
 
 /**

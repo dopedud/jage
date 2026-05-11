@@ -166,29 +166,38 @@ namespace JAGE
         };
     }
 
-    // forward declare GraphicsContext class and Layer class to be used by Window class
-    class JAGE_API GraphicsContext;
-    class JAGE_API Layer;
+    // forward declare Window class to be used by Layer class
+    class JAGE_API Window;
 
-    /**
-     * @struct WindowProperties
-     * @brief The `WindowProperties` structure that holds data for properties of a window.
-     * 
-     * The data was defined as a seperate structure to allow callbacks from the window manager.
-     */
-    struct JAGE_API WindowProperties
+    class JAGE_API Layer
     {
-        std::string title { "JAGE Engine" };
-        unsigned width { 1280 }, height { 720 };
-        bool vsync { false };
+    public:
+        Layer(Window* window, std::string_view name = "Unnamed Layer");
+        virtual ~Layer() = default;
 
-        WindowProperties
-        (
-            std::string_view title = "JAGE Engine",
-            unsigned width = 1280,
-            unsigned height = 720,
-            bool vsync = false
-        );
+        virtual void OnAttach() = 0;
+        virtual void OnDetach() = 0;
+
+        virtual void OnUpdate() = 0;
+
+        virtual void OnEvent(const Event& e) = 0;
+
+        std::string_view name() const { return m_name; }
+    protected:
+        Window* m_window;
+        const std::string m_name;
+    };
+
+    class JAGE_API GraphicsContext
+    {
+    public:
+        GraphicsContext(Window* window);
+        virtual ~GraphicsContext() = default;
+
+        virtual void Clear() = 0;
+        virtual void SwapBuffers() = 0;
+    protected:
+        Window* m_window;
     };
 
     using EventCallbackFn = std::function<void(const Event&)>;
@@ -196,8 +205,29 @@ namespace JAGE
     class JAGE_API Window
     {
     public:
-        static std::unique_ptr<Window> Create(const WindowProperties& properties = WindowProperties{});
-        Window(const WindowProperties& properties);
+        /**
+         * @struct Window::Properties
+         * @brief The `Window::Properties` structure that holds data for properties of a window.
+         * 
+         * The data was defined as a seperate structure to allow callbacks from the window manager.
+         */
+        struct JAGE_API Properties
+        {
+            std::string title { "JAGE Engine" };
+            unsigned width { 1280 }, height { 720 };
+            bool vsync { false };
+
+            Properties
+            (
+                std::string_view title = "JAGE Engine",
+                unsigned width = 1280,
+                unsigned height = 720,
+                bool vsync = false
+            );
+        };
+
+        static std::unique_ptr<Window> Create(const Properties& properties = Properties{});
+        Window(const Properties& properties);
         virtual ~Window() = default;
 
         unsigned width() const;
@@ -229,12 +259,12 @@ namespace JAGE
     protected:
 
         /**
-         * @struct Data
-         * @brief The `Data` structure 
+         * @struct Window::Data
+         * @brief The `Window::Data` structure 
          */
         struct Data
         {
-            WindowProperties properties;
+            Properties properties;
             EventCallbackFn callback;
             EventCallbackFn OnEvent;
         };

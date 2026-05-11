@@ -6,7 +6,7 @@
 
 namespace JAGE
 {
-    GLFWWindow::GLFWWindow(const WindowProperties& properties) : Window{ properties }
+    GLFWWindow::GLFWWindow(const Properties& properties) : Window{ properties }
     {
         JAGE_MSG_INFO("Window Info:");
         JAGE_MSG_INFO("    Backend:     GLFW");
@@ -59,7 +59,7 @@ namespace JAGE
 
         glfwSetWindowCloseCallback(m_handle, [](GLFWwindow* window) -> void 
         {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            Data& data = *(Data*)glfwGetWindowUserPointer(window);
             WindowCloseEvent event {};
             data.callback(event);
             data.OnEvent(event);
@@ -67,7 +67,7 @@ namespace JAGE
 
         glfwSetWindowFocusCallback(m_handle, [](GLFWwindow* window, int focused) -> void
         {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            Data& data = *(Data*)glfwGetWindowUserPointer(window);
             WindowFocusEvent event { focused };
             data.callback(event);
             data.OnEvent(event);
@@ -75,7 +75,7 @@ namespace JAGE
 
         glfwSetWindowSizeCallback(m_handle, [](GLFWwindow* window, int width, int height) -> void
         {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            Data& data = *(Data*)glfwGetWindowUserPointer(window);
             data.properties.width = width;
             data.properties.height = height;
 
@@ -87,7 +87,7 @@ namespace JAGE
 
         glfwSetKeyCallback(m_handle, [](GLFWwindow* window, int key, int scancode, int action, int mods) -> void
         {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            Data& data = *(Data*)glfwGetWindowUserPointer(window);
 
             KeyEvent event { Input::FromGLFWKey(key), scancode, Input::FromGLFWAction(action), Input::FromGLFWMods(mods) };
 
@@ -107,7 +107,7 @@ namespace JAGE
 
         glfwSetMouseButtonCallback(m_handle, [](GLFWwindow* window, int button, int action, int mods) -> void
         {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            Data& data = *(Data*)glfwGetWindowUserPointer(window);
 
             MouseButtonEvent event { Input::FromGLFWMouseButton(button), Input::FromGLFWAction(action), Input::FromGLFWMods(mods) };
 
@@ -117,7 +117,7 @@ namespace JAGE
 
         glfwSetCursorEnterCallback(m_handle, [](GLFWwindow* window, int entered) -> void
         {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            Data& data = *(Data*)glfwGetWindowUserPointer(window);
             MouseEnterEvent event { entered };
             data.callback(event);
             data.OnEvent(event);
@@ -125,7 +125,7 @@ namespace JAGE
 
         glfwSetCursorPosCallback(m_handle, [](GLFWwindow* window, double xpos, double ypos) -> void
         {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            Data& data = *(Data*)glfwGetWindowUserPointer(window);
             MouseMovedEvent event { xpos, ypos };
             data.callback(event);
             data.OnEvent(event);
@@ -133,7 +133,7 @@ namespace JAGE
 
         glfwSetScrollCallback(m_handle, [](GLFWwindow* window, double xoffset, double yoffset) -> void
         {
-            WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+            Data& data = *(Data*)glfwGetWindowUserPointer(window);
             MouseScrolledEvent event { xoffset, yoffset };
             data.callback(event);
             data.OnEvent(event);

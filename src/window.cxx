@@ -5,7 +5,7 @@
 
 namespace JAGE
 {
-    WindowProperties::WindowProperties
+    Window::Properties::Properties
     (
         std::string_view title,
         unsigned width,
@@ -17,12 +17,12 @@ namespace JAGE
     , height { height }
     , vsync { vsync } {}
 
-    Window::Window(const WindowProperties& properties) 
+    Window::Window(const Properties& properties) 
     : layers {}
     , layer_insert_index {}
     { data.properties = properties; }
 
-    std::unique_ptr<Window> Window::Create(const WindowProperties& properties)
+    std::unique_ptr<Window> Window::Create(const Properties& properties)
     { return std::make_unique<GLFWWindow>(properties); }
 
     unsigned Window::width() const { return data.properties.width; }

@@ -7,7 +7,7 @@ namespace JAGE
     class GLFWWindow final : public Window
     {
     public:
-        GLFWWindow(const WindowProperties& properties);
+        GLFWWindow(const Properties& properties);
         ~GLFWWindow() override;
 
         void set_vsync(bool enabled) override;
