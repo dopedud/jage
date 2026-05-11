@@ -166,6 +166,87 @@ namespace JAGE
         };
     }
 
+    // forward declare GraphicsContext class and Layer class to be used by Window class
+    class JAGE_API GraphicsContext;
+    class JAGE_API Layer;
+
+    /**
+     * @struct WindowProperties
+     * @brief The `WindowProperties` structure that holds data for properties of a window.
+     * 
+     * The data was defined as a seperate structure to allow callbacks from the window manager.
+     */
+    struct JAGE_API WindowProperties
+    {
+        std::string title { "JAGE Engine" };
+        unsigned width { 1280 }, height { 720 };
+        bool vsync { false };
+
+        WindowProperties
+        (
+            std::string_view title = "JAGE Engine",
+            unsigned width = 1280,
+            unsigned height = 720,
+            bool vsync = false
+        );
+    };
+
+    using EventCallbackFn = std::function<void(const Event&)>;
+
+    class JAGE_API Window
+    {
+    public:
+        static std::unique_ptr<Window> Create(const WindowProperties& properties = WindowProperties{});
+        Window(const WindowProperties& properties);
+        virtual ~Window() = default;
+
+        unsigned width() const;
+        unsigned height() const;
+
+        float aspect_ratio() const;
+
+        bool vsync() const;
+        virtual void set_vsync(bool enabled) = 0;
+
+        void set_eventcallback(const EventCallbackFn& callback);
+
+        virtual void OnUpdate() = 0;
+
+        /**
+         * @fn handle
+         * @brief A function to expose backend implementation of a window.
+         * 
+         * @note This should be used only if you know what you're doing.
+         */
+        virtual void* handle() = 0;
+
+        void OnEvent(const Event& e);
+
+        void PushLayer(std::unique_ptr<Layer> layer);
+        void PushOverlay(std::unique_ptr<Layer> overlay);
+        // void PopLayer(std::unique_ptr<Layer> layer);
+        // void PopOverlay(std::unique_ptr<Layer> overlay);
+    protected:
+
+        /**
+         * @struct Data
+         * @brief The `Data` structure 
+         */
+        struct Data
+        {
+            WindowProperties properties;
+            EventCallbackFn callback;
+            EventCallbackFn OnEvent;
+        };
+
+        Data data;
+
+        std::vector<std::unique_ptr<Layer>> layers;
+        int layer_insert_index;
+
+        std::unique_ptr<GraphicsContext> graphics_context;
+    };
+
     class JAGE_API Renderer
     {
     public:
