@@ -54,8 +54,6 @@ namespace JAGE
 
         glfwSwapInterval(data.properties.vsync);
 
-        graphics_context = std::make_unique<OpenGLContext>(this);
-
         // need to initialise GLAD first to use glGetString()
         int glad_load_success { gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) };
         JAGE_MSG_ASSERT(glad_load_success, "Failed to initialise GLAD.");

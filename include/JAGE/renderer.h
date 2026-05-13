@@ -9,6 +9,9 @@ namespace JAGE
     // forward declare Renderer class to be used by the Resource classes
     class JAGE_API Renderer;
 
+    // forward declare DebugRenderer class to be used by the Window class
+    class JAGE_API DebugRenderer;
+
     /**
      * @namespace Resource
      * 
@@ -189,18 +192,6 @@ namespace JAGE
         const std::string m_name;
     };
 
-    class JAGE_API GraphicsContext
-    {
-    public:
-        GraphicsContext(Window* window);
-        virtual ~GraphicsContext() = default;
-
-        virtual void Clear() = 0;
-        virtual void SwapBuffers() = 0;
-    protected:
-        Window* m_window;
-    };
-
     using EventCallbackFn = std::function<void(const Event&)>;
 
     class JAGE_API Window
@@ -258,10 +249,12 @@ namespace JAGE
         // void PopLayer(std::unique_ptr<Layer> layer);
         // void PopOverlay(std::unique_ptr<Layer> overlay);
     protected:
-
         /**
          * @struct Window::Data
-         * @brief The `Window::Data` structure 
+         * @brief The `Window::Data` structure that holds additional data of a window, particularly event callbacks.
+         * 
+         * This is the data that's being passed in a callback of an event for a window manager to call when a window
+         * event occurs.
          */
         struct Data
         {
@@ -275,7 +268,8 @@ namespace JAGE
         std::vector<std::unique_ptr<Layer>> layers;
         int layer_insert_index;
 
-        std::unique_ptr<GraphicsContext> graphics_context;
+        std::unique_ptr<Renderer> renderer;
+        std::unique_ptr<DebugRenderer> debug_renderer;
     };
 
     class JAGE_API Renderer

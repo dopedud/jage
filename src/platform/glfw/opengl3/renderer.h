@@ -8,15 +8,6 @@
 
 namespace JAGE
 {
-    class OpenGLContext final : public GraphicsContext
-    {
-    public:
-        OpenGLContext(Window* window);
-
-        virtual void Clear() override;
-        virtual void SwapBuffers() override;
-    };
-
     class OpenGLShader final : public Resource::Shader
     {
     public:

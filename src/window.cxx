@@ -1,4 +1,4 @@
-#include "JAGE/core.h"
+#include "JAGE/renderer.h"
 
 #include "platform/glfw/window.h"
 #include "log.h"
@@ -18,8 +18,11 @@ namespace JAGE
     , vsync { vsync } {}
 
     Window::Window(const Properties& properties) 
-    : layers {}
+    : data {}
+    , layers {}
     , layer_insert_index {}
+    , renderer { Renderer::Create(this) }
+    , debug_renderer { DebugRenderer::Create(this) }
     { data.properties = properties; }
 
     std::unique_ptr<Window> Window::Create(const Properties& properties)

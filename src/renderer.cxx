@@ -5,8 +5,6 @@
 
 namespace JAGE
 {
-    GraphicsContext::GraphicsContext(Window* window) : m_window { window } {}
-
     template<typename T>
     static std::string instance_counter() { static u64 counter {}; return std::to_string(counter++); }
 
