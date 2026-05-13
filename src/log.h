@@ -5,9 +5,6 @@
 
 namespace JAGE
 {
-    void LogInit();
-    void LogDestroy();
-
     /**
      * @class EngineLogger
      * @brief The @c EngineLogger class used to log engine operations.

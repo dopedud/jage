@@ -6,6 +6,28 @@
 
 namespace JAGE
 {
+    static void opengl_message_callback
+    (
+        GLenum, // source
+        GLenum, // type
+        GLuint, // id
+        GLenum severity,
+        GLsizei, // length
+        const GLchar *message,
+        const void* // userParam
+    )
+    {
+        switch (severity)
+        {
+            case GL_DEBUG_SEVERITY_NOTIFICATION:    JAGE_MSG_TRACE(message); return;
+            case GL_DEBUG_SEVERITY_LOW:             JAGE_MSG_WARN(message); return;
+            case GL_DEBUG_SEVERITY_MEDIUM:          JAGE_MSG_ERROR(message); return;
+            case GL_DEBUG_SEVERITY_HIGH:            JAGE_MSG_CRITICAL(message); return;
+
+            default: JAGE_MSG_ERROR("JAGE error: unknown severity level from OpenGL."); return;
+        }
+    }
+
     GLFWWindow::GLFWWindow(const Properties& properties) : Window{ properties }
     {
         JAGE_MSG_INFO("Window Info:");
@@ -14,18 +36,6 @@ namespace JAGE
         JAGE_LOG_INFO("    Dimensions:  {} x {}", properties.width, properties.height);
 
         data.OnEvent = [this](const Event& e) -> void { OnEvent(e); };
-
-        glfwSetErrorCallback([](int error_code, const char* desc) -> void
-        {
-            JAGE_LOG_ERROR("GLFW error {}: {}.", error_code, desc);
-        });
-
-        int success { glfwInit() };
-        JAGE_MSG_ASSERT(success, "GLFW error: Failed to initialise GLFW.")
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         m_handle = glfwCreateWindow
         (
@@ -45,6 +55,36 @@ namespace JAGE
         glfwSwapInterval(data.properties.vsync);
 
         graphics_context = std::make_unique<OpenGLContext>(this);
+
+        // need to initialise GLAD first to use glGetString()
+        int glad_load_success { gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) };
+        JAGE_MSG_ASSERT(glad_load_success, "Failed to initialise GLAD.");
+
+        JAGE_MSG_INFO("Graphics Info:");
+        JAGE_MSG_INFO("    Graphics Backend:   OpenGL");
+        JAGE_LOG_INFO("    Vendor:             {}", (const char*)glGetString(GL_VENDOR));
+        JAGE_LOG_INFO("    Renderer:           {}", (const char*)glGetString(GL_RENDERER));
+        JAGE_LOG_INFO("    Version:            {}", (const char*)glGetString(GL_VERSION));
+
+        #ifdef DEBUG
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(opengl_message_callback, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
+        #endif
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
+
+        glViewport(0, 0, data.properties.width, data.properties.height);
+
+        glfwSetFramebufferSizeCallback(static_cast<GLFWwindow*>(m_handle),
+        [](GLFWwindow* window, int width, int height) -> void
+        {
+            glViewport(0, 0, width, height);
+        });
 
         if (glfwRawMouseMotionSupported()) glfwSetInputMode(m_handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
@@ -148,18 +188,20 @@ namespace JAGE
     {
         glfwDestroyWindow(m_handle);
         m_handle = nullptr;
-
-        glfwTerminate();
     }
 
     void GLFWWindow::OnUpdate()
     {
-        graphics_context->Clear();
+        // CLEAR SCREEN
+        glClearColor(1, 0, 1, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         Input::UpdateMousePosition();
         for (const std::unique_ptr<Layer>& layer : layers) layer->OnUpdate();
 
-        graphics_context->SwapBuffers();
+        // SWAP BUFFERS
+        glfwPollEvents();
+        glfwSwapBuffers(static_cast<GLFWwindow*>(m_handle));
 
         Time::FrameLap();
     }

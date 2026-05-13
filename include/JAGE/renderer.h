@@ -6,6 +6,7 @@
 
 namespace JAGE
 {
+    // forward declare Renderer class to be used by the Resource classes
     class JAGE_API Renderer;
 
     /**
