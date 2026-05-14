@@ -21,8 +21,8 @@ namespace JAGE
     : data {}
     , layers {}
     , layer_insert_index {}
-    , renderer { Renderer::Create(this) }
-    , debug_renderer { DebugRenderer::Create(this) }
+    , m_renderer { Renderer::Create(this) }
+    , m_debug_renderer { DebugRenderer::Create(this) }
     { data.properties = properties; }
 
     std::unique_ptr<Window> Window::Create(const Properties& properties)
@@ -31,12 +31,15 @@ namespace JAGE
     unsigned Window::width() const { return data.properties.width; }
     unsigned Window::height() const { return data.properties.height; }
 
-    bool Window::vsync() const { return data.properties.vsync; }
-        
-    void Window::set_eventcallback(const EventCallbackFn& callback) { data.callback = callback; }
-
     float Window::aspect_ratio() const
     { return static_cast<float>(data.properties.width) / static_cast<float>(data.properties.height); }
+
+    bool Window::vsync() const { return data.properties.vsync; }
+
+    Renderer* Window::renderer() const { return m_renderer.get(); }
+    DebugRenderer* Window::debug_renderer() const { return m_debug_renderer.get(); }
+        
+    void Window::set_eventcallback(const EventCallbackFn& callback) { data.callback = callback; }
 
     void Window::OnEvent(const Event& e)
     {

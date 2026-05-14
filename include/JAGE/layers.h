@@ -16,8 +16,8 @@ namespace JAGE
 
         void OnEvent(const Event& e) override;
     private:
-        std::unique_ptr<Renderer> renderer;
-        std::unique_ptr<DebugRenderer> debug_renderer;
+        Renderer* renderer;
+        DebugRenderer* debug_renderer;
 
         Resource::Handle<Resource::Shader> shader;
         Resource::Handle<Resource::Material> mat1;

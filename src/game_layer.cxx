@@ -12,8 +12,8 @@ namespace JAGE
     {
         JAGE_MSG_TRACE("Attaching Game layer to layer stack.");
 
-        renderer = Renderer::Create(m_window);
-        debug_renderer = DebugRenderer::Create(m_window);
+        renderer = m_window->renderer();
+        debug_renderer = m_window->debug_renderer();
 
         Asset::Handle<Asset::Image> image { AssetManager::instance().Get<Asset::Image>("image.jpg") };
         Asset::Handle<Asset::Text> vertex_shader { AssetManager::instance().Get<Asset::Text>("default.vs") };
@@ -33,8 +33,8 @@ namespace JAGE
 
         World::ApplicationContext app_ctx;
         app_ctx.window = m_window;
-        app_ctx.renderer = renderer.get();
-        app_ctx.debug_renderer = debug_renderer.get();
+        app_ctx.renderer = renderer;
+        app_ctx.debug_renderer = debug_renderer;
         world = World{ app_ctx };
         camera = world.CreateEntity("FreeCamera");
         object1 = world.CreateEntity("object1");

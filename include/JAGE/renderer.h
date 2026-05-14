@@ -230,6 +230,9 @@ namespace JAGE
         bool vsync() const;
         virtual void set_vsync(bool enabled) = 0;
 
+        Renderer* renderer() const;
+        DebugRenderer* debug_renderer() const;
+
         void set_eventcallback(const EventCallbackFn& callback);
 
         virtual void OnUpdate() = 0;
@@ -268,8 +271,8 @@ namespace JAGE
         std::vector<std::unique_ptr<Layer>> layers;
         int layer_insert_index;
 
-        std::unique_ptr<Renderer> renderer;
-        std::unique_ptr<DebugRenderer> debug_renderer;
+        std::unique_ptr<Renderer> m_renderer;
+        std::unique_ptr<DebugRenderer> m_debug_renderer;
     };
 
     class JAGE_API Renderer
