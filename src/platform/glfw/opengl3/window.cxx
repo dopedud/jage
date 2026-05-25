@@ -180,6 +180,9 @@ namespace JAGE
         DISABLE_WARNING_POP
 
         // END BUNCH OF CALLBACK DEFINITIONS
+
+        m_renderer = Renderer::Create(this);
+        m_debug_renderer = DebugRenderer::Create(this);
     }
 
     GLFWWindow::~GLFWWindow()

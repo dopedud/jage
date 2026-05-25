@@ -21,8 +21,8 @@ namespace JAGE
     : data {}
     , layers {}
     , layer_insert_index {}
-    , m_renderer { Renderer::Create(this) }
-    , m_debug_renderer { DebugRenderer::Create(this) }
+    , m_renderer {}
+    , m_debug_renderer {}
     { data.properties = properties; }
 
     std::unique_ptr<Window> Window::Create(const Properties& properties)

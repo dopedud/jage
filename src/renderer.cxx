@@ -75,14 +75,19 @@ namespace JAGE
         std::unique_ptr<Texture> Texture::Create(Data::URI uri, const Data::Image* imagedata)
         { return std::make_unique<OpenGLTexture>(uri, imagedata); }
 
-        Material::Material(Data::URI uri, Handle<Shader> shader, const Data::Material* materialdata)
+        Material::Material(Data::URI uri, const Data::Material* materialdata, Handle<Shader> shader)
         : Base{ uri }
-        , m_shader { shader }
         , m_materialdata { materialdata }
-        , m_albedo_texture {} {}
+        , m_shader { shader }
+        {
+            // if (materialdata->albedo_map != nullptr)
+            // {
+            //     m_albedo_texture
+            // }
+        }
 
-        std::unique_ptr<Material> Material::Create(Data::URI uri, Handle<Shader> shader, const Data::Material* materialdata)
-        { return std::make_unique<Material>(uri, shader, materialdata); }
+        std::unique_ptr<Material> Material::Create(Data::URI uri, const Data::Material* materialdata, Handle<Shader> shader)
+        { return std::make_unique<Material>(uri, materialdata, shader); }
 
         Handle<Shader>              Material::shader() const                                            { return m_shader; }
         const Data::Material*       Material::materialdata() const                                      { return m_materialdata; }
@@ -160,7 +165,7 @@ namespace JAGE
 
         std::unique_ptr<Resource::Material> resource
         {
-            Resource::Material::Create(uri, shader, model_asset.asset()->materialdata(mat_index))
+            Resource::Material::Create(uri, model_asset.asset()->materialdata(mat_index), shader)
         };
 
         Resource::Material* raw { resource.get() };

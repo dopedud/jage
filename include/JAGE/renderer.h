@@ -127,10 +127,11 @@ namespace JAGE
 
             static LogicalPath dir_path();
 
-            Material(Data::URI uri, Handle<Shader> shader, const Data::Material* materialdata);
+            Material(Data::URI uri, const Data::Material* materialdata, Handle<Shader> shader);
+
+            const Data::Material* materialdata() const;
 
             Handle<Shader> shader() const;
-            const Data::Material* materialdata() const;
 
             Handle<Texture> albedo_texture() const;
             void set_albedo_texture(Handle<Texture> texture);
@@ -141,8 +142,8 @@ namespace JAGE
             static std::unique_ptr<Material> Create
             (
                 Data::URI uri,
-                Handle<Shader> shader,
-                const Data::Material* materialdata
+                const Data::Material* materialdata,
+                Handle<Shader> shader
             );
 
             Handle<Shader> m_shader;
