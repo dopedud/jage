@@ -210,7 +210,7 @@ namespace JAGE
             {
                 JAGE_LOG_ERROR("JAGE I/O error: {}", stbi_failure_reason());
                 JAGE_MSG_ERROR("Returning pink black checkerbox image.");
-                m_data = *Data::Image::pink_black_checkerbox();
+                // m_data = *Data::Image::pink_black_checkerbox();
                 m_valid = false;
                 return;
             }
@@ -275,10 +275,11 @@ namespace JAGE
                 (
                     path.string(),
                     aiProcess_MakeLeftHanded |
+
                     // might need to disable Assimp's flip UVs post-processing step after importing a model, or disable
-                    // stb_image's flip images vertically upon loading
-                    // either one should be disabled
+                    // stb_image's flip images vertically upon loading, either one should be disabled
                     aiProcess_FlipUVs |
+
                     aiProcess_TransformUVCoords |
                     aiProcessPreset_TargetRealtime_Quality
                 )

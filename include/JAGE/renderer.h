@@ -127,14 +127,19 @@ namespace JAGE
 
             static LogicalPath dir_path();
 
-            Material(Data::URI uri, const Data::Material* materialdata, Handle<Shader> shader);
+            Material
+            (
+                Data::URI uri, 
+                const Data::Material* materialdata,
+                Handle<Shader> shader,
+                Handle<Texture> albedo_texture
+            );
 
             const Data::Material* materialdata() const;
 
             Handle<Shader> shader() const;
 
             Handle<Texture> albedo_texture() const;
-            void set_albedo_texture(Handle<Texture> texture);
 
             FaceCullingMode face_culling_mode() const;
             void set_face_culling_mode(FaceCullingMode mode);
@@ -143,11 +148,12 @@ namespace JAGE
             (
                 Data::URI uri,
                 const Data::Material* materialdata,
-                Handle<Shader> shader
+                Handle<Shader> shader,
+                Handle<Texture> albedo_texture
             );
 
-            Handle<Shader> m_shader;
             const Data::Material* m_materialdata;
+            Handle<Shader> m_shader;
             Handle<Texture> m_albedo_texture;
             FaceCullingMode m_face_culling_mode;
 
@@ -299,16 +305,20 @@ namespace JAGE
 
         Resource::Handle<Resource::Material> CreateMaterial
         (
-            Resource::Handle<Resource::Shader> shader,
             Asset::Handle<Asset::Model> model_asset,
+            Resource::Handle<Resource::Shader> shader,
             unsigned mat_index
         );
 
         Resource::Handle<Resource::Mesh> CreateMesh(Asset::Handle<Asset::Model> model_asset, unsigned mesh_index);
+
+        Resource::Handle<Resource::Texture> ErrorTexture();
     protected:
         Window* m_window;
 
         glm::mat4 m_view, m_projection;
+
+        Resource::Handle<Resource::Texture> CreateTexture(const Data::Image* imagedata);
 
         std::unordered_map<Resource::ID, std::unique_ptr<Resource::Shader>>     shader_resources;
         std::unordered_map<Resource::ID, std::unique_ptr<Resource::Texture>>    texture_resources;

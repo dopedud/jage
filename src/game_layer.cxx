@@ -25,8 +25,8 @@ namespace JAGE
         shader = renderer->CreateShader(vertex_shader, fragment_shader);
         mesh1 = renderer->CreateMesh(model1, 0);
         mesh2 = renderer->CreateMesh(model2, 0);
-        mat1 = renderer->CreateMaterial(shader, model1, 0);
-        mat2 = renderer->CreateMaterial(shader, model2, 0);
+        mat1 = renderer->CreateMaterial(model1, shader, 0);
+        mat2 = renderer->CreateMaterial(model2, shader, 0);
 
         mat1.resource()->set_face_culling_mode(Resource::Material::FaceCullingMode::NONE);
         mat2.resource()->set_face_culling_mode(Resource::Material::FaceCullingMode::NONE);

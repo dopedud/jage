@@ -4,9 +4,6 @@
 
 namespace JAGE
 {
-    DISABLE_WARNING_PUSH
-    DISABLE_WARNING_GCC_CLANG("-Wvla")
-
     static GLuint CreateSubShader(const GLchar* source, unsigned subshader_type)
     {
         JAGE_MSG_TRACE("Initialising subshader.");
@@ -17,19 +14,20 @@ namespace JAGE
         glShaderSource(subshader, 1, &source, 0);
 
         glCompileShader(subshader);
+
         glGetShaderiv(subshader, GL_COMPILE_STATUS, &compiled);
         if(compiled == GL_FALSE)
         {
-            JAGE_LOG_DEBUG("SUBSHADER TYPE: {}", subshader_type);
             GLint max_length {};
             glGetShaderiv(subshader, GL_INFO_LOG_LENGTH, &max_length);
 
-            GLchar infoLog[max_length];
-            glGetShaderInfoLog(subshader, max_length, &max_length, &infoLog[0]);
+            std::vector<GLchar> infolog {};
+            infolog.reserve(max_length);
+            glGetShaderInfoLog(subshader, max_length, &max_length, &infolog[0]);
 
             glDeleteShader(subshader);
 
-            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
+            JAGE_LOG_ERROR("OpenGL shader error: {}.", std::string_view{ infolog.data() });
             JAGE_MSG_ERROR("Returning invalid subshader.");
 
             return 0;
@@ -61,13 +59,14 @@ namespace JAGE
             GLint max_length {};
             glGetProgramiv(id, GL_INFO_LOG_LENGTH, &max_length);
 
-            GLchar infoLog[max_length];
-            glGetProgramInfoLog(id, max_length, &max_length, &infoLog[0]);
+            std::vector<GLchar> infolog {};
+            infolog.reserve(max_length);
+            glGetProgramInfoLog(id, max_length, &max_length, &infolog[0]);
 
             glDeleteProgram(id);
             for (GLuint subshader : subshaders_array) glDeleteShader(subshader);
 
-            JAGE_LOG_ERROR("OpenGL shader error: {}.", static_cast<std::string_view>(infoLog));
+            JAGE_LOG_ERROR("OpenGL shader error: {}.", std::string_view{ infolog.data() });
             JAGE_MSG_ERROR("Returning invalid shader program.");
 
             return 0;
@@ -79,8 +78,6 @@ namespace JAGE
 
         return id;
     }
-
-    DISABLE_WARNING_POP
 
     GLenum OpenGLShader::to_opengl_type(Shader::DataType datatype)
     {
@@ -123,6 +120,8 @@ namespace JAGE
             GLuint geometry_shader_id { CreateSubShader(geometry_shader_str.data(), GL_GEOMETRY_SHADER) };
             id = CreateShaderProgram(vertex_shader_id, fragment_shader_id, geometry_shader_id);
         } else id = CreateShaderProgram(vertex_shader_id, fragment_shader_id);
+
+        if (id) m_valid = true;
 
         JAGE_MSG_TRACE("OpenGL shader initialised.");
     }
@@ -195,6 +194,8 @@ namespace JAGE
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        m_valid = true;
     }
 
     OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &id); }
@@ -250,6 +251,8 @@ namespace JAGE
         }
 
         glBindVertexArray(0);
+
+        m_valid = true;
     }
 
     OpenGLMesh::~OpenGLMesh()

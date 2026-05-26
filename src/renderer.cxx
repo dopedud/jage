@@ -75,24 +75,39 @@ namespace JAGE
         std::unique_ptr<Texture> Texture::Create(Data::URI uri, const Data::Image* imagedata)
         { return std::make_unique<OpenGLTexture>(uri, imagedata); }
 
-        Material::Material(Data::URI uri, const Data::Material* materialdata, Handle<Shader> shader)
+        Material::Material
+        (
+            Data::URI uri,
+            const Data::Material* materialdata,
+            Handle<Shader> shader,
+            Handle<Texture> albedo_texture
+        )
         : Base{ uri }
-        , m_materialdata { materialdata }
-        , m_shader { shader }
-        {
-            // if (materialdata->albedo_map != nullptr)
-            // {
-            //     m_albedo_texture
-            // }
-        }
+        , m_materialdata    { materialdata }
+        , m_shader          { shader }
+        , m_albedo_texture  { albedo_texture }
+        {}
 
-        std::unique_ptr<Material> Material::Create(Data::URI uri, const Data::Material* materialdata, Handle<Shader> shader)
-        { return std::make_unique<Material>(uri, materialdata, shader); }
+        std::unique_ptr<Material> Material::Create
+        (
+            Data::URI uri,
+            const Data::Material* materialdata,
+            Handle<Shader> shader,
+            Handle<Texture> albedo_texture
+        )
+        {
+            return std::make_unique<Material>
+            (
+                uri,
+                materialdata,
+                shader,
+                albedo_texture
+            );
+        }
 
         Handle<Shader>              Material::shader() const                                            { return m_shader; }
         const Data::Material*       Material::materialdata() const                                      { return m_materialdata; }
         Handle<Texture>             Material::albedo_texture() const                                    { return m_albedo_texture; }
-        void                        Material::set_albedo_texture(Handle<Texture> texture)               { m_albedo_texture = texture; }
         Material::FaceCullingMode   Material::face_culling_mode() const                                 { return m_face_culling_mode; }
         void                        Material::set_face_culling_mode(Material::FaceCullingMode mode)     { m_face_culling_mode = mode; }
 
@@ -140,12 +155,15 @@ namespace JAGE
     }
 
     Resource::Handle<Resource::Texture> Renderer::CreateTexture(Asset::Handle<Asset::Image> image_asset)
+    { return CreateTexture(image_asset.asset()->data()); }
+
+    Resource::Handle<Resource::Texture> Renderer::CreateTexture(const Data::Image* imagedata)
     {
         LogicalPath path { Resource::Base::dir_path() / Resource::Texture::dir_path() / ("texture" + instance_counter<Resource::Texture>()) };
         Data::URI uri { URI::Builder{ URI::Scheme::GPU }.path(path).build() };
         Resource::ID id { str_to_ID(uri.string()) };
 
-        std::unique_ptr<Resource::Texture> resource { Resource::Texture::Create(uri, image_asset.asset()->data()) };
+        std::unique_ptr<Resource::Texture> resource { Resource::Texture::Create(uri, imagedata) };
 
         Resource::Texture* raw { resource.get() };
         texture_resources.emplace(id, std::move(resource));
@@ -154,8 +172,8 @@ namespace JAGE
 
     Resource::Handle<Resource::Material> Renderer::CreateMaterial
     (
-        Resource::Handle<Resource::Shader> shader,
         Asset::Handle<Asset::Model> model_asset,
+        Resource::Handle<Resource::Shader> shader,
         unsigned mat_index
     )
     {
@@ -163,9 +181,19 @@ namespace JAGE
         Data::URI uri { URI::Builder{ URI::Scheme::GPU }.path(path).build() };
         Resource::ID id { str_to_ID(uri.string()) };
 
+        const Data::Material* model_mat { model_asset.asset()->materialdata(mat_index) };
+
+        Resource::Handle<Resource::Texture> albedo_texture { CreateTexture(model_mat->albedo_map) };
+
         std::unique_ptr<Resource::Material> resource
         {
-            Resource::Material::Create(uri, model_asset.asset()->materialdata(mat_index), shader)
+            Resource::Material::Create
+            (
+                uri,
+                model_mat,
+                shader,
+                albedo_texture
+            )
         };
 
         Resource::Material* raw { resource.get() };

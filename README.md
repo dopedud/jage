@@ -24,7 +24,7 @@ and easy-to-use interface.
 - **Editor GUI:**                   Dear ImGui
 - **Code Documentation:**           Doxygen
 
-### Overview (basic)
+### Basic Overview
 
 JAGE can act as a framework where developers can take control of low-level systems commonly used in a game engine by
 providing the necessary header files and CMake build scripts to let them build the game executable from the ground up,

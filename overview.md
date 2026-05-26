@@ -1,4 +1,4 @@
-# Overview (detailed)
+# Overview
 
 This is the overview section of the development of JAGE as a game engine. This section will cover and discuss all
 things related to developing JAGE which includes engine, architecture, and system design decisions that have been made
@@ -61,6 +61,27 @@ from, and I think that serves as evidence for some of my opinions I'm about to e
 with off-the-shelf game engines.
 
 The biggest issue I see when developing games using tools made by big tech companies is their development environment.
+Much like how a plumber needs their tools, safety equipment, and a suitable environment to fix broken pipes, a game
+developer needs their set of tools and a suitable environment as well for them to utilise their tools effectively. A
+deteriorated condition in one of these 2 factors can affect a game developer's experience when making a game, which
+consequently affects their final product.
+
+This does not mean that a developer should solely rely on their tools to do their job. One would say that a skilled
+handyman does not depend on his tools. Rather, it's the deep knowledge and acummulated experience of several years of
+game development of a developer that would determine their overall skills and whether they have what it takes to make
+any kind of game effectively. Even then, working with bad tools almost always have an effect on a developer's
+productivity, and what most game engines do nowadays to achieve this effect is to increase dependence on their engine
+and set of game development tools from the developer so that they won't depend on anything else to work their craft.
+It's so bizarre that I have to go the extra mile of hacking around Unity's proprietary engine just to implement my own
+physics engine!
+
+Granted, Unity's business model litreally forbids me from doing so (and Unreal is open-source anyways), however I still
+stand with my point. I can give one other example to highlight this point even more, where I couldn't tamper with Unity
+engine's source code (to make better judgements of how I should code my game), simply because I don't have the required
+generated revenue to gain that access. Again, granted, that Unity's business model would require that my game should be
+sold extremely well first before I even get to have a talk with Unity about tampering with its source code, but even
+having a read-only rough overview of its source code would be enough for a free-tier access.
+
 <!-- 
 TODO: explain about how you as a developer would be locked in their development environment, no freedom, source code
 unavailable in the case of Unity, bloated tools, not needed features being included, on the bright side support and
