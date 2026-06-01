@@ -25,6 +25,8 @@ namespace JAGE
             {
                 duration<u64, std::nano> remaining_deltatime { target_deltatime - deltatime };
                 deltatime = target_deltatime;
+                /// NOTE: uncomment the line below to lower CPU usage when limiting FPS
+                /// NOTE: this also means that FPS limit won't be accurate to given cap value
                 // std::this_thread::sleep_for(remaining_deltatime);
 
                 while (high_resolution_clock::now() - previous < target_deltatime) {}
