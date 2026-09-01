@@ -4,13 +4,21 @@
 
 This repository is a project about making a game engine from scratch.
 
-## Key Features
+JAGE focuses on exposing as much game development tools as possible to the user
+to allow for maximum control, while also abstracting away low-level
+implementations and maintain extensibility as much as possible to present a
+friendly and easy-to-use interface.
 
-JAGE focuses on exposing as much game development tools as possible to the user to allow for maximum control, while
-also abstracting away low-level implementations and maintain extensibility as much as possible to present a friendly
-and easy-to-use interface.
+## Table of Contents
 
-### Tech Stack
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+    - [Basic Overview](#basic-overview)
+    - [Basic Example](#basic-example)
+- [Build and Installation](#build-and-installation)
+- [Documentation Generation](#documentation-generation)
+
+## Technology Stack
 
 - **Programming Language(s):**      C++
 - **Build System:**                 CMake
@@ -24,13 +32,18 @@ and easy-to-use interface.
 - **Editor GUI:**                   Dear ImGui
 - **Code Documentation:**           Doxygen
 
+## Getting Started
+
 ### Basic Overview
 
-JAGE can act as a framework where developers can take control of low-level systems commonly used in a game engine by
-providing the necessary header files and CMake build scripts to let them build the game executable from the ground up,
-but it can also act as a friendly interface for developers who are just starting out, or for those who are looking to
-make actual games instead of reinventing the wheel by providing them with an editor (soon!) where they can build their
-game world, code behaviours in their game, and manage projects accordingly.
+JAGE can act as a framework where developers can take control of low-level
+systems commonly used in a game engine by providing the necessary header files
+and CMake build scripts to let them build the game executable from the ground
+up, but it can also act as a friendly interface for developers who are just
+starting out, or for those who are looking to make actual games instead of
+reinventing the wheel by providing them with an editor (soon!) where they can
+build their game world, code behaviours in their game, and manage projects
+accordingly.
 
 ### Basic Example
 
@@ -49,17 +62,21 @@ int main(int argc, char** argv)
     // have your own variable to dictate whether to run the game loop or not
     bool running { true };
 
-    // JAGE provides logging utilities for both the application and the engine (although it's private for the engine)
+    // JAGE provides logging utilities for both the application and the engine
+    // (although it's private for the engine)
     APP_MSG_TRACE("Creating a window.");
 
-    // set your own window properties like width and height of the window and the title (optional)
+    // set your own window properties like width and height of the window and
+    // the title (optional)
     JAGE::WindowProperties window_properties {};
     std::unique_ptr<JAGE::Window> window { JAGE::Window::Create(window_properties) };
 
-    // you can push your own layer, or use the provided game layer that renders the game world
+    // you can push your own layer, or use the provided game layer that renders
+    // the game world
     window->PushLayer(new JAGE::GameLayer{ window.get() });
 
-    // have a callback function to receive JAGE's WindowCloseEvent event to switch running to false
+    // have a callback function to receive JAGE's WindowCloseEvent event to
+    // switch running to false
     std::function<bool(const JAGE::WindowCloseEvent&)> OnWindowClose
     {
         [&running](const JAGE::WindowCloseEvent& e) -> bool
@@ -95,16 +112,18 @@ int main(int argc, char** argv)
 }
 ```
 
-For a more detailed view on how to use JAGE effectively, refer to the separate [Overview](./overview.md) section
-located in the `overview.md` file.
+For a more detailed view on how to use JAGE effectively, refer to the separate
+[Overview](./docs/overview.md) section located in the `overview.md` file.
 
-## Build and Installation 
+## Build and Installation
 
-This project uses CMake to build, which requires the use of `CMakePresets.json` and `CMakeUserPresets.json` file. The
-`CMakePresets.json` defines the general CMake configurations and is needed so that `CMakeUserPresets.json` can derive
-its configurations from it. The `CMakeUserPresets.json` is a file that contains developer-specific CMake
-configurations, which means each developer who wishes to contribute should define their own `CMakeUserPresets.json`. A
-template is provided as shown below:
+This project uses CMake to build, which requires the use of `CMakePresets.json`
+and `CMakeUserPresets.json` file. The `CMakePresets.json` defines the general
+CMake configurations and is needed so that `CMakeUserPresets.json` can derive
+its configurations from it. The `CMakeUserPresets.json` is a file that contains
+developer-specific CMake configurations, which means each developer who wishes
+to contribute should define their own `CMakeUserPresets.json`. A template is
+provided as shown below:
 
 ```json
 {
@@ -134,12 +153,14 @@ template is provided as shown below:
 }
 ```
 
-Note that this is not the complete JSON script for `CMakeUserPresets.json`. For the full script, simply copy or
-duplicate the contents in `CMakePresets.json` and replace the JSON objects under `configurePresets` with the one
-provided above. Change the parameters in the template as you see fit (for example, define your own `generator` if you
-used other than `MinGW Makefiles`, or specify the path to your C++ compiler).
+Note that this is not the complete JSON script for `CMakeUserPresets.json`. For
+the full script, simply copy or duplicate the contents in `CMakePresets.json`
+and replace the JSON objects under `configurePresets` with the one provided
+above. Change the parameters in the template as you see fit (for example, define
+your own `generator` if you used other than `MinGW Makefiles`, or specify the
+path to your C++ compiler).
 
-Here are some of the common build commands for use in terminal:
+Here are some of the common build commands for use at the terminal:
 
 ```bash
 cmake --build build --target clean_install
@@ -152,17 +173,18 @@ cmake --install build/debug
 
 ## Documentation Generation
 
-This project uses Doxygen to generate code documentation. The terminal command below is executed to generate the
-documentation:
+This project uses Doxygen to generate code documentation. The terminal command
+below is executed to generate the documentation:
 
 ```bash
 doxygen Doxyfile
 ```
 
-The `docs` directory will then be produced and modified at this project's source directory. Doxygen provides different
-forms of output to view the documentation. For this project, a simple static HTML page will suffice and can be accessed
+The `./docs/doxygen` directory will then be produced and modified at this project's source
+directory. Doxygen provides different forms of output to view the documentation.
+For this project, a simple static HTML page will suffice and can be accessed
 under:
 
 ```bash
-docs/html/index.html
+./docs/doxygen/html/index.html
 ```

@@ -1,36 +1,37 @@
 {
     "version": 9,
-
-    "cmakeMinimumRequired": 
-    {
-        "major": 3,
-        "minor": 11,
-        "patch": 0
-    },
+    "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
 
     "configurePresets": 
     [
         {
+            "name": "base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}"
+        },
+
+        {
             "name": "debug",
+            "inherits": "base",
             "displayName": "Debug Config",
-            "binaryDir": "${sourceDir}/build/debug",
             "cacheVariables":
             {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_C_FLAGS": "-g -O0 -Wall -Wextra -Wpedantic -DDEBUG",
-                "CMAKE_CXX_FLAGS": "-g -O0 -Wall -Wextra -Wpedantic -DDEBUG",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
 
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+                "CMAKE_C_FLAGS": "-g -O0 -Wall -Wextra -Wpedantic -DDEBUG",
+                "CMAKE_CXX_FLAGS": "-g -O0 -Wall -Wextra -Wpedantic -DDEBUG"
             }
         },
 
         {
             "name": "release",
+            "inherits": "base",
             "displayName": "Release Config",
-            "binaryDir": "${sourceDir}/build/release",
             "cacheVariables":
             {
                 "CMAKE_BUILD_TYPE": "Release",
+
                 "CMAKE_C_FLAGS": "-O3 -DNDEBUG",
                 "CMAKE_CXX_FLAGS": "-O3 -DNDEBUG"
             }

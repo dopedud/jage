@@ -78,4 +78,4 @@ installs
 .clangd
 
 # Doxygen generated documentation
-docs
+docs/doxygen
